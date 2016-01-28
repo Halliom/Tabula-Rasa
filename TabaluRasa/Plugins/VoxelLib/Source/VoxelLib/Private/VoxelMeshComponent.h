@@ -5,6 +5,10 @@
 
 #include "VoxelMeshComponent.generated.h"
 
+/**
+ * This is the vertex buffer that gets sent to the shader to be processed
+ * this is where the vertices for the voxel (cube) will be stored
+ */
 class FVoxelVertexBuffer : public FVertexBuffer
 {
 public:
@@ -21,6 +25,10 @@ public:
 	}
 };
 
+/**
+ * This is the index buffer that gets sent to the shader to be processed
+ * this is where the indices for the vertices for the voxel will be stored
+ */
 class FVoxelIndexBuffer : public FIndexBuffer
 {
 public:
