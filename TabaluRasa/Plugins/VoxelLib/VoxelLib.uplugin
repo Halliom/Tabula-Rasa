@@ -1,0 +1,19 @@
+{
+	"FileVersion" : 3,
+	"FriendlyName" : "Voxel Library Plugin",
+	"Version" : 0.1,
+	"VersionName" : "0.1",
+
+	"CreatedBy" : "Johan Wieslander",
+
+	"Description" : "Enables placeable voxels in-editor that you can use in your game",
+
+	"Modules" :
+	[
+		{
+			"Name" : "VoxelLib",
+			"Type" : "Runtime",
+			"LoadingPhase" : "PostConfigInit"
+		}
+	]
+}
