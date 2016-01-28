@@ -1,19 +1,24 @@
 {
-	"FileVersion" : 3,
-	"FriendlyName" : "Voxel Library Plugin",
-	"Version" : 0.1,
-	"VersionName" : "0.1",
-
-	"CreatedBy" : "Johan Wieslander",
-
-	"Description" : "Enables placeable voxels in-editor that you can use in your game",
-
-	"Modules" :
-	[
+	"FileVersion": 3,
+	"Version": 0,
+	"VersionName": "0.1",
+	"FriendlyName": "Voxel Library Plugin",
+	"Description": "Enables placeable voxels in-editor that you can use in your game",
+	"Category": "",
+	"CreatedBy": "Johan Wieslander",
+	"CreatedByURL": "",
+	"DocsURL": "",
+	"MarketplaceURL": "",
+	"SupportURL": "",
+	"Modules": [
 		{
-			"Name" : "VoxelLib",
-			"Type" : "Runtime",
-			"LoadingPhase" : "PostConfigInit"
+			"Name": "VoxelLib",
+			"Type": "Runtime",
+			"LoadingPhase": "PostConfigInit"
 		}
-	]
+	],
+	"EnabledByDefault": false,
+	"CanContainContent": false,
+	"IsBetaVersion": false,
+	"Installed": false
 }
