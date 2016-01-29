@@ -49,6 +49,19 @@ public:
 	}
 };
 
+class FVoxelVertexFactory : public FLocalVertexFactory
+{
+	// Only used in conjunction with shader
+	//DECLARE_VERTEX_FACTORY_TYPE(FVoxelVertexFactory)
+public:
+
+	FVoxelVertexFactory() {}
+
+	inline void InitVertexComponentsRenderThread(const FVoxelVertexBuffer* VertexBuffer);
+
+	inline void InitVertexComponentsGameThread(const FVoxelVertexBuffer* VertexBuffer);
+};
+
 UCLASS(meta=(BlueprintSpawnableComponent))
 class UVoxelMeshComponent : public UMeshComponent
 {
