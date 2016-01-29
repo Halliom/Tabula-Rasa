@@ -62,6 +62,33 @@ public:
 	inline void InitVertexComponentsGameThread(const FVoxelVertexBuffer* VertexBuffer);
 };
 
+class UVoxelMeshComponent;
+
+class FVoxelSceneProxy : public FPrimitiveSceneProxy
+{
+public:
+
+	FVoxelSceneProxy(UVoxelMeshComponent* Component);
+
+	virtual ~FVoxelSceneProxy();
+
+	virtual void GetDynamicMeshElements(const TArray<const FSceneView*>& Views, const FSceneViewFamily& ViewFamily, uint32 VisibilityMap, class FMeshElementCollector& Collector) const override;
+
+	virtual FPrimitiveViewRelevance GetViewRelevance(const FSceneView* View) override;
+
+	virtual bool CanBeOccluded() const override { return !MaterialRelevance.bDisableDepthTest; }
+
+	virtual uint32 GetMemoryFootprint() const { return sizeof(*this) + FPrimitiveSceneProxy::GetAllocatedSize(); }
+
+private:
+	UMaterialInterface* Material;
+	FVoxelVertexBuffer VertexBuffer;
+	FVoxelIndexBuffer IndexBuffer;
+	FVoxelVertexFactory VertexFactory;
+
+	FMaterialRelevance MaterialRelevance;
+};
+
 UCLASS(meta=(BlueprintSpawnableComponent))
 class UVoxelMeshComponent : public UMeshComponent
 {
