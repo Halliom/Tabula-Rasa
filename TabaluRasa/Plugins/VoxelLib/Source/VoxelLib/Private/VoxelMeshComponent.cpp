@@ -62,12 +62,48 @@ inline void FVoxelVertexFactory::InitVertexComponentsGameThread(const FVoxelVert
 // This should be used when adding shader
 //IMPLEMENT_VERTEX_FACTORY_TYPE(FVoxelVertexFactory, "VoxelVertexFactory", true, true, true, true, true);
 
+#define CUBE_SIZE = 50.0f
+
 FVoxelSceneProxy::FVoxelSceneProxy(UVoxelMeshComponent* Component) : 
 	FPrimitiveSceneProxy(Component),
 	MaterialRelevance(Component->GetMaterialRelevance(ERHIFeatureLevel::SM4))
 {
 	//TODO: Add vertices
 	//VertexBuffer.Vertices.Add();
+
+	FDynamicMeshVertex Vertex0;
+	Vertex0.Position = FVector(CUBE_SIZE / -2.0f, CUBE_SIZE / 2.0f, 0.0f);
+	VertexBuffer.Vertices.Add(Vertex0);
+
+	FDynamicMeshVertex Vertex1;
+	Vertex1.Position = FVector(CUBE_SIZE / -2.0f, CUBE_SIZE / -2.0f, 0.0f);
+	VertexBuffer.Vertices.Add(Vertex1);
+
+	FDynamicMeshVertex Vertex2;
+	Vertex2.Position = FVector(CUBE_SIZE / 2.0f, CUBE_SIZE / 2.0f, 0.0f);
+	VertexBuffer.Vertices.Add(Vertex2);
+
+	FDynamicMeshVertex Vertex3;
+	Vertex3.Position = FVector(CUBE_SIZE / 2.0f, CUBE_SIZE / -2.0f, 0.0f);
+	VertexBuffer.Vertices.Add(Vertex3);
+	
+	//-------Top level-------
+
+	FDynamicMeshVertex Vertex4;
+	Vertex4.Position = FVector(CUBE_SIZE / -2.0f, CUBE_SIZE / 2.0f, CUBE_SIZE);
+	VertexBuffer.Vertices.Add(Vertex4);
+
+	FDynamicMeshVertex Vertex5;
+	Vertex5.Position = FVector(CUBE_SIZE / -2.0f, CUBE_SIZE / -2.0f, CUBE_SIZE);
+	VertexBuffer.Vertices.Add(Vertex5);
+
+	FDynamicMeshVertex Vertex6;
+	Vertex6.Position = FVector(CUBE_SIZE / 2.0f, CUBE_SIZE / 2.0f, CUBE_SIZE);
+	VertexBuffer.Vertices.Add(Vertex6);
+
+	FDynamicMeshVertex Vertex7;
+	Vertex7.Position = FVector(CUBE_SIZE / 2.0f, CUBE_SIZE / -2.0f, CUBE_SIZE);
+	VertexBuffer.Vertices.Add(Vertex7);
 
 	//IndexBuffer.Indices.Add();
 
