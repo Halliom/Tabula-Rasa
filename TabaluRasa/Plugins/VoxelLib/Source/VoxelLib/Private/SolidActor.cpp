@@ -5,8 +5,8 @@
 void ASolidActor::SpawnSolid(UObject* Creator, FWorldPosition SpawnPosition)
 {
 	FTransform SpawnTransform;
-	SpawnTransform.TransformPosition(FVector(SpawnPosition.PositionX * 50.0f, SpawnPosition.PositionY * 50.0f, SpawnPosition.PositionZ * 50.0f));
-	Creator->GetWorld()->SpawnActor(ASolidActor::StaticClass());
+	SpawnTransform.SetLocation(FVector(SpawnPosition.PositionX * 50.0f, SpawnPosition.PositionY * 50.0f, SpawnPosition.PositionZ * 50.0f + 25.0f));
+	Creator->GetWorld()->SpawnActor(ASolidActor::StaticClass(), &SpawnTransform);
 
 	//TODO: Return the spawned actor?
 }
