@@ -218,11 +218,13 @@ void FVoxelSceneProxy::GetDynamicMeshElements(const TArray<const FSceneView*>& V
 FPrimitiveViewRelevance FVoxelSceneProxy::GetViewRelevance(const FSceneView * View)
 {
 	FPrimitiveViewRelevance ViewRelevance;
-	ViewRelevance.bDrawRelevance = IsShown(View);
-	ViewRelevance.bShadowRelevance = IsShadowCast(View);
+	//ViewRelevance.bDrawRelevance = IsShown(View);
+	ViewRelevance.bDrawRelevance = true;
+	//ViewRelevance.bShadowRelevance = IsShadowCast(View);
 	ViewRelevance.bDynamicRelevance = true;
-	ViewRelevance.bRenderInMainPass = ShouldRenderInMainPass();
-	ViewRelevance.bRenderCustomDepth = ShouldRenderCustomDepth();
+	//ViewRelevance.bRenderInMainPass = ShouldRenderInMainPass();
+	ViewRelevance.bRenderInMainPass = true;
+	//ViewRelevance.bRenderCustomDepth = ShouldRenderCustomDepth();
 	MaterialRelevance.SetPrimitiveViewRelevance(ViewRelevance);
 	return ViewRelevance;
 }
