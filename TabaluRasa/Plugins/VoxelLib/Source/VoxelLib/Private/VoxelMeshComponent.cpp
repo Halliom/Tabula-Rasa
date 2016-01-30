@@ -4,8 +4,6 @@
 
 FPrimitiveSceneProxy* UVoxelMeshComponent::CreateSceneProxy()
 {
-	GEngine->AddOnScreenDebugMessage(1, 5.0f,FColor::Red, TEXT("Testing"));
-	println("CreateSceneProxy");
 	return new FVoxelSceneProxy(this);
 }
 
