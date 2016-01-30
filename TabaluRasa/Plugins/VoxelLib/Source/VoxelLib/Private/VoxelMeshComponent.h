@@ -94,6 +94,11 @@ class UVoxelMeshComponent : public UMeshComponent
 {
 	GENERATED_BODY()
 
+	UVoxelMeshComponent(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer) 
+	{
+		MarkRenderStateDirty();
+	}
+
 private:
 
 	virtual FPrimitiveSceneProxy* CreateSceneProxy() override;

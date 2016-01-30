@@ -32,3 +32,5 @@ public:
 		return FModuleManager::Get().IsModuleLoaded("VoxelLib");
 	}
 };
+
+DECLARE_LOG_CATEGORY_EXTERN(VoxelLog, Log, All);
