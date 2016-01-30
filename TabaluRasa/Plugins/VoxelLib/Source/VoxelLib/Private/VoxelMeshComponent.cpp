@@ -75,6 +75,8 @@ struct Triangle
 	FVector Vertex0;
 	FVector Vertex1;
 	FVector Vertex2;
+
+	Triangle(FVector V0, FVector V1, FVector V2) : Vertex0(V0), Vertex1(V1), Vertex2(V2) {}
 };
 
 FVoxelSceneProxy::FVoxelSceneProxy(UVoxelMeshComponent* Component) : 
@@ -83,108 +85,79 @@ FVoxelSceneProxy::FVoxelSceneProxy(UVoxelMeshComponent* Component) :
 {
 	//-------Bottom level-------
 
-	//FDynamicMeshVertex Vertex0;
-	//Vertex0.Position = FVector(CUBE_SIZE / -2.0f, CUBE_SIZE / 2.0f, 0.0f);
-	//Vertex0.Color = FColor(255, 255, 255);
-	//VertexBuffer.Vertices.Add(Vertex0);
+	FDynamicMeshVertex Vertex0;
+	Vertex0.Position = FVector(0, CUBE_SIZE, 0.0f);
+	Vertex0.Color = FColor(255, 255, 255);
+	//Vertex0.SetTangents(FVector(-1, 0, 0), FVector(0, 1, 0), FVector(0, 0, 1));
+	VertexBuffer.Vertices.Add(Vertex0);
 
-	//FDynamicMeshVertex Vertex1;
-	//Vertex1.Position = FVector(CUBE_SIZE / -2.0f, CUBE_SIZE / -2.0f, 0.0f);
-	//Vertex1.Color = FColor(255, 255, 255);
-	//VertexBuffer.Vertices.Add(Vertex1);
+	FDynamicMeshVertex Vertex1;
+	Vertex1.Position = FVector(0, 0, 0.0f);
+	Vertex1.Color = FColor(255, 255, 255);
+	//Vertex1.SetTangents(FVector(-1, 0, 0), FVector(0, -1, 0), FVector(0, 0, 1));
+	VertexBuffer.Vertices.Add(Vertex1);
 
-	//FDynamicMeshVertex Vertex2;
-	//Vertex2.Position = FVector(CUBE_SIZE / 2.0f, CUBE_SIZE / 2.0f, 0.0f);
-	//Vertex2.Color = FColor(255, 255, 255);
-	//VertexBuffer.Vertices.Add(Vertex2);
+	FDynamicMeshVertex Vertex2;
+	Vertex2.Position = FVector(CUBE_SIZE, CUBE_SIZE, 0.0f);
+	Vertex2.Color = FColor(255, 255, 255);
+	//Vertex2.SetTangents(FVector(1, 0, 0), FVector(0, 1, 0), FVector(0, 0, 1));
+	VertexBuffer.Vertices.Add(Vertex2);
 
-	//FDynamicMeshVertex Vertex3;
-	//Vertex3.Position = FVector(CUBE_SIZE / 2.0f, CUBE_SIZE / -2.0f, 0.0f);
-	//Vertex3.Color = FColor(255, 255, 255);
-	//VertexBuffer.Vertices.Add(Vertex3);
-	//
-	////-------Top level-------
+	FDynamicMeshVertex Vertex3;
+	Vertex3.Position = FVector(CUBE_SIZE, 0, 0.0f);
+	Vertex3.Color = FColor(255, 255, 255);
+	//Vertex3.SetTangents(FVector(1, 0, 0), FVector(0, -1, 0), FVector(0, 0, 1));
+	VertexBuffer.Vertices.Add(Vertex3);
+	
+	//-------Top level-------
 
-	//FDynamicMeshVertex Vertex4;
-	//Vertex4.Position = FVector(CUBE_SIZE / -2.0f, CUBE_SIZE / 2.0f, CUBE_SIZE);
-	//Vertex4.Color = FColor(255, 255, 255);
-	//VertexBuffer.Vertices.Add(Vertex4);
+	FDynamicMeshVertex Vertex4;
+	Vertex4.Position = FVector(0, CUBE_SIZE, CUBE_SIZE);
+	Vertex4.Color = FColor(255, 255, 255);
+	//Vertex4.SetTangents(FVector(-1, 0, 0), FVector(0, 1, 0), FVector(0, 0, -1));
+	VertexBuffer.Vertices.Add(Vertex4);
 
-	//FDynamicMeshVertex Vertex5;
-	//Vertex5.Position = FVector(CUBE_SIZE / -2.0f, CUBE_SIZE / -2.0f, CUBE_SIZE);
-	//Vertex5.Color = FColor(255, 255, 255);
-	//VertexBuffer.Vertices.Add(Vertex5);
+	FDynamicMeshVertex Vertex5;
+	Vertex5.Position = FVector(0, 0, CUBE_SIZE);
+	Vertex5.Color = FColor(255, 255, 255);
+	//Vertex5.SetTangents(FVector(-1, 0, 0), FVector(0, -1, 0), FVector(0, 0, -1));
+	VertexBuffer.Vertices.Add(Vertex5);
 
-	//FDynamicMeshVertex Vertex6;
-	//Vertex6.Position = FVector(CUBE_SIZE / 2.0f, CUBE_SIZE / 2.0f, CUBE_SIZE);
-	//Vertex6.Color = FColor(255, 255, 255);
-	//VertexBuffer.Vertices.Add(Vertex6);
+	FDynamicMeshVertex Vertex6;
+	Vertex6.Position = FVector(CUBE_SIZE, CUBE_SIZE, CUBE_SIZE);
+	Vertex6.Color = FColor(255, 255, 255);
+	//Vertex6.SetTangents(FVector(1, 0, 0), FVector(0, 1, 0), FVector(0, 0, -1));
+	VertexBuffer.Vertices.Add(Vertex6);
 
-	//FDynamicMeshVertex Vertex7;
-	//Vertex7.Position = FVector(CUBE_SIZE / 2.0f, CUBE_SIZE / -2.0f, CUBE_SIZE);
-	//Vertex7.Color = FColor(255, 255, 255);
-	//VertexBuffer.Vertices.Add(Vertex7);
+	FDynamicMeshVertex Vertex7;
+	Vertex7.Position = FVector(CUBE_SIZE, 0, CUBE_SIZE);
+	Vertex7.Color = FColor(255, 255, 255);
+	//Vertex7.SetTangents(FVector(1, 0, 0), FVector(0, -1, 0), FVector(0, 0, -1));
+	VertexBuffer.Vertices.Add(Vertex7);
 
-	//// BOTTOM FACE
-	//IndexBuffer.Indices.Add(0); IndexBuffer.Indices.Add(1); IndexBuffer.Indices.Add(3);
-	//IndexBuffer.Indices.Add(0); IndexBuffer.Indices.Add(2); IndexBuffer.Indices.Add(3);
+	// BOTTOM FACE draw clockwise
+	IndexBuffer.Indices.Add(0); IndexBuffer.Indices.Add(1); IndexBuffer.Indices.Add(3);
+	IndexBuffer.Indices.Add(0); IndexBuffer.Indices.Add(3); IndexBuffer.Indices.Add(2);
 
-	//// TOP FACE
-	//IndexBuffer.Indices.Add(4); IndexBuffer.Indices.Add(5); IndexBuffer.Indices.Add(7);
-	//IndexBuffer.Indices.Add(4); IndexBuffer.Indices.Add(6); IndexBuffer.Indices.Add(7);
+	// TOP FACE draw anti-clockwise so it faces outwards
+	IndexBuffer.Indices.Add(7); IndexBuffer.Indices.Add(5); IndexBuffer.Indices.Add(4);
+	IndexBuffer.Indices.Add(6); IndexBuffer.Indices.Add(7); IndexBuffer.Indices.Add(4);
 
-	//// FRONT FACE
-	//IndexBuffer.Indices.Add(0); IndexBuffer.Indices.Add(2); IndexBuffer.Indices.Add(4);
-	//IndexBuffer.Indices.Add(2); IndexBuffer.Indices.Add(4); IndexBuffer.Indices.Add(6);
+	// FRONT FACE
+	IndexBuffer.Indices.Add(0); IndexBuffer.Indices.Add(2); IndexBuffer.Indices.Add(4);
+	IndexBuffer.Indices.Add(2); IndexBuffer.Indices.Add(6); IndexBuffer.Indices.Add(4);
 
-	//// BACK FACE
-	//IndexBuffer.Indices.Add(1); IndexBuffer.Indices.Add(3); IndexBuffer.Indices.Add(5);
-	//IndexBuffer.Indices.Add(3); IndexBuffer.Indices.Add(5); IndexBuffer.Indices.Add(7);
+	// BACK FACE
+	IndexBuffer.Indices.Add(1); IndexBuffer.Indices.Add(5); IndexBuffer.Indices.Add(3);
+	IndexBuffer.Indices.Add(3); IndexBuffer.Indices.Add(5); IndexBuffer.Indices.Add(7);
 
-	//// LEFT FACE
-	//IndexBuffer.Indices.Add(0); IndexBuffer.Indices.Add(1); IndexBuffer.Indices.Add(5);
-	//IndexBuffer.Indices.Add(0); IndexBuffer.Indices.Add(5); IndexBuffer.Indices.Add(4);
+	// LEFT FACE
+	IndexBuffer.Indices.Add(5); IndexBuffer.Indices.Add(1); IndexBuffer.Indices.Add(0);
+	IndexBuffer.Indices.Add(4); IndexBuffer.Indices.Add(5); IndexBuffer.Indices.Add(0);
 
-	//// RIGHT FACE
-	//IndexBuffer.Indices.Add(2); IndexBuffer.Indices.Add(3); IndexBuffer.Indices.Add(6);
-	//IndexBuffer.Indices.Add(3); IndexBuffer.Indices.Add(6); IndexBuffer.Indices.Add(7);
-
-	TArray<Triangle> Triangles;
-
-	Triangles.Add({ FVector(CUBE_SIZE / -2.0f, CUBE_SIZE / 2.0f, 0.0f), FVector(CUBE_SIZE / -2.0f, CUBE_SIZE / -2.0f, 0.0f), FVector(CUBE_SIZE / 2.0f, CUBE_SIZE / 2.0f, 0.0f) });
-
-	for (int i = 0; i < Triangles.Num(); ++i)
-	{
-		Triangle& Tri = Triangles[i];
-
-		const FVector Edge01 = (Tri.Vertex1 - Tri.Vertex0);
-		const FVector Edge02 = (Tri.Vertex2 - Tri.Vertex0);
-
-		const FVector TangentX = Edge01.GetSafeNormal();
-		const FVector TangentZ = (Edge02 ^ Edge01).GetSafeNormal();
-		const FVector TangentY = (TangentX ^ TangentZ).GetSafeNormal();
-
-		FDynamicMeshVertex Vert0;
-		Vert0.Position = Tri.Vertex0;
-		Vert0.Color = FColor(255, 255, 255);
-		Vert0.SetTangents(TangentX, TangentY, TangentZ);
-		int32 VIndex = VertexBuffer.Vertices.Add(Vert0);
-		IndexBuffer.Indices.Add(VIndex);
-
-		FDynamicMeshVertex Vert1;
-		Vert1.Position = Tri.Vertex1;
-		Vert1.Color = FColor(255, 255, 255);
-		Vert1.SetTangents(TangentX, TangentY, TangentZ);
-		VIndex = VertexBuffer.Vertices.Add(Vert1);
-		IndexBuffer.Indices.Add(VIndex);
-
-		FDynamicMeshVertex Vert2;
-		Vert2.Position = Tri.Vertex2;
-		Vert2.Color = FColor(255, 255, 255);
-		Vert2.SetTangents(TangentX, TangentY, TangentZ);
-		VIndex = VertexBuffer.Vertices.Add(Vert2);
-		IndexBuffer.Indices.Add(VIndex);
-	}
+	// RIGHT FACE
+	IndexBuffer.Indices.Add(2); IndexBuffer.Indices.Add(3); IndexBuffer.Indices.Add(6);
+	IndexBuffer.Indices.Add(7); IndexBuffer.Indices.Add(6); IndexBuffer.Indices.Add(3);
 
 	VertexFactory.InitVertexComponentsGameThread(&VertexBuffer);
 
