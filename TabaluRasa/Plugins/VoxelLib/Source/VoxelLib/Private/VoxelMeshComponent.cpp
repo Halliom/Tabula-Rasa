@@ -62,14 +62,13 @@ inline void FVoxelVertexFactory::InitVertexComponentsGameThread(const FVoxelVert
 // This should be used when adding shader
 //IMPLEMENT_VERTEX_FACTORY_TYPE(FVoxelVertexFactory, "VoxelVertexFactory", true, true, true, true, true);
 
-#define CUBE_SIZE = 50.0f
+#define CUBE_SIZE 50.0f
 
 FVoxelSceneProxy::FVoxelSceneProxy(UVoxelMeshComponent* Component) : 
 	FPrimitiveSceneProxy(Component),
 	MaterialRelevance(Component->GetMaterialRelevance(ERHIFeatureLevel::SM4))
 {
-	//TODO: Add vertices
-	//VertexBuffer.Vertices.Add();
+	//-------Bottom level-------
 
 	FDynamicMeshVertex Vertex0;
 	Vertex0.Position = FVector(CUBE_SIZE / -2.0f, CUBE_SIZE / 2.0f, 0.0f);
@@ -105,7 +104,29 @@ FVoxelSceneProxy::FVoxelSceneProxy(UVoxelMeshComponent* Component) :
 	Vertex7.Position = FVector(CUBE_SIZE / 2.0f, CUBE_SIZE / -2.0f, CUBE_SIZE);
 	VertexBuffer.Vertices.Add(Vertex7);
 
-	//IndexBuffer.Indices.Add();
+	// BOTTOM FACE
+	IndexBuffer.Indices.Add(0); IndexBuffer.Indices.Add(1); IndexBuffer.Indices.Add(3);
+	IndexBuffer.Indices.Add(0); IndexBuffer.Indices.Add(2); IndexBuffer.Indices.Add(3);
+
+	// TOP FACE
+	IndexBuffer.Indices.Add(4); IndexBuffer.Indices.Add(5); IndexBuffer.Indices.Add(7);
+	IndexBuffer.Indices.Add(4); IndexBuffer.Indices.Add(6); IndexBuffer.Indices.Add(7);
+
+	// FRONT FACE
+	IndexBuffer.Indices.Add(0); IndexBuffer.Indices.Add(2); IndexBuffer.Indices.Add(4);
+	IndexBuffer.Indices.Add(2); IndexBuffer.Indices.Add(4); IndexBuffer.Indices.Add(6);
+
+	// BACK FACE
+	IndexBuffer.Indices.Add(1); IndexBuffer.Indices.Add(3); IndexBuffer.Indices.Add(5);
+	IndexBuffer.Indices.Add(3); IndexBuffer.Indices.Add(5); IndexBuffer.Indices.Add(7);
+
+	// LEFT FACE
+	IndexBuffer.Indices.Add(0); IndexBuffer.Indices.Add(1); IndexBuffer.Indices.Add(5);
+	IndexBuffer.Indices.Add(0); IndexBuffer.Indices.Add(5); IndexBuffer.Indices.Add(4);
+
+	// RIGHT FACE
+	IndexBuffer.Indices.Add(2); IndexBuffer.Indices.Add(3); IndexBuffer.Indices.Add(6);
+	IndexBuffer.Indices.Add(3); IndexBuffer.Indices.Add(6); IndexBuffer.Indices.Add(7);
 
 	VertexFactory.InitVertexComponentsGameThread(&VertexBuffer);
 
