@@ -210,7 +210,6 @@ FVoxelSceneProxy::~FVoxelSceneProxy()
 
 void FVoxelSceneProxy::GetDynamicMeshElements(const TArray<const FSceneView*>& Views, const FSceneViewFamily& ViewFamily, uint32 VisibilityMap, class FMeshElementCollector& Collector) const
 {
-	println("Test");
 	FMaterialRenderProxy* MaterialProxy = NULL;
 
 	MaterialProxy = Material->GetRenderProxy(IsSelected());
@@ -254,5 +253,5 @@ FPrimitiveViewRelevance FVoxelSceneProxy::GetViewRelevance(const FSceneView * Vi
 	ViewRelevance.bRenderInMainPass = ShouldRenderInMainPass();
 	ViewRelevance.bRenderCustomDepth = ShouldRenderCustomDepth();
 	MaterialRelevance.SetPrimitiveViewRelevance(ViewRelevance);
-	return FPrimitiveViewRelevance();
+	return ViewRelevance;
 }

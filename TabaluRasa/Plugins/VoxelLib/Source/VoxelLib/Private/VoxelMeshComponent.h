@@ -99,6 +99,10 @@ class UVoxelMeshComponent : public UMeshComponent
 		MarkRenderStateDirty();
 	}
 
+protected:
+
+
+
 private:
 
 	virtual FPrimitiveSceneProxy* CreateSceneProxy() override;

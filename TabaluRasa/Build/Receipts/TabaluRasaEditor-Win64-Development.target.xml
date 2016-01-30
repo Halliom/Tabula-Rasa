@@ -7,12 +7,12 @@
     <Property Name="Precompile" Value="False" />
   </Properties>
   <BuildProducts>
-    <BuildProduct Path="$(ProjectDir)\Plugins\VoxelLib\Binaries\Win64\UE4Editor-VoxelLib-2743.dll" Type="DynamicLibrary" />
-    <BuildProduct Path="$(ProjectDir)\Plugins\VoxelLib\Binaries\Win64\UE4Editor-VoxelLib-2743.pdb" Type="SymbolFile" />
-    <BuildProduct Path="$(ProjectDir)\Plugins\VoxelLib\Intermediate\Build\Win64\UE4Editor\Development\UE4Editor-VoxelLib-2743.lib" Type="ImportLibrary" />
-    <BuildProduct Path="$(ProjectDir)\Binaries\Win64\UE4Editor-TabaluRasa-130.dll" Type="DynamicLibrary" />
-    <BuildProduct Path="$(ProjectDir)\Binaries\Win64\UE4Editor-TabaluRasa-130.pdb" Type="SymbolFile" />
-    <BuildProduct Path="$(ProjectDir)\Intermediate\Build\Win64\UE4Editor\Development\UE4Editor-TabaluRasa-130.lib" Type="ImportLibrary" />
+    <BuildProduct Path="$(ProjectDir)\Plugins\VoxelLib\Binaries\Win64\UE4Editor-VoxelLib.dll" Type="DynamicLibrary" />
+    <BuildProduct Path="$(ProjectDir)\Plugins\VoxelLib\Binaries\Win64\UE4Editor-VoxelLib.pdb" Type="SymbolFile" />
+    <BuildProduct Path="$(ProjectDir)\Plugins\VoxelLib\Intermediate\Build\Win64\UE4Editor\Development\UE4Editor-VoxelLib.lib" Type="ImportLibrary" />
+    <BuildProduct Path="$(ProjectDir)\Binaries\Win64\UE4Editor-TabaluRasa.dll" Type="DynamicLibrary" />
+    <BuildProduct Path="$(ProjectDir)\Binaries\Win64\UE4Editor-TabaluRasa.pdb" Type="SymbolFile" />
+    <BuildProduct Path="$(ProjectDir)\Intermediate\Build\Win64\UE4Editor\Development\UE4Editor-TabaluRasa.lib" Type="ImportLibrary" />
   </BuildProducts>
   <RuntimeDependencies />
   <AdditionalProperties />
