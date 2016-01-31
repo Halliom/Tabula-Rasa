@@ -3,27 +3,12 @@
 #include "VoxelLibPluginPrivatePCH.h"
 
 #include "VoxelMeshComponent.h"
+#include "Chunk.h"
 
 #include "SolidActor.generated.h"
 
-USTRUCT(BlueprintType)
-struct FWorldPosition
-{
-	GENERATED_BODY()
-public:
-	
-	UPROPERTY(Category="Position", EditDefaultsOnly)
-	int32 PositionX;
-
-	UPROPERTY(Category = "Position", EditDefaultsOnly)
-	int32 PositionY;
-
-	UPROPERTY(Category = "Position", EditDefaultsOnly)
-	int32 PositionZ;
-};
-
 UCLASS(Blueprintable)
-class ASolidActor : public AActor
+class ASolidActor : public AOctreeNode
 {
 	GENERATED_BODY()
 public:
