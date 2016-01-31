@@ -84,8 +84,8 @@ TArray<int32, TInlineAllocator<6>> FVoxelSceneProxy::TopFaceIndices = TArray<int
 TArray<int32, TInlineAllocator<6>> FVoxelSceneProxy::BottomFaceIndices = TArray<int32, TInlineAllocator<6>>();
 TArray<int32, TInlineAllocator<6>> FVoxelSceneProxy::FrontFaceIndices = TArray<int32, TInlineAllocator<6>>();
 TArray<int32, TInlineAllocator<6>> FVoxelSceneProxy::BackFaceIndices = TArray<int32, TInlineAllocator<6>>();
-TArray<int32, TInlineAllocator<6>> FVoxelSceneProxy::RightFaceIndices = TArray<int32, TInlineAllocator<6>>();
 TArray<int32, TInlineAllocator<6>> FVoxelSceneProxy::LeftFaceIndices = TArray<int32, TInlineAllocator<6>>();
+TArray<int32, TInlineAllocator<6>> FVoxelSceneProxy::RightFaceIndices = TArray<int32, TInlineAllocator<6>>();
 
 bool FVoxelSceneProxy::bHasBeenInitialized = false;
 
@@ -174,12 +174,18 @@ FVoxelSceneProxy::FVoxelSceneProxy(UVoxelMeshComponent* Component) :
 
 	VertexBuffer.Vertices.Append(FVoxelSceneProxy::StandardVertices);
 
-	IndexBuffer.Indices.Append(FVoxelSceneProxy::BottomFaceIndices);
-	IndexBuffer.Indices.Append(FVoxelSceneProxy::TopFaceIndices);
-	IndexBuffer.Indices.Append(FVoxelSceneProxy::FrontFaceIndices);
-	IndexBuffer.Indices.Append(FVoxelSceneProxy::BackFaceIndices);
-	IndexBuffer.Indices.Append(FVoxelSceneProxy::LeftFaceIndices);
-	IndexBuffer.Indices.Append(FVoxelSceneProxy::RightFaceIndices);
+	if ((Component->SidesToRender & EVoxelSide::VS_SIDE_TOP) == EVoxelSide::VS_SIDE_TOP)
+		IndexBuffer.Indices.Append(FVoxelSceneProxy::TopFaceIndices);
+	if ((Component->SidesToRender & EVoxelSide::VS_SIDE_BOTTOM) == EVoxelSide::VS_SIDE_BOTTOM)
+		IndexBuffer.Indices.Append(FVoxelSceneProxy::BottomFaceIndices);
+	if ((Component->SidesToRender & EVoxelSide::VS_SIDE_FRONT) == EVoxelSide::VS_SIDE_FRONT)
+		IndexBuffer.Indices.Append(FVoxelSceneProxy::FrontFaceIndices);
+	if ((Component->SidesToRender & EVoxelSide::VS_SIDE_BACK) == EVoxelSide::VS_SIDE_BACK)
+		IndexBuffer.Indices.Append(FVoxelSceneProxy::BackFaceIndices);
+	if ((Component->SidesToRender & EVoxelSide::VS_SIDE_LEFT) == EVoxelSide::VS_SIDE_LEFT)
+		IndexBuffer.Indices.Append(FVoxelSceneProxy::LeftFaceIndices);
+	if ((Component->SidesToRender & EVoxelSide::VS_SIDE_RIGHT) == EVoxelSide::VS_SIDE_RIGHT)
+		IndexBuffer.Indices.Append(FVoxelSceneProxy::RightFaceIndices);
 
 	VertexFactory.InitVertexComponentsGameThread(&VertexBuffer);
 

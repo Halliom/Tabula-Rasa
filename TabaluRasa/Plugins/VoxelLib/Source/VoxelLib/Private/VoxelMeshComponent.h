@@ -6,6 +6,20 @@
 #include "VoxelMeshComponent.generated.h"
 
 /**
+ * Defines sides of a solid that the API and game use to determine
+ * things such as what side to render or where a solid was clicked
+ */
+enum EVoxelSide : unsigned int
+{
+	VS_SIDE_TOP = 1,
+	VS_SIDE_BOTTOM = 2,
+	VS_SIDE_FRONT = 4,
+	VS_SIDE_BACK = 8,
+	VS_SIDE_LEFT = 16,
+	VS_SIDE_RIGHT = 32,
+};
+
+/**
  * This is the vertex buffer that gets sent to the shader to be processed
  * this is where the vertices for the voxel (cube) will be stored
  */
@@ -93,8 +107,8 @@ private:
 	static TArray<int32, TInlineAllocator<6>> BottomFaceIndices;
 	static TArray<int32, TInlineAllocator<6>> FrontFaceIndices;
 	static TArray<int32, TInlineAllocator<6>> BackFaceIndices;
-	static TArray<int32, TInlineAllocator<6>> RightFaceIndices;
 	static TArray<int32, TInlineAllocator<6>> LeftFaceIndices;
+	static TArray<int32, TInlineAllocator<6>> RightFaceIndices;
 
 	static bool bHasBeenInitialized;
 };
@@ -104,16 +118,17 @@ class UVoxelMeshComponent : public UMeshComponent
 {
 	GENERATED_BODY()
 
+	friend class FVoxelSceneProxy;
+
 	UVoxelMeshComponent(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer) 
 	{
-		MarkRenderStateDirty();
+		// Set it to render all sides
+		SidesToRender = VS_SIDE_TOP | VS_SIDE_BOTTOM | VS_SIDE_FRONT | VS_SIDE_BACK | VS_SIDE_LEFT | VS_SIDE_RIGHT; //63
 	}
 
-protected:
-
-
-
 private:
+
+	unsigned int SidesToRender;
 
 	virtual FPrimitiveSceneProxy* CreateSceneProxy() override;
 

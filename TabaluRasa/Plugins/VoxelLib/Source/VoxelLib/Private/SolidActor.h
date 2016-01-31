@@ -37,6 +37,9 @@ public:
 	UFUNCTION(Category = "Solid", BlueprintCallable)
 	static void SpawnSolid(UObject* Creator, FWorldPosition SpawnPosition);
 
+	UFUNCTION(Category = "Solid", BlueprintCallable)
+	static ASolidActor* GetSolidAtLocation(FWorldPosition& Position);
+
 public:
 
 	ASolidActor(const FObjectInitializer& ObjectInitializer);

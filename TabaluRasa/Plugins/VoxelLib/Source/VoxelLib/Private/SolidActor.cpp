@@ -11,6 +11,11 @@ void ASolidActor::SpawnSolid(UObject* Creator, FWorldPosition SpawnPosition)
 	//TODO: Return the spawned actor?
 }
 
+ASolidActor* ASolidActor::GetSolidAtLocation(FWorldPosition& Position)
+{
+	return NULL;
+}
+
 ASolidActor::ASolidActor(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {
