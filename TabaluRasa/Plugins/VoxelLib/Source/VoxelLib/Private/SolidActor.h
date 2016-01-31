@@ -35,12 +35,11 @@ public:
 		return WorldPosition;
 	}
 
+	virtual void BeginPlay() override;
+
 private:
 
 	UPROPERTY()
 	UVoxelMeshComponent* Voxel;
-
-	UPROPERTY()
-	FWorldPosition WorldPosition;
 
 };

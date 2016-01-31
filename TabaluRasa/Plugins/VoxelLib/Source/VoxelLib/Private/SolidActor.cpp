@@ -20,8 +20,14 @@ ASolidActor::ASolidActor(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {
 	Voxel = ObjectInitializer.CreateDefaultSubobject<UVoxelMeshComponent>(this, TEXT("Voxel"));
+	RootComponent = Voxel;
 
 	static ConstructorHelpers::FObjectFinder<UMaterial> Material(TEXT("Material'/Game/BlankMaterial.BlankMaterial'"));
 	
 	Voxel->SetMaterial(0, Material.Object);
+}
+
+void ASolidActor::BeginPlay()
+{
+	TArray<AOctreeNode*, TInlineAllocator<6>> SurroundingBlocks = Chunk->GetSurroundingBlocks(LocalPosition);
 }

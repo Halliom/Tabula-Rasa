@@ -31,10 +31,13 @@ public:
 UCLASS() //TODO: Should this be marked abstract?
 class AOctreeNode : public AActor
 {
+	friend class AChunk;
 	GENERATED_BODY()
 public:
 
 	AOctreeNode(const FObjectInitializer& ObjectInitializer);
+
+	void InsertNode(const FWorldPosition& LocalPosition);
 
 private: 
 
@@ -42,9 +45,18 @@ private:
 
 	TArray<AOctreeNode*, TInlineAllocator<8>> Children;
 
-};
+protected:
 
-typedef TArray<AOctreeNode*, TInlineAllocator<8>> NodeDimension;
+	UPROPERTY()
+	FWorldPosition WorldPosition;
+
+	UPROPERTY()
+	FWorldPosition LocalPosition;
+
+	UPROPERTY()
+	AChunk* Chunk;
+
+};
 
 UCLASS()
 class AChunk : public AActor
@@ -54,7 +66,11 @@ public:
 
 	AChunk(const FObjectInitializer& ObjectInitializer);
 
-	void InsertIntoChunkLocal(const FWorldPosition& LocalTreePosition, const AOctreeNode* node);
+	AOctreeNode* GetNodeFromTreeLocal(const FWorldPosition& LocalTreePosition);
+
+	void InsertIntoChunkLocal(const FWorldPosition& LocalTreePosition, AOctreeNode* Node);
+
+	TArray<AOctreeNode*, TInlineAllocator<6>> GetSurroundingBlocks(const FWorldPosition& Position);
 
 	UPROPERTY(Category = "World|Chunk", EditDefaultsOnly)
 	int32 SizeX;
@@ -65,9 +81,12 @@ public:
 	UPROPERTY(Category = "World|Chunk", EditDefaultsOnly)
 	int32 SizeZ;
 
+	UPROPERTY(Category = "World|Chunk", BlueprintReadOnly)
+	FWorldPosition ChunkPosition;
+
 private:
 
 	//TODO: Implement octree
-	TArray<TArray<TArray<AOctreeNode*, TInlineAllocator<16>>*, TInlineAllocator<16>>, TInlineAllocator<16>> ChunkBlocks;
+	AOctreeNode* ChunkBlocks[16][16][16];
 
 };
