@@ -87,6 +87,16 @@ private:
 	FVoxelVertexFactory VertexFactory;
 
 	FMaterialRelevance MaterialRelevance;
+
+	static TArray<FDynamicMeshVertex, TInlineAllocator<8>> StandardVertices;
+	static TArray<int32, TInlineAllocator<6>> TopFaceIndices;
+	static TArray<int32, TInlineAllocator<6>> BottomFaceIndices;
+	static TArray<int32, TInlineAllocator<6>> FrontFaceIndices;
+	static TArray<int32, TInlineAllocator<6>> BackFaceIndices;
+	static TArray<int32, TInlineAllocator<6>> RightFaceIndices;
+	static TArray<int32, TInlineAllocator<6>> LeftFaceIndices;
+
+	static bool bHasBeenInitialized;
 };
 
 UCLASS(meta=(BlueprintSpawnableComponent))

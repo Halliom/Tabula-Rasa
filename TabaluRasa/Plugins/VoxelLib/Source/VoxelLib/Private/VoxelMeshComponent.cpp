@@ -77,85 +77,109 @@ struct Triangle
 	Triangle(FVector V0, FVector V1, FVector V2) : Vertex0(V0), Vertex1(V1), Vertex2(V2) {}
 };
 
+// Default initializers
+TArray<FDynamicMeshVertex, TInlineAllocator<8>> FVoxelSceneProxy::StandardVertices = TArray<FDynamicMeshVertex, TInlineAllocator<8>>();
+
+TArray<int32, TInlineAllocator<6>> FVoxelSceneProxy::TopFaceIndices = TArray<int32, TInlineAllocator<6>>();
+TArray<int32, TInlineAllocator<6>> FVoxelSceneProxy::BottomFaceIndices = TArray<int32, TInlineAllocator<6>>();
+TArray<int32, TInlineAllocator<6>> FVoxelSceneProxy::FrontFaceIndices = TArray<int32, TInlineAllocator<6>>();
+TArray<int32, TInlineAllocator<6>> FVoxelSceneProxy::BackFaceIndices = TArray<int32, TInlineAllocator<6>>();
+TArray<int32, TInlineAllocator<6>> FVoxelSceneProxy::RightFaceIndices = TArray<int32, TInlineAllocator<6>>();
+TArray<int32, TInlineAllocator<6>> FVoxelSceneProxy::LeftFaceIndices = TArray<int32, TInlineAllocator<6>>();
+
+bool FVoxelSceneProxy::bHasBeenInitialized = false;
+
 FVoxelSceneProxy::FVoxelSceneProxy(UVoxelMeshComponent* Component) : 
 	FPrimitiveSceneProxy(Component),
 	MaterialRelevance(Component->GetMaterialRelevance(ERHIFeatureLevel::SM4))
 {
-	//-------Bottom level-------
+	if (!FVoxelSceneProxy::bHasBeenInitialized)
+	{
+		//-------Bottom level-------
+		FDynamicMeshVertex Vertex0;
+		Vertex0.Position = FVector(0, CUBE_SIZE, 0.0f);
+		Vertex0.Color = FColor(255, 255, 255);
+		//Vertex0.SetTangents(FVector(-1, 0, 0), FVector(0, 1, 0), FVector(0, 0, 1));
+		FVoxelSceneProxy::StandardVertices.Add(Vertex0);
 
-	FDynamicMeshVertex Vertex0;
-	Vertex0.Position = FVector(0, CUBE_SIZE, 0.0f);
-	Vertex0.Color = FColor(255, 255, 255);
-	//Vertex0.SetTangents(FVector(-1, 0, 0), FVector(0, 1, 0), FVector(0, 0, 1));
-	VertexBuffer.Vertices.Add(Vertex0);
+		FDynamicMeshVertex Vertex1;
+		Vertex1.Position = FVector(0, 0, 0.0f);
+		Vertex1.Color = FColor(255, 255, 255);
+		//Vertex1.SetTangents(FVector(-1, 0, 0), FVector(0, -1, 0), FVector(0, 0, 1));
+		FVoxelSceneProxy::StandardVertices.Add(Vertex1);
 
-	FDynamicMeshVertex Vertex1;
-	Vertex1.Position = FVector(0, 0, 0.0f);
-	Vertex1.Color = FColor(255, 255, 255);
-	//Vertex1.SetTangents(FVector(-1, 0, 0), FVector(0, -1, 0), FVector(0, 0, 1));
-	VertexBuffer.Vertices.Add(Vertex1);
+		FDynamicMeshVertex Vertex2;
+		Vertex2.Position = FVector(CUBE_SIZE, CUBE_SIZE, 0.0f);
+		Vertex2.Color = FColor(255, 255, 255);
+		//Vertex2.SetTangents(FVector(1, 0, 0), FVector(0, 1, 0), FVector(0, 0, 1));
+		FVoxelSceneProxy::StandardVertices.Add(Vertex2);
 
-	FDynamicMeshVertex Vertex2;
-	Vertex2.Position = FVector(CUBE_SIZE, CUBE_SIZE, 0.0f);
-	Vertex2.Color = FColor(255, 255, 255);
-	//Vertex2.SetTangents(FVector(1, 0, 0), FVector(0, 1, 0), FVector(0, 0, 1));
-	VertexBuffer.Vertices.Add(Vertex2);
+		FDynamicMeshVertex Vertex3;
+		Vertex3.Position = FVector(CUBE_SIZE, 0, 0.0f);
+		Vertex3.Color = FColor(255, 255, 255);
+		//Vertex3.SetTangents(FVector(1, 0, 0), FVector(0, -1, 0), FVector(0, 0, 1));
+		FVoxelSceneProxy::StandardVertices.Add(Vertex3);
 
-	FDynamicMeshVertex Vertex3;
-	Vertex3.Position = FVector(CUBE_SIZE, 0, 0.0f);
-	Vertex3.Color = FColor(255, 255, 255);
-	//Vertex3.SetTangents(FVector(1, 0, 0), FVector(0, -1, 0), FVector(0, 0, 1));
-	VertexBuffer.Vertices.Add(Vertex3);
-	
-	//-------Top level-------
+		//-------Top level-------
+		FDynamicMeshVertex Vertex4;
+		Vertex4.Position = FVector(0, CUBE_SIZE, CUBE_SIZE);
+		Vertex4.Color = FColor(255, 255, 255);
+		//Vertex4.SetTangents(FVector(-1, 0, 0), FVector(0, 1, 0), FVector(0, 0, -1));
+		FVoxelSceneProxy::StandardVertices.Add(Vertex4);
 
-	FDynamicMeshVertex Vertex4;
-	Vertex4.Position = FVector(0, CUBE_SIZE, CUBE_SIZE);
-	Vertex4.Color = FColor(255, 255, 255);
-	//Vertex4.SetTangents(FVector(-1, 0, 0), FVector(0, 1, 0), FVector(0, 0, -1));
-	VertexBuffer.Vertices.Add(Vertex4);
+		FDynamicMeshVertex Vertex5;
+		Vertex5.Position = FVector(0, 0, CUBE_SIZE);
+		Vertex5.Color = FColor(255, 255, 255);
+		//Vertex5.SetTangents(FVector(-1, 0, 0), FVector(0, -1, 0), FVector(0, 0, -1));
+		FVoxelSceneProxy::StandardVertices.Add(Vertex5);
 
-	FDynamicMeshVertex Vertex5;
-	Vertex5.Position = FVector(0, 0, CUBE_SIZE);
-	Vertex5.Color = FColor(255, 255, 255);
-	//Vertex5.SetTangents(FVector(-1, 0, 0), FVector(0, -1, 0), FVector(0, 0, -1));
-	VertexBuffer.Vertices.Add(Vertex5);
+		FDynamicMeshVertex Vertex6;
+		Vertex6.Position = FVector(CUBE_SIZE, CUBE_SIZE, CUBE_SIZE);
+		Vertex6.Color = FColor(255, 255, 255);
+		//Vertex6.SetTangents(FVector(1, 0, 0), FVector(0, 1, 0), FVector(0, 0, -1));
+		FVoxelSceneProxy::StandardVertices.Add(Vertex6);
 
-	FDynamicMeshVertex Vertex6;
-	Vertex6.Position = FVector(CUBE_SIZE, CUBE_SIZE, CUBE_SIZE);
-	Vertex6.Color = FColor(255, 255, 255);
-	//Vertex6.SetTangents(FVector(1, 0, 0), FVector(0, 1, 0), FVector(0, 0, -1));
-	VertexBuffer.Vertices.Add(Vertex6);
+		FDynamicMeshVertex Vertex7;
+		Vertex7.Position = FVector(CUBE_SIZE, 0, CUBE_SIZE);
+		Vertex7.Color = FColor(255, 255, 255);
+		//Vertex7.SetTangents(FVector(1, 0, 0), FVector(0, -1, 0), FVector(0, 0, -1));
+		FVoxelSceneProxy::StandardVertices.Add(Vertex7);
 
-	FDynamicMeshVertex Vertex7;
-	Vertex7.Position = FVector(CUBE_SIZE, 0, CUBE_SIZE);
-	Vertex7.Color = FColor(255, 255, 255);
-	//Vertex7.SetTangents(FVector(1, 0, 0), FVector(0, -1, 0), FVector(0, 0, -1));
-	VertexBuffer.Vertices.Add(Vertex7);
+		// BOTTOM FACE draw clockwise
+		FVoxelSceneProxy::BottomFaceIndices.Add(0); FVoxelSceneProxy::BottomFaceIndices.Add(1); FVoxelSceneProxy::BottomFaceIndices.Add(3);
+		FVoxelSceneProxy::BottomFaceIndices.Add(0); FVoxelSceneProxy::BottomFaceIndices.Add(3); FVoxelSceneProxy::BottomFaceIndices.Add(2);
 
-	// BOTTOM FACE draw clockwise
-	IndexBuffer.Indices.Add(0); IndexBuffer.Indices.Add(1); IndexBuffer.Indices.Add(3);
-	IndexBuffer.Indices.Add(0); IndexBuffer.Indices.Add(3); IndexBuffer.Indices.Add(2);
+		// TOP FACE draw anti-clockwise so it faces outwards
+		FVoxelSceneProxy::TopFaceIndices.Add(7); FVoxelSceneProxy::TopFaceIndices.Add(5); FVoxelSceneProxy::TopFaceIndices.Add(4);
+		FVoxelSceneProxy::TopFaceIndices.Add(6); FVoxelSceneProxy::TopFaceIndices.Add(7); FVoxelSceneProxy::TopFaceIndices.Add(4);
 
-	// TOP FACE draw anti-clockwise so it faces outwards
-	IndexBuffer.Indices.Add(7); IndexBuffer.Indices.Add(5); IndexBuffer.Indices.Add(4);
-	IndexBuffer.Indices.Add(6); IndexBuffer.Indices.Add(7); IndexBuffer.Indices.Add(4);
+		// FRONT FACE
+		FVoxelSceneProxy::FrontFaceIndices.Add(0); FVoxelSceneProxy::FrontFaceIndices.Add(2); FVoxelSceneProxy::FrontFaceIndices.Add(4);
+		FVoxelSceneProxy::FrontFaceIndices.Add(2); FVoxelSceneProxy::FrontFaceIndices.Add(6); FVoxelSceneProxy::FrontFaceIndices.Add(4);
 
-	// FRONT FACE
-	IndexBuffer.Indices.Add(0); IndexBuffer.Indices.Add(2); IndexBuffer.Indices.Add(4);
-	IndexBuffer.Indices.Add(2); IndexBuffer.Indices.Add(6); IndexBuffer.Indices.Add(4);
+		// BACK FACE
+		FVoxelSceneProxy::BackFaceIndices.Add(1); FVoxelSceneProxy::BackFaceIndices.Add(5); FVoxelSceneProxy::BackFaceIndices.Add(3);
+		FVoxelSceneProxy::BackFaceIndices.Add(3); FVoxelSceneProxy::BackFaceIndices.Add(5); FVoxelSceneProxy::BackFaceIndices.Add(7);
 
-	// BACK FACE
-	IndexBuffer.Indices.Add(1); IndexBuffer.Indices.Add(5); IndexBuffer.Indices.Add(3);
-	IndexBuffer.Indices.Add(3); IndexBuffer.Indices.Add(5); IndexBuffer.Indices.Add(7);
+		// LEFT FACE
+		FVoxelSceneProxy::LeftFaceIndices.Add(5); FVoxelSceneProxy::LeftFaceIndices.Add(1); FVoxelSceneProxy::LeftFaceIndices.Add(0);
+		FVoxelSceneProxy::LeftFaceIndices.Add(4); FVoxelSceneProxy::LeftFaceIndices.Add(5); FVoxelSceneProxy::LeftFaceIndices.Add(0);
 
-	// LEFT FACE
-	IndexBuffer.Indices.Add(5); IndexBuffer.Indices.Add(1); IndexBuffer.Indices.Add(0);
-	IndexBuffer.Indices.Add(4); IndexBuffer.Indices.Add(5); IndexBuffer.Indices.Add(0);
+		// RIGHT FACE
+		FVoxelSceneProxy::RightFaceIndices.Add(2); FVoxelSceneProxy::RightFaceIndices.Add(3); FVoxelSceneProxy::RightFaceIndices.Add(6);
+		FVoxelSceneProxy::RightFaceIndices.Add(7); FVoxelSceneProxy::RightFaceIndices.Add(6); FVoxelSceneProxy::RightFaceIndices.Add(3);
 
-	// RIGHT FACE
-	IndexBuffer.Indices.Add(2); IndexBuffer.Indices.Add(3); IndexBuffer.Indices.Add(6);
-	IndexBuffer.Indices.Add(7); IndexBuffer.Indices.Add(6); IndexBuffer.Indices.Add(3);
+		FVoxelSceneProxy::bHasBeenInitialized = true;
+	}
+
+	VertexBuffer.Vertices.Append(FVoxelSceneProxy::StandardVertices);
+
+	IndexBuffer.Indices.Append(FVoxelSceneProxy::BottomFaceIndices);
+	IndexBuffer.Indices.Append(FVoxelSceneProxy::TopFaceIndices);
+	IndexBuffer.Indices.Append(FVoxelSceneProxy::FrontFaceIndices);
+	IndexBuffer.Indices.Append(FVoxelSceneProxy::BackFaceIndices);
+	IndexBuffer.Indices.Append(FVoxelSceneProxy::LeftFaceIndices);
+	IndexBuffer.Indices.Append(FVoxelSceneProxy::RightFaceIndices);
 
 	VertexFactory.InitVertexComponentsGameThread(&VertexBuffer);
 
