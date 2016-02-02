@@ -37,6 +37,8 @@ public:
 
 	virtual void BeginPlay() override;
 
+	virtual void OnNodePlacedAdjacent() override;
+
 private:
 
 	UPROPERTY()

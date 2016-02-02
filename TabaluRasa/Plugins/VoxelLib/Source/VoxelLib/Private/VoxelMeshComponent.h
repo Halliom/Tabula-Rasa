@@ -117,13 +117,18 @@ UCLASS(meta=(BlueprintSpawnableComponent))
 class UVoxelMeshComponent : public UMeshComponent
 {
 	GENERATED_BODY()
-
 	friend class FVoxelSceneProxy;
-
+public:
 	UVoxelMeshComponent(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer) 
 	{
 		// Set it to render all sides
 		SidesToRender = VS_SIDE_TOP | VS_SIDE_BOTTOM | VS_SIDE_FRONT | VS_SIDE_BACK | VS_SIDE_LEFT | VS_SIDE_RIGHT; //63
+	}
+
+	void SetSidesToRender(unsigned int RenderInfo)
+	{
+		SidesToRender = RenderInfo;
+		MarkRenderStateDirty();
 	}
 
 private:

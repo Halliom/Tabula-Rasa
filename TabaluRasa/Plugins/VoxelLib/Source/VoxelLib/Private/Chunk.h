@@ -39,6 +39,8 @@ public:
 
 	void InsertNode(const FWorldPosition& LocalPosition);
 
+	virtual void OnNodePlacedAdjacent();
+
 private: 
 
 	AOctreeNode* ParentNode;
@@ -71,6 +73,8 @@ public:
 	void InsertIntoChunkLocal(const FWorldPosition& LocalTreePosition, AOctreeNode* Node);
 
 	TArray<AOctreeNode*, TInlineAllocator<6>> GetSurroundingBlocks(const FWorldPosition& Position);
+
+	unsigned int GetRenderFaceMask(const FWorldPosition& Position);
 
 	UPROPERTY(Category = "World|Chunk", EditDefaultsOnly)
 	int32 SizeX;

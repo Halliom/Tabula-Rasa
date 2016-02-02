@@ -29,5 +29,17 @@ ASolidActor::ASolidActor(const FObjectInitializer& ObjectInitializer)
 
 void ASolidActor::BeginPlay()
 {
-	TArray<AOctreeNode*, TInlineAllocator<6>> SurroundingBlocks = Chunk->GetSurroundingBlocks(LocalPosition);
+	//TODO: This check should not have to be performed
+	if (Chunk)
+	{
+		Voxel->SetSidesToRender(Chunk->GetRenderFaceMask(LocalPosition));
+	}
+}
+
+void ASolidActor::OnNodePlacedAdjacent()
+{
+	if (Chunk)
+	{
+		Voxel->SetSidesToRender(Chunk->GetRenderFaceMask(LocalPosition));
+	}
 }
