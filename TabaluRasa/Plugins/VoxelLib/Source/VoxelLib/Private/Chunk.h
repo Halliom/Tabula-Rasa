@@ -67,8 +67,19 @@ public:
 		return Result;
 	}
 
-	UPROPERTY(Category = "Chunk", BlueprintReadOnly)
+	UPROPERTY(Category = "World|Chunk", BlueprintReadOnly)
 	ASolidActor* NodeData;
+
+	UPROPERTY(Category = "World|Chunk", BlueprintReadOnly)
+	int Size;
+
+	UPROPERTY(Category = "World|Chunk", BlueprintReadOnly)
+	FVector Center;
+
+	UPROPERTY(Category = "World|Chunk", BlueprintReadOnly)
+	AChunk* Chunk;
+
+private:
 
 	AOctreeNode* RemoveChild(AOctreeNode* Node)
 	{
@@ -83,18 +94,6 @@ public:
 
 	TArray<AOctreeNode*, TInlineAllocator<8>> Children;
 
-	//TODO: Do we really need a box?
-	//UPROPERTY()
-	//FBox Box;
-
-	int Size;
-
-	UPROPERTY()
-	FVector Center;
-
-	UPROPERTY()
-	AChunk* Chunk;
-
 };
 
 UCLASS()
@@ -103,16 +102,24 @@ class AChunk : public AActor
 	GENERATED_BODY()
 public:
 
+	/**
+	 * Constructor, sets off the BuildTree function to construct the tree
+	 */
 	AChunk(const FObjectInitializer& ObjectInitializer);
 
+	/**
+	 * Recursively dismounts the octree by calling its destructors
+	 */
 	~AChunk();
 
-	AOctreeNode* GetNodeFromTreeLocal(const FWorldPosition LocalTreePosition);
+	//TODO: These need to be inlined or else...
+	UFUNCTION(Category = "World|Chunk", BlueprintCallable)
+	ASolidActor* GetNode(const FWorldPosition LocalTreePosition);
 
-	UFUNCTION(Category = "Chunk", BlueprintCallable)
-	void InsertIntoChunkLocal(FWorldPosition LocalTreePosition, ASolidActor* Node);
+	UFUNCTION(Category = "World|Chunk", BlueprintCallable)
+	void InsertIntoChunk(FWorldPosition LocalTreePosition, ASolidActor* Node);
 
-	TArray<AOctreeNode*, TInlineAllocator<6>> GetSurroundingBlocks(const FWorldPosition& Position);
+	TArray<ASolidActor*, TInlineAllocator<6>> GetSurroundingBlocks(const FWorldPosition& Position);
 
 	unsigned int GetRenderFaceMask(const FWorldPosition& Position);
 
@@ -123,10 +130,16 @@ public:
 
 private:
 
+	/** 
+	 * Builds the octree
+	 */
 	void BuildOctree(int Size);
 
 private:
 
+	/**
+	 * The root node of the tree
+	 */
 	AOctreeNode* RootNode;
 
 };

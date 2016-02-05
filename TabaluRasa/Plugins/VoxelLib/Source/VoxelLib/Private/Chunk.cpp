@@ -150,26 +150,27 @@ void AChunk::BeginPlay()
 {
 }
 
-AOctreeNode* AChunk::GetNodeFromTreeLocal(const FWorldPosition LocalTreePosition)
+ASolidActor* AChunk::GetNode(const FWorldPosition LocalTreePosition)
 {
-	return RootNode->GetNodeAtPosition(LocalTreePosition);
+	AOctreeNode* Node = RootNode->GetNodeAtPosition(LocalTreePosition);
+	return Node ? Node->NodeData : NULL;
 }
 
-void AChunk::InsertIntoChunkLocal(FWorldPosition LocalTreePosition, ASolidActor* Node)
+void AChunk::InsertIntoChunk(FWorldPosition LocalTreePosition, ASolidActor* Node)
 {
 	RootNode->InsertNode(LocalTreePosition, Node);
 }
 
-FORCEINLINE TArray<AOctreeNode*, TInlineAllocator<6>> AChunk::GetSurroundingBlocks(const FWorldPosition& Position)
+FORCEINLINE TArray<ASolidActor*, TInlineAllocator<6>> AChunk::GetSurroundingBlocks(const FWorldPosition& Position)
 {
-	TArray<AOctreeNode*, TInlineAllocator<6>> Result;
+	TArray<ASolidActor*, TInlineAllocator<6>> Result;
 
-	Result.Add(GetNodeFromTreeLocal(FWorldPosition(Position.PositionX, Position.PositionY, Position.PositionZ + 1)));
-	Result.Add(GetNodeFromTreeLocal(FWorldPosition(Position.PositionX, Position.PositionY, Position.PositionZ - 1)));
-	Result.Add(GetNodeFromTreeLocal(FWorldPosition(Position.PositionX, Position.PositionY + 1, Position.PositionZ)));
-	Result.Add(GetNodeFromTreeLocal(FWorldPosition(Position.PositionX, Position.PositionY - 1, Position.PositionZ)));
-	Result.Add(GetNodeFromTreeLocal(FWorldPosition(Position.PositionX - 1, Position.PositionY, Position.PositionZ)));
-	Result.Add(GetNodeFromTreeLocal(FWorldPosition(Position.PositionX + 1, Position.PositionY, Position.PositionZ)));
+	Result.Add(GetNode(FWorldPosition(Position.PositionX, Position.PositionY, Position.PositionZ + 1)));
+	Result.Add(GetNode(FWorldPosition(Position.PositionX, Position.PositionY, Position.PositionZ - 1)));
+	Result.Add(GetNode(FWorldPosition(Position.PositionX, Position.PositionY + 1, Position.PositionZ)));
+	Result.Add(GetNode(FWorldPosition(Position.PositionX, Position.PositionY - 1, Position.PositionZ)));
+	Result.Add(GetNode(FWorldPosition(Position.PositionX - 1, Position.PositionY, Position.PositionZ)));
+	Result.Add(GetNode(FWorldPosition(Position.PositionX + 1, Position.PositionY, Position.PositionZ)));
 
 	return Result;
 }
@@ -178,27 +179,27 @@ unsigned int AChunk::GetRenderFaceMask(const FWorldPosition& Position)
 {
 	unsigned int Result;
 
-	if (!GetNodeFromTreeLocal(FWorldPosition(Position.PositionX, Position.PositionY, Position.PositionZ + 1)))
+	if (!GetNode(FWorldPosition(Position.PositionX, Position.PositionY, Position.PositionZ + 1)))
 	{
 		Result |= EVoxelSide::VS_SIDE_TOP;
 	}
-	if (!GetNodeFromTreeLocal(FWorldPosition(Position.PositionX, Position.PositionY, Position.PositionZ - 1)))
+	if (!GetNode(FWorldPosition(Position.PositionX, Position.PositionY, Position.PositionZ - 1)))
 	{
 		Result |= EVoxelSide::VS_SIDE_BOTTOM;
 	}
-	if (!GetNodeFromTreeLocal(FWorldPosition(Position.PositionX, Position.PositionY + 1, Position.PositionZ)))
+	if (!GetNode(FWorldPosition(Position.PositionX, Position.PositionY + 1, Position.PositionZ)))
 	{
 		Result |= EVoxelSide::VS_SIDE_FRONT;
 	}
-	if (!GetNodeFromTreeLocal(FWorldPosition(Position.PositionX, Position.PositionY - 1, Position.PositionZ)))
+	if (!GetNode(FWorldPosition(Position.PositionX, Position.PositionY - 1, Position.PositionZ)))
 	{ 
 		Result |= EVoxelSide::VS_SIDE_BACK;
 	}
-	if (!GetNodeFromTreeLocal(FWorldPosition(Position.PositionX - 1, Position.PositionY, Position.PositionZ)))
+	if (!GetNode(FWorldPosition(Position.PositionX - 1, Position.PositionY, Position.PositionZ)))
 	{
 		Result |= EVoxelSide::VS_SIDE_LEFT;
 	}
-	if (!GetNodeFromTreeLocal(FWorldPosition(Position.PositionX + 1, Position.PositionY, Position.PositionZ)))
+	if (!GetNode(FWorldPosition(Position.PositionX + 1, Position.PositionY, Position.PositionZ)))
 	{
 		Result |= EVoxelSide::VS_SIDE_RIGHT;
 	}
