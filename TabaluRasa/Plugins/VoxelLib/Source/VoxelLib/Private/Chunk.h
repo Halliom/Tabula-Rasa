@@ -26,34 +26,71 @@ public:
 	int32 PositionZ;
 
 	bool IsWithinBounds(const FWorldPosition& Bounds) const;
+
+	bool operator==(const FWorldPosition& OtherPosition)
+	{
+		return PositionX == OtherPosition.PositionX && PositionY == OtherPosition.PositionY && PositionZ == OtherPosition.PositionZ;
+	}
 };
 
-UCLASS() //TODO: Should this be marked abstract?
-class AOctreeNode : public AActor
+class ASolidActor;
+
+//TODO: Should this be marked abstract?
+class AOctreeNode
 {
 	friend class AChunk;
-	GENERATED_BODY()
 public:
 
-	AOctreeNode(const FObjectInitializer& ObjectInitializer);
+	AOctreeNode();
 
-	void InsertNode(const FWorldPosition& LocalPosition);
+	AOctreeNode(AOctreeNode* Parent, FVector Center, AChunk* Chunk) : 
+		ParentNode(Parent),
+		Center(Center),
+		Chunk(Chunk)
+	{}
 
-	virtual void OnNodePlacedAdjacent();
+	void InsertNode(const FWorldPosition& InsertPosition, ASolidActor* NodeData);
 
-private: 
+	AOctreeNode* GetNodeAtPosition(const FWorldPosition& Position) const;
+
+	AOctreeNode* RemoveNodeAtPosition(const FWorldPosition& Position);
+
+	inline int GetOctantForPosition(const FWorldPosition& Position) const
+	{
+		int Result = 0;
+		if (Position.PositionX >= Center.X) // We are on the high X values
+			Result |= 4;
+		if (Position.PositionY >= Center.Y) // We are on the high Y values
+			Result |= 2;
+		if (Position.PositionZ >= Center.Z)
+			Result |= 1;
+		return Result;
+	}
+
+	UPROPERTY(Category = "Chunk", BlueprintReadOnly)
+	ASolidActor* NodeData;
+
+	AOctreeNode* RemoveChild(AOctreeNode* Node)
+	{
+		int32 Index = Children.Find(Node);
+		AOctreeNode* Removed = Children[Index];
+		Children.RemoveAt(Index, 1, false);
+
+		return Removed;
+	}
 
 	AOctreeNode* ParentNode;
 
 	TArray<AOctreeNode*, TInlineAllocator<8>> Children;
 
-protected:
+	//TODO: Do we really need a box?
+	//UPROPERTY()
+	//FBox Box;
+
+	int Size;
 
 	UPROPERTY()
-	FWorldPosition WorldPosition;
-
-	UPROPERTY()
-	FWorldPosition LocalPosition;
+	FVector Center;
 
 	UPROPERTY()
 	AChunk* Chunk;
@@ -68,29 +105,28 @@ public:
 
 	AChunk(const FObjectInitializer& ObjectInitializer);
 
-	AOctreeNode* GetNodeFromTreeLocal(const FWorldPosition& LocalTreePosition);
+	~AChunk();
 
-	void InsertIntoChunkLocal(const FWorldPosition& LocalTreePosition, AOctreeNode* Node);
+	AOctreeNode* GetNodeFromTreeLocal(const FWorldPosition LocalTreePosition);
+
+	UFUNCTION(Category = "Chunk", BlueprintCallable)
+	void InsertIntoChunkLocal(FWorldPosition LocalTreePosition, ASolidActor* Node);
 
 	TArray<AOctreeNode*, TInlineAllocator<6>> GetSurroundingBlocks(const FWorldPosition& Position);
 
 	unsigned int GetRenderFaceMask(const FWorldPosition& Position);
 
-	UPROPERTY(Category = "World|Chunk", EditDefaultsOnly)
-	int32 SizeX;
-
-	UPROPERTY(Category = "World|Chunk", EditDefaultsOnly)
-	int32 SizeY;
-
-	UPROPERTY(Category = "World|Chunk", EditDefaultsOnly)
-	int32 SizeZ;
+	virtual void BeginPlay() override;
 
 	UPROPERTY(Category = "World|Chunk", BlueprintReadOnly)
 	FWorldPosition ChunkPosition;
 
 private:
 
-	//TODO: Implement octree
-	AOctreeNode* ChunkBlocks[16][16][16];
+	void BuildOctree(int Size);
+
+private:
+
+	AOctreeNode* RootNode;
 
 };

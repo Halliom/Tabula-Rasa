@@ -3,12 +3,11 @@
 #include "VoxelLibPluginPrivatePCH.h"
 
 #include "VoxelMeshComponent.h"
-#include "Chunk.h"
 
 #include "SolidActor.generated.h"
 
 UCLASS(Blueprintable)
-class ASolidActor : public AOctreeNode
+class ASolidActor : public AActor
 {
 	GENERATED_BODY()
 public:
@@ -37,7 +36,15 @@ public:
 
 	virtual void BeginPlay() override;
 
-	virtual void OnNodePlacedAdjacent() override;
+	void OnNodePlacedAdjacent();
+
+	UPROPERTY()
+	FWorldPosition WorldPosition;
+
+	UPROPERTY()
+	FWorldPosition LocalChunkPosition;
+
+	AOctreeNode* ContainingNode;
 
 private:
 

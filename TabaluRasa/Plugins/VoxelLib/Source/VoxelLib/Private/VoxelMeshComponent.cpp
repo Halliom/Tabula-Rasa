@@ -66,8 +66,6 @@ inline void FVoxelVertexFactory::InitVertexComponentsGameThread(const FVoxelVert
 // This should be used when adding shader
 //IMPLEMENT_VERTEX_FACTORY_TYPE(FVoxelVertexFactory, "VoxelVertexFactory", true, true, true, true, true);
 
-#define CUBE_SIZE 50.0f
-
 struct Triangle
 {
 	FVector Vertex0;

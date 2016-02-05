@@ -30,16 +30,17 @@ ASolidActor::ASolidActor(const FObjectInitializer& ObjectInitializer)
 void ASolidActor::BeginPlay()
 {
 	//TODO: This check should not have to be performed
-	if (Chunk)
+	if (ContainingNode)
 	{
-		Voxel->SetSidesToRender(Chunk->GetRenderFaceMask(LocalPosition));
+		Voxel->SetSidesToRender(ContainingNode->Chunk->GetRenderFaceMask(LocalChunkPosition));
 	}
 }
 
 void ASolidActor::OnNodePlacedAdjacent()
 {
-	if (Chunk)
+	//TODO: This check should not have to be performed
+	if (ContainingNode)
 	{
-		Voxel->SetSidesToRender(Chunk->GetRenderFaceMask(LocalPosition));
+		Voxel->SetSidesToRender(ContainingNode->Chunk->GetRenderFaceMask(LocalChunkPosition));
 	}
 }

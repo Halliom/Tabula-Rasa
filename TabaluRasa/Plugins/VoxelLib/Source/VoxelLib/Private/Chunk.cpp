@@ -1,78 +1,175 @@
 #include "VoxelLibPluginPrivatePCH.h"
 
 #include "VoxelMeshComponent.h"
+#include "SolidActor.h"
 #include "Chunk.h"
 
 bool FWorldPosition::IsWithinBounds(const FWorldPosition& Bounds) const
 {
-	if ((PositionX <= Bounds.PositionX) && (PositionY <= Bounds.PositionY) && (PositionZ <= Bounds.PositionZ))
+	if ((PositionX < Bounds.PositionX) && (PositionX >= 0))
 	{
-		return true;
+		if ((PositionY < Bounds.PositionY) && (PositionY >= 0))
+		{
+			if ((PositionZ < Bounds.PositionZ) && (PositionZ >= 0))
+			{
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
+AOctreeNode::AOctreeNode()
+{
+}
+
+void AOctreeNode::InsertNode(const FWorldPosition& InsertPosition, ASolidActor* NodeData)
+{
+	int HalfSize = Size >> 1;
+
+	// This tests whether we are a "leaf node" or not. A leaf node doesn't contain
+	// any children and since all the children get initialized if we have children
+	// then all of the elements will be NULL if we don't have ANY children and
+	// therefore this check is sufficient.
+	if (Children[0] == NULL)
+	{
+		// No worries this node is empty, just set the data. Or this is as far down
+		// the tree as we will go and then we will have to replace the
+		if (NodeData == NULL || HalfSize == 0)
+		{
+			this->NodeData = NodeData;
+			this->NodeData->LocalChunkPosition = InsertPosition;
+			this->NodeData->ContainingNode = this;
+
+			this->NodeData->OnNodePlacedAdjacent();
+		}
+		else
+		{
+			// There already is something on this node so it has to get broken up
+			// and then we have to set the old NodeData in the correct octant and
+			// then the new NodeData in its correct octant.
+
+			ASolidActor* OldNodeData = this->NodeData;
+			this->NodeData = NULL;
+
+			for (int i = 0; i < 8; ++i)
+			{
+				// Bitmasks out the x coordinate by checking the 3rd bit, the y
+				// by checking the 2nd and the z by checking the 1st bit. Then
+				// multiplies the x, y and z values for the new center to be either
+				// to the right of / up down / in out of the current nodes center
+				FVector NewCenter = FVector(Center);
+				NewCenter.X += HalfSize * (i & 4 ? 0.5f : -0.5f);
+				NewCenter.Y += HalfSize * (i & 2 ? 0.5f : -0.5f);
+				NewCenter.Z += HalfSize * (i & 1 ? 0.5f : -0.5f);
+				Children[i] = new AOctreeNode(this, NewCenter, Chunk);
+			}
+
+			// Insert the new node
+			Children[GetOctantForPosition(InsertPosition)]->InsertNode(InsertPosition, NodeData);
+
+			// (Re)Insert the old node
+			Children[GetOctantForPosition(OldNodeData->LocalChunkPosition)]->InsertNode(OldNodeData->LocalChunkPosition, OldNodeData);
+		}
 	}
 	else
 	{
-		return false;
+		// This node is subdivided and we just need to get the correct region to put
+		// the NodeData in.
+		Children[GetOctantForPosition(InsertPosition)]->InsertNode(InsertPosition, NodeData);
 	}
 }
 
-AOctreeNode::AOctreeNode(const FObjectInitializer& ObjectInitializer)
-	: Super(ObjectInitializer)
+FORCEINLINE AOctreeNode* AOctreeNode::GetNodeAtPosition(const FWorldPosition& Position) const
 {
-	
+	if (Children[0] == NULL)
+	{
+		if (NodeData && (NodeData->LocalChunkPosition == Position))
+		{
+			return (AOctreeNode*) this;
+		}
+		else
+		{
+			return NULL;
+		}
+	}
+	else
+	{
+		return Children[GetOctantForPosition(Position)]->GetNodeAtPosition(Position);
+	}
 }
 
-void AOctreeNode::InsertNode(const FWorldPosition& LocalPosition)
+FORCEINLINE AOctreeNode* AOctreeNode::RemoveNodeAtPosition(const FWorldPosition& Position)
 {
-
+	if (Children[0] == NULL)
+	{
+		if (NodeData && (NodeData->LocalChunkPosition == Position))
+		{
+			if (ParentNode)
+			{
+				return ParentNode->RemoveChild(this);
+			}
+		}
+		return NULL;
+	}
+	else
+	{
+		return Children[GetOctantForPosition(Position)]->RemoveNodeAtPosition(Position);
+	}
 }
 
-void AOctreeNode::OnNodePlacedAdjacent()
-{
-
-}
+#define INITIAL_CHUNK_SIZE 128
 
 AChunk::AChunk(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {
-	//RootNode = ObjectInitializer.CreateDefaultSubobject<AOctreeNode>(this, TEXT("RootNode"));
-	//RootComponent = RootNode;
+	BuildOctree(INITIAL_CHUNK_SIZE);
 }
 
-AOctreeNode* AChunk::GetNodeFromTreeLocal(const FWorldPosition& LocalTreePosition)
+AChunk::~AChunk()
 {
-	if (LocalTreePosition.IsWithinBounds(FWorldPosition(16, 16, 16)))
+	if (RootNode)
 	{
-		return ChunkBlocks[LocalTreePosition.PositionX][LocalTreePosition.PositionY][LocalTreePosition.PositionZ];
-	}
-	return NULL;
-}
-
-void AChunk::InsertIntoChunkLocal(const FWorldPosition& LocalTreePosition, AOctreeNode* Node)
-{
-	if (LocalTreePosition.IsWithinBounds(FWorldPosition(16, 16, 16)))
-	{
-		ChunkBlocks[LocalTreePosition.PositionX][LocalTreePosition.PositionY][LocalTreePosition.PositionZ] = Node;
-		Node->Chunk = this;
-		Node->LocalPosition = LocalTreePosition;
-		//TODO: Set World position
-
-		for (auto It = GetSurroundingBlocks(LocalTreePosition).CreateIterator(); It; It++)
-		{
-			(*It)->OnNodePlacedAdjacent();
-		}
+		delete RootNode;
 	}
 }
 
-TArray<AOctreeNode*, TInlineAllocator<6>> AChunk::GetSurroundingBlocks(const FWorldPosition& Position)
+void AChunk::BuildOctree(int Size)
+{
+	RootNode = new AOctreeNode();
+
+	int HalfSize = Size >> 1;
+	RootNode->Center = FVector(HalfSize, HalfSize, HalfSize);
+	//TODO: Set the world position of the node
+
+	RootNode->Chunk = this;
+	RootNode->Size = Size;
+}
+
+void AChunk::BeginPlay()
+{
+}
+
+AOctreeNode* AChunk::GetNodeFromTreeLocal(const FWorldPosition LocalTreePosition)
+{
+	return RootNode->GetNodeAtPosition(LocalTreePosition);
+}
+
+void AChunk::InsertIntoChunkLocal(FWorldPosition LocalTreePosition, ASolidActor* Node)
+{
+	RootNode->InsertNode(LocalTreePosition, Node);
+}
+
+FORCEINLINE TArray<AOctreeNode*, TInlineAllocator<6>> AChunk::GetSurroundingBlocks(const FWorldPosition& Position)
 {
 	TArray<AOctreeNode*, TInlineAllocator<6>> Result;
 
-	Result[0] = GetNodeFromTreeLocal(FWorldPosition(Position.PositionX, Position.PositionY, Position.PositionZ + 1));
-	Result[1] = GetNodeFromTreeLocal(FWorldPosition(Position.PositionX, Position.PositionY, Position.PositionZ - 1));
-	Result[2] = GetNodeFromTreeLocal(FWorldPosition(Position.PositionX, Position.PositionY + 1, Position.PositionZ));
-	Result[3] = GetNodeFromTreeLocal(FWorldPosition(Position.PositionX, Position.PositionY - 1, Position.PositionZ));
-	Result[4] = GetNodeFromTreeLocal(FWorldPosition(Position.PositionX - 1, Position.PositionY, Position.PositionZ));
-	Result[5] = GetNodeFromTreeLocal(FWorldPosition(Position.PositionX + 1, Position.PositionY, Position.PositionZ));
+	Result.Add(GetNodeFromTreeLocal(FWorldPosition(Position.PositionX, Position.PositionY, Position.PositionZ + 1)));
+	Result.Add(GetNodeFromTreeLocal(FWorldPosition(Position.PositionX, Position.PositionY, Position.PositionZ - 1)));
+	Result.Add(GetNodeFromTreeLocal(FWorldPosition(Position.PositionX, Position.PositionY + 1, Position.PositionZ)));
+	Result.Add(GetNodeFromTreeLocal(FWorldPosition(Position.PositionX, Position.PositionY - 1, Position.PositionZ)));
+	Result.Add(GetNodeFromTreeLocal(FWorldPosition(Position.PositionX - 1, Position.PositionY, Position.PositionZ)));
+	Result.Add(GetNodeFromTreeLocal(FWorldPosition(Position.PositionX + 1, Position.PositionY, Position.PositionZ)));
 
 	return Result;
 }

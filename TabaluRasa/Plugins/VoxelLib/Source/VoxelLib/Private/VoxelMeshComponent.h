@@ -5,6 +5,8 @@
 
 #include "VoxelMeshComponent.generated.h"
 
+#define CUBE_SIZE 50.0f
+
 /**
  * Defines sides of a solid that the API and game use to determine
  * things such as what side to render or where a solid was clicked
