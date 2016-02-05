@@ -51,6 +51,8 @@ public:
 
 	void AddChunk(FWorldPosition ChunkPosition, AChunk* Chunk);
 
+	bool DeleteChunkAtPosition(FWorldPosition ChunkPosition);
+
 private:
 
 	static AChunkManager* ChunkManager;

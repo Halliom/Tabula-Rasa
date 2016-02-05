@@ -36,3 +36,15 @@ void AChunkManager::AddChunk(FWorldPosition ChunkPosition, AChunk* Chunk)
 
 	LoadedChunks.Add(Pos, Chunk);
 }
+
+bool AChunkManager::DeleteChunkAtPosition(FWorldPosition ChunkPosition)
+{
+	ChunkPos Pos(ChunkPosition);
+
+	if (LoadedChunks.Contains(Pos))
+	{
+		LoadedChunks.Remove(Pos);
+		return true;
+	}
+	return false;
+}
