@@ -1,3 +1,5 @@
+#pragma once
+
 #include "VoxelLibPluginPrivatePCH.h"
 
 #include "ChunkManager.generated.h"
@@ -34,6 +36,11 @@ struct ChunkPos
 	{
 		return FCrc::MemCrc_DEPRECATED(&Position.PosX, sizeof(int32) * 3);
 	}
+
+	FORCEINLINE FWorldPosition ToWorldPosition() const
+	{
+		return FWorldPosition(PosX, PosY, PosZ);
+	}
 };
 
 UCLASS()
@@ -50,6 +57,8 @@ public:
 	AChunk* GetChunkFromPosition(FWorldPosition Position);
 
 	void AddChunk(FWorldPosition ChunkPosition, AChunk* Chunk);
+
+	AChunk* GetOrCreateChunkFromWorldPosition(FWorldPosition Position);
 
 	bool DeleteChunkAtPosition(FWorldPosition ChunkPosition);
 

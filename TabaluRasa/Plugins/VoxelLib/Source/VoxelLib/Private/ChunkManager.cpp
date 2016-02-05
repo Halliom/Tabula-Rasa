@@ -28,6 +28,34 @@ AChunk* AChunkManager::GetChunkFromPosition(FWorldPosition Position)
 	return *(LoadedChunks.Find(ChunkPos));
 }
 
+AChunk* AChunkManager::GetOrCreateChunkFromWorldPosition(FWorldPosition Position)
+{
+	if (Position.PositionX != 0 && Position.PositionY != 0 && Position.PositionZ != 0)
+	{
+		int32 ChunkX = FMath::Ceil(Position.PositionX / INITIAL_CHUNK_SIZE) * (Position.PositionX > 0 ? 1 : -1);
+		int32 ChunkY = FMath::Ceil(Position.PositionY / INITIAL_CHUNK_SIZE) * (Position.PositionY > 0 ? 1 : -1);
+		int32 ChunkZ = FMath::Ceil(Position.PositionZ / INITIAL_CHUNK_SIZE) * (Position.PositionZ > 0 ? 1 : -1);
+		
+		ChunkPos ChunkPosition = ChunkPos(ChunkX, ChunkY, ChunkZ);
+		AChunk* Chunk = *(LoadedChunks.Find(ChunkPosition));
+		if (Chunk)
+		{
+			return Chunk;
+		}
+		else
+		{
+			Chunk = GetWorld()->SpawnActor<AChunk>();
+			Chunk->ChunkPosition = FWorldPosition(ChunkX * INITIAL_CHUNK_SIZE, ChunkY * INITIAL_CHUNK_SIZE, ChunkZ * INITIAL_CHUNK_SIZE);
+
+			// Add it (save it) to the LoadedChunks map
+			LoadedChunks.Add(ChunkPosition, Chunk);
+
+			return Chunk;
+		}
+	}
+	return NULL;
+}
+
 void AChunkManager::AddChunk(FWorldPosition ChunkPosition, AChunk* Chunk)
 {
 	ChunkPos Pos(ChunkPosition);

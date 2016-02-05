@@ -1,14 +1,25 @@
 #include "VoxelLibPluginPrivatePCH.h"
 
+#include "ChunkManager.h"
 #include "SolidActor.h"
 
-void ASolidActor::SpawnSolid(UObject* Creator, FWorldPosition SpawnPosition)
+ASolidActor* ASolidActor::SpawnSolid(UObject* Creator, FWorldPosition SpawnPosition)
 {
 	FTransform SpawnTransform;
 	SpawnTransform.SetLocation(FVector(SpawnPosition.PositionX * 50.0f, SpawnPosition.PositionY * 50.0f, SpawnPosition.PositionZ * 50.0f + 25.0f));
-	Creator->GetWorld()->SpawnActor(ASolidActor::StaticClass(), &SpawnTransform);
+	ASolidActor* SpawnedActor = (ASolidActor*) Creator->GetWorld()->SpawnActor(ASolidActor::StaticClass(), &SpawnTransform);
 
-	//TODO: Return the spawned actor?
+	SpawnedActor->WorldPosition = SpawnPosition;
+
+	// Get the chunk of the
+	AChunk* Chunk = AChunkManager::GetStaticChunkManager()->GetOrCreateChunkFromWorldPosition(SpawnPosition);
+	FWorldPosition LocalPosition = FWorldPosition(
+		SpawnPosition.PositionX % INITIAL_CHUNK_SIZE,
+		SpawnPosition.PositionY % INITIAL_CHUNK_SIZE,
+		SpawnPosition.PositionZ % INITIAL_CHUNK_SIZE);
+	Chunk->InsertIntoChunk(LocalPosition, SpawnedActor);
+
+	return SpawnedActor;
 }
 
 ASolidActor* ASolidActor::GetSolidAtLocation(FWorldPosition& Position)
