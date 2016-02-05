@@ -4,6 +4,8 @@
 
 #include "Chunk.generated.h"
 
+#define INITIAL_CHUNK_SIZE 64
+
 USTRUCT(BlueprintType)
 struct FWorldPosition
 {

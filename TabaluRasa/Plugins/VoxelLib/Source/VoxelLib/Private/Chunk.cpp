@@ -118,8 +118,6 @@ FORCEINLINE AOctreeNode* AOctreeNode::RemoveNodeAtPosition(const FWorldPosition&
 	}
 }
 
-#define INITIAL_CHUNK_SIZE 128
-
 AChunk::AChunk(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {
