@@ -31,19 +31,6 @@ public:
 	{
 		return PositionX == OtherPosition.PositionX && PositionY == OtherPosition.PositionY && PositionZ == OtherPosition.PositionZ;
 	}
-
-	friend FORCEINLINE uint32 GetTypeHash(const FWorldPosition& Position)
-	{
-		return FCrc::MemCrc_DEPRECATED(&PositionX, sizeof(int32) * 3);
-	}
-
-	/**
-	* Serialize to Archive
-	*/
-	friend FArchive& operator<<(FArchive& Ar, FWorldPosition& Position)
-	{
-		return Ar << Position.PositionX << Position.PositionY << Position.PositionZ;
-	}
 };
 
 class ASolidActor;
