@@ -5,16 +5,16 @@
 
 ASolidActor* ASolidActor::SpawnSolid(UObject* Creator, FWorldPosition SpawnPosition)
 {
-	FTransform SpawnTransform;
-	SpawnTransform.SetLocation(FVector(SpawnPosition.PositionX * 50.0f, SpawnPosition.PositionY * 50.0f, SpawnPosition.PositionZ * 50.0f + 25.0f));
-	ASolidActor* SpawnedActor = (ASolidActor*) Creator->GetWorld()->SpawnActor(ASolidActor::StaticClass(), &SpawnTransform);
-
-	SpawnedActor->WorldPosition = SpawnPosition;
-
-	// Get the chunk of the
+	// Get the chunk of the spawn position
 	AChunk* Chunk = AChunkManager::GetStaticChunkManager()->GetOrCreateChunkFromWorldPosition(SpawnPosition);
 	if (Chunk)
 	{
+		FTransform SpawnTransform;
+		SpawnTransform.SetLocation(FVector(SpawnPosition.PositionX * 50.0f, SpawnPosition.PositionY * 50.0f, SpawnPosition.PositionZ * 50.0f + 25.0f));
+		ASolidActor* SpawnedActor = (ASolidActor*)Creator->GetWorld()->SpawnActor(ASolidActor::StaticClass(), &SpawnTransform);
+
+		SpawnedActor->WorldPosition = SpawnPosition;
+
 		FWorldPosition LocalPosition = FWorldPosition(
 			SpawnPosition.PositionX % INITIAL_CHUNK_SIZE,
 			SpawnPosition.PositionY % INITIAL_CHUNK_SIZE,

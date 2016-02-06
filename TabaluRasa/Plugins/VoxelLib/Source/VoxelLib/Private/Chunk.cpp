@@ -190,7 +190,7 @@ unsigned int AChunk::GetRenderFaceMask(const FWorldPosition& Position)
 		Result |= EVoxelSide::VS_SIDE_FRONT;
 	}
 	if (!GetNode(FWorldPosition(Position.PositionX, Position.PositionY - 1, Position.PositionZ)))
-	{ 
+	{
 		Result |= EVoxelSide::VS_SIDE_BACK;
 	}
 	if (!GetNode(FWorldPosition(Position.PositionX - 1, Position.PositionY, Position.PositionZ)))
