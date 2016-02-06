@@ -13,13 +13,17 @@ ASolidActor* ASolidActor::SpawnSolid(UObject* Creator, FWorldPosition SpawnPosit
 
 	// Get the chunk of the
 	AChunk* Chunk = AChunkManager::GetStaticChunkManager()->GetOrCreateChunkFromWorldPosition(SpawnPosition);
-	FWorldPosition LocalPosition = FWorldPosition(
-		SpawnPosition.PositionX % INITIAL_CHUNK_SIZE,
-		SpawnPosition.PositionY % INITIAL_CHUNK_SIZE,
-		SpawnPosition.PositionZ % INITIAL_CHUNK_SIZE);
-	Chunk->InsertIntoChunk(LocalPosition, SpawnedActor);
+	if (Chunk)
+	{
+		FWorldPosition LocalPosition = FWorldPosition(
+			SpawnPosition.PositionX % INITIAL_CHUNK_SIZE,
+			SpawnPosition.PositionY % INITIAL_CHUNK_SIZE,
+			SpawnPosition.PositionZ % INITIAL_CHUNK_SIZE);
+		Chunk->InsertIntoChunk(LocalPosition, SpawnedActor);
 
-	return SpawnedActor;
+		return SpawnedActor;
+	}
+	return NULL;
 }
 
 ASolidActor* ASolidActor::GetSolidAtLocation(FWorldPosition& Position)

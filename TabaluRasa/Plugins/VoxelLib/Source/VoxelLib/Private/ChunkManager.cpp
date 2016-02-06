@@ -32,25 +32,30 @@ AChunk* AChunkManager::GetOrCreateChunkFromWorldPosition(FWorldPosition Position
 {
 	if (Position.PositionX != 0 && Position.PositionY != 0 && Position.PositionZ != 0)
 	{
-		int32 ChunkX = FMath::Ceil(Position.PositionX / INITIAL_CHUNK_SIZE) * (Position.PositionX > 0 ? 1 : -1);
-		int32 ChunkY = FMath::Ceil(Position.PositionY / INITIAL_CHUNK_SIZE) * (Position.PositionY > 0 ? 1 : -1);
-		int32 ChunkZ = FMath::Ceil(Position.PositionZ / INITIAL_CHUNK_SIZE) * (Position.PositionZ > 0 ? 1 : -1);
+		int32 ChunkX = FMath::CeilToInt((float) Position.PositionX / (float) INITIAL_CHUNK_SIZE) * (Position.PositionX > 0 ? 1 : -1);
+		int32 ChunkY = FMath::CeilToInt((float) Position.PositionY / (float) INITIAL_CHUNK_SIZE) * (Position.PositionY > 0 ? 1 : -1);
+		int32 ChunkZ = FMath::CeilToInt((float) Position.PositionZ / (float) INITIAL_CHUNK_SIZE) * (Position.PositionZ > 0 ? 1 : -1);
 		
 		ChunkPos ChunkPosition = ChunkPos(ChunkX, ChunkY, ChunkZ);
-		AChunk* Chunk = *(LoadedChunks.Find(ChunkPosition));
+		AChunk* Chunk = LoadedChunks.FindRef(ChunkPosition); //TODO: Fix crash here
 		if (Chunk)
 		{
 			return Chunk;
 		}
 		else
 		{
-			Chunk = GetWorld()->SpawnActor<AChunk>();
-			Chunk->ChunkPosition = FWorldPosition(ChunkX * INITIAL_CHUNK_SIZE, ChunkY * INITIAL_CHUNK_SIZE, ChunkZ * INITIAL_CHUNK_SIZE);
+			Chunk = Cast<AChunk>(UGameplayStatics::BeginSpawningActorFromClass(this,
+				AChunk::StaticClass(),
+				FTransform(FVector(ChunkX * INITIAL_CHUNK_SIZE, ChunkY * INITIAL_CHUNK_SIZE, ChunkZ * INITIAL_CHUNK_SIZE))));
+			if (Chunk)
+			{
+				Chunk->ChunkPosition = FWorldPosition(ChunkX * INITIAL_CHUNK_SIZE, ChunkY * INITIAL_CHUNK_SIZE, ChunkZ * INITIAL_CHUNK_SIZE);
 
-			// Add it (save it) to the LoadedChunks map
-			LoadedChunks.Add(ChunkPosition, Chunk);
+				// Add it (save it) to the LoadedChunks map
+				LoadedChunks.Add(ChunkPosition, Chunk);
 
-			return Chunk;
+				return Chunk;
+			}
 		}
 	}
 	return NULL;
