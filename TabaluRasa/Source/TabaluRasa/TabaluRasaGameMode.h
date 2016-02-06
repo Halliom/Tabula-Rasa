@@ -14,6 +14,8 @@ class TABALURASA_API ATabaluRasaGameMode : public AGameMode
 	GENERATED_BODY()
 public:
 
+	ATabaluRasaGameMode(const FObjectInitializer& ObjectInitiailizer);
+
 	virtual void BeginPlay() override;
 	
 };
