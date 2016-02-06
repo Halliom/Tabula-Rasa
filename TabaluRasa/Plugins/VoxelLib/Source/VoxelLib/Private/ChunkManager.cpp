@@ -44,9 +44,7 @@ AChunk* AChunkManager::GetOrCreateChunkFromWorldPosition(FWorldPosition Position
 		}
 		else
 		{
-			Chunk = Cast<AChunk>(UGameplayStatics::BeginDeferredActorSpawnFromClass(this,
-				AChunk::StaticClass(),
-				FTransform(FVector(ChunkX * INITIAL_CHUNK_SIZE, ChunkY * INITIAL_CHUNK_SIZE, ChunkZ * INITIAL_CHUNK_SIZE))));
+			Chunk = UGameplayStatics::GetGameMode(this)->GetWorld()->SpawnActor<AChunk>();
 			if (Chunk)
 			{
 				Chunk->ChunkPosition = FWorldPosition(ChunkX * INITIAL_CHUNK_SIZE, ChunkY * INITIAL_CHUNK_SIZE, ChunkZ * INITIAL_CHUNK_SIZE);

@@ -3,7 +3,7 @@
 #include "ChunkManager.h"
 #include "SolidActor.h"
 
-ASolidActor* ASolidActor::SpawnSolid(UObject* Creator, FWorldPosition SpawnPosition)
+ASolidActor* ASolidActor::SpawnSolidAt(FWorldPosition SpawnPosition)
 {
 	// Get the chunk of the spawn position
 	AChunk* Chunk = AChunkManager::GetStaticChunkManager()->GetOrCreateChunkFromWorldPosition(SpawnPosition);
@@ -11,7 +11,7 @@ ASolidActor* ASolidActor::SpawnSolid(UObject* Creator, FWorldPosition SpawnPosit
 	{
 		FTransform SpawnTransform;
 		SpawnTransform.SetLocation(FVector(SpawnPosition.PositionX * 50.0f, SpawnPosition.PositionY * 50.0f, SpawnPosition.PositionZ * 50.0f + 25.0f));
-		ASolidActor* SpawnedActor = (ASolidActor*)Creator->GetWorld()->SpawnActor(ASolidActor::StaticClass(), &SpawnTransform);
+		ASolidActor* SpawnedActor = Cast<ASolidActor>(Chunk->GetWorld()->SpawnActor(ASolidActor::StaticClass(), &SpawnTransform));
 
 		SpawnedActor->WorldPosition = SpawnPosition;
 
