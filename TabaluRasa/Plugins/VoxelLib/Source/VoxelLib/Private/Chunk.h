@@ -99,7 +99,7 @@ private:
 };
 
 UCLASS()
-class AChunk : public AActor
+class VOXELLIB_API AChunk : public AActor
 {
 	GENERATED_BODY()
 public:

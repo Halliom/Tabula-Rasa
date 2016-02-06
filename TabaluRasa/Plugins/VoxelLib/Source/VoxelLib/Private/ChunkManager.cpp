@@ -35,7 +35,7 @@ AChunk* AChunkManager::GetOrCreateChunkFromWorldPosition(FWorldPosition Position
 		int32 ChunkX = FMath::CeilToInt((float) Position.PositionX / (float) INITIAL_CHUNK_SIZE) * (Position.PositionX > 0 ? 1 : -1);
 		int32 ChunkY = FMath::CeilToInt((float) Position.PositionY / (float) INITIAL_CHUNK_SIZE) * (Position.PositionY > 0 ? 1 : -1);
 		int32 ChunkZ = FMath::CeilToInt((float) Position.PositionZ / (float) INITIAL_CHUNK_SIZE) * (Position.PositionZ > 0 ? 1 : -1);
-		
+
 		ChunkPos ChunkPosition = ChunkPos(ChunkX, ChunkY, ChunkZ);
 		AChunk* Chunk = LoadedChunks.FindRef(ChunkPosition); //TODO: Fix crash here
 		if (Chunk)
@@ -44,7 +44,7 @@ AChunk* AChunkManager::GetOrCreateChunkFromWorldPosition(FWorldPosition Position
 		}
 		else
 		{
-			Chunk = Cast<AChunk>(UGameplayStatics::BeginSpawningActorFromClass(this,
+			Chunk = Cast<AChunk>(UGameplayStatics::BeginDeferredActorSpawnFromClass(this,
 				AChunk::StaticClass(),
 				FTransform(FVector(ChunkX * INITIAL_CHUNK_SIZE, ChunkY * INITIAL_CHUNK_SIZE, ChunkZ * INITIAL_CHUNK_SIZE))));
 			if (Chunk)

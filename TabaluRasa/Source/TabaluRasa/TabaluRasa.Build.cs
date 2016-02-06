@@ -6,9 +6,13 @@ public class TabaluRasa : ModuleRules
 {
 	public TabaluRasa(TargetInfo Target)
 	{
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore" });
+		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "VoxelLib" });
 
-		PrivateDependencyModuleNames.AddRange(new string[] {  });
+		PrivateDependencyModuleNames.AddRange(new string[] { "VoxelLib" });
+ 		PrivateIncludePathModuleNames.AddRange(new string[] { "VoxelLib" });
+ 
+		PrivateIncludePaths.AddRange(new string[] { "VoxelLib/Public", "VoxelLib/Classes", "VoxelLib/Private" });
+		PublicIncludePaths.AddRange(new string[] { "VoxelLib/Public", "VoxelLib/Classes", "VoxelLib/Private" });
 
 		// Uncomment if you are using Slate UI
 		// PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore" });

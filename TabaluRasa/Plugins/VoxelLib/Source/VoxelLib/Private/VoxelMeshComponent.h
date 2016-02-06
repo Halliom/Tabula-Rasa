@@ -116,7 +116,7 @@ private:
 };
 
 UCLASS(meta=(BlueprintSpawnableComponent))
-class UVoxelMeshComponent : public UMeshComponent
+class VOXELLIB_API UVoxelMeshComponent : public UMeshComponent
 {
 	GENERATED_BODY()
 	friend class FVoxelSceneProxy;

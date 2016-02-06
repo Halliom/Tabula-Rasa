@@ -44,6 +44,8 @@ ASolidActor::ASolidActor(const FObjectInitializer& ObjectInitializer)
 
 void ASolidActor::BeginPlay()
 {
+	Super::BeginPlay();
+
 	//TODO: This check should not have to be performed
 	if (ContainingNode)
 	{

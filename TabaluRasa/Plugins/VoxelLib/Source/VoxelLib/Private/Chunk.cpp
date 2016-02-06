@@ -146,6 +146,7 @@ void AChunk::BuildOctree(int Size)
 
 void AChunk::BeginPlay()
 {
+	Super::BeginPlay();
 }
 
 ASolidActor* AChunk::GetNode(const FWorldPosition LocalTreePosition)

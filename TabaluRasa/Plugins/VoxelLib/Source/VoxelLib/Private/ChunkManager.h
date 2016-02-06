@@ -43,8 +43,8 @@ struct ChunkPos
 	}
 };
 
-UCLASS()
-class AChunkManager : public AActor
+UCLASS(NotPlaceable)
+class VOXELLIB_API AChunkManager : public AInfo
 {
 	GENERATED_BODY()
 public:

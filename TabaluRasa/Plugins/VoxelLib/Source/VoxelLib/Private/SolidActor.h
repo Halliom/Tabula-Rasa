@@ -7,7 +7,7 @@
 #include "SolidActor.generated.h"
 
 UCLASS(Blueprintable)
-class ASolidActor : public AActor
+class VOXELLIB_API ASolidActor : public AActor
 {
 	GENERATED_BODY()
 public:
