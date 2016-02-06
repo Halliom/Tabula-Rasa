@@ -4,7 +4,7 @@ namespace UnrealBuildTool.Rules
 	{
         public VoxelLib(TargetInfo Target)
         {
-	    PublicIncludePaths.Add("VoxelLib/Private");
+	    PublicIncludePaths.Add("VoxelLib/Public");
             PrivateIncludePaths.Add("VoxelLib/Private");
 
 			PublicDependencyModuleNames.AddRange(

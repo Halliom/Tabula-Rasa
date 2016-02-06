@@ -6,7 +6,7 @@ public class TabaluRasa : ModuleRules
 {
 	public TabaluRasa(TargetInfo Target)
 	{
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "VoxelLib" });
+		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore"});
 
 		PrivateDependencyModuleNames.AddRange(new string[] { "VoxelLib" });
  		PrivateIncludePathModuleNames.AddRange(new string[] { "VoxelLib" });
