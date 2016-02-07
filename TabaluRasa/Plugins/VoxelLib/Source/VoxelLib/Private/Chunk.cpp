@@ -202,33 +202,46 @@ FORCEINLINE TArray<ASolidActor*, TInlineAllocator<6>> AChunk::GetSurroundingBloc
 	return Result;
 }
 
-unsigned int AChunk::GetRenderFaceMask(const FWorldPosition& Position)
+FORCEINLINE unsigned int AChunk::GetRenderFaceMask(const FWorldPosition& Position)
 {
-	unsigned int Result = 0;
+	unsigned int Result = 63;
 
-	if (!GetNode(FWorldPosition(Position.PositionX, Position.PositionY, Position.PositionZ + 1)))
+	ASolidActor* TopActor = GetNode(FWorldPosition(Position.PositionX, Position.PositionY, Position.PositionZ + 1));
+	ASolidActor* BottomActor = GetNode(FWorldPosition(Position.PositionX, Position.PositionY, Position.PositionZ - 1));
+	ASolidActor* FrontActor = GetNode(FWorldPosition(Position.PositionX, Position.PositionY + 1, Position.PositionZ));
+	ASolidActor* BackActor = GetNode(FWorldPosition(Position.PositionX, Position.PositionY - 1, Position.PositionZ));
+	ASolidActor* LeftActor = GetNode(FWorldPosition(Position.PositionX - 1, Position.PositionY, Position.PositionZ));
+	ASolidActor* RightActor = GetNode(FWorldPosition(Position.PositionX + 1, Position.PositionY, Position.PositionZ));
+
+	if (TopActor)
 	{
-		Result |= EVoxelSide::VS_SIDE_TOP;
+		Result ^= EVoxelSide::VS_SIDE_TOP;
+		TopActor->OnNodePlacedOnSide(EVoxelSide::VS_SIDE_BOTTOM);
 	}
-	if (!GetNode(FWorldPosition(Position.PositionX, Position.PositionY, Position.PositionZ - 1)))
+	if (BottomActor)
 	{
-		Result |= EVoxelSide::VS_SIDE_BOTTOM;
+		Result ^= EVoxelSide::VS_SIDE_BOTTOM;
+		BottomActor->OnNodePlacedOnSide(EVoxelSide::VS_SIDE_TOP);
 	}
-	if (!GetNode(FWorldPosition(Position.PositionX, Position.PositionY + 1, Position.PositionZ)))
+	if (FrontActor)
 	{
-		Result |= EVoxelSide::VS_SIDE_FRONT;
+		Result ^= EVoxelSide::VS_SIDE_FRONT;
+		FrontActor->OnNodePlacedOnSide(EVoxelSide::VS_SIDE_BACK);
 	}
-	if (!GetNode(FWorldPosition(Position.PositionX, Position.PositionY - 1, Position.PositionZ)))
+	if (BackActor)
 	{
-		Result |= EVoxelSide::VS_SIDE_BACK;
+		Result ^= EVoxelSide::VS_SIDE_BACK;
+		BackActor->OnNodePlacedOnSide(EVoxelSide::VS_SIDE_FRONT);
 	}
-	if (!GetNode(FWorldPosition(Position.PositionX - 1, Position.PositionY, Position.PositionZ)))
+	if (LeftActor)
 	{
-		Result |= EVoxelSide::VS_SIDE_LEFT;
+		Result ^= EVoxelSide::VS_SIDE_LEFT;
+		LeftActor->OnNodePlacedOnSide(EVoxelSide::VS_SIDE_RIGHT);
 	}
-	if (!GetNode(FWorldPosition(Position.PositionX + 1, Position.PositionY, Position.PositionZ)))
+	if (RightActor)
 	{
-		Result |= EVoxelSide::VS_SIDE_RIGHT;
+		Result ^= EVoxelSide::VS_SIDE_RIGHT;
+		RightActor->OnNodePlacedOnSide(EVoxelSide::VS_SIDE_LEFT);
 	}
 
 	return Result;

@@ -127,9 +127,15 @@ public:
 		SidesToRender = VS_SIDE_TOP | VS_SIDE_BOTTOM | VS_SIDE_FRONT | VS_SIDE_BACK | VS_SIDE_LEFT | VS_SIDE_RIGHT; //63
 	}
 
-	void SetSidesToRender(unsigned int RenderInfo)
+	FORCEINLINE void SetSidesToRender(unsigned int RenderInfo)
 	{
 		SidesToRender = RenderInfo;
+		MarkRenderStateDirty();
+	}
+
+	FORCEINLINE void ToggleSideToRender(const EVoxelSide& Side)
+	{
+		SidesToRender ^= Side;
 		MarkRenderStateDirty();
 	}
 

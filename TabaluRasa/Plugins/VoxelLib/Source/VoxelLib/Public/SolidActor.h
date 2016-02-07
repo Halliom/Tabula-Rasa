@@ -40,9 +40,9 @@ public:
 		return WorldPosition;
 	}
 
-	virtual void BeginPlay() override;
-
 	void OnNodePlacedAdjacent();
+
+	void OnNodePlacedOnSide(const EVoxelSide& Side);
 
 	UPROPERTY()
 	FWorldPosition WorldPosition;

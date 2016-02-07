@@ -30,9 +30,16 @@ AChunk* AChunkManager::GetChunkFromPosition(FWorldPosition Position)
 
 AChunk* AChunkManager::GetOrCreateChunkFromWorldPosition(AActor* ParentActor, FWorldPosition Position)
 {
-	int32 ChunkX = FMath::CeilToInt((float) Position.PositionX / (float) INITIAL_CHUNK_SIZE) * (Position.PositionX > 0 ? 1 : -1);
-	int32 ChunkY = FMath::CeilToInt((float) Position.PositionY / (float) INITIAL_CHUNK_SIZE) * (Position.PositionY > 0 ? 1 : -1);
-	int32 ChunkZ = FMath::CeilToInt((float) Position.PositionZ / (float) INITIAL_CHUNK_SIZE) * (Position.PositionZ > 0 ? 1 : -1);
+	int32 ChunkX = FMath::CeilToInt((float)Position.PositionX / (float)INITIAL_CHUNK_SIZE) * (Position.PositionX > 0 ? 1 : -1);
+	int32 ChunkY = FMath::CeilToInt((float)Position.PositionY / (float)INITIAL_CHUNK_SIZE) * (Position.PositionY > 0 ? 1 : -1);
+	int32 ChunkZ = FMath::CeilToInt((float)Position.PositionZ / (float)INITIAL_CHUNK_SIZE) * (Position.PositionZ > 0 ? 1 : -1);
+
+	if (Position.PositionX == 0)
+		ChunkX = 1;
+	if (Position.PositionY == 0)
+		ChunkY = 1;
+	if (Position.PositionZ == 0)
+		ChunkZ = 1;
 
 	ChunkPos ChunkPosition = ChunkPos(ChunkX, ChunkY, ChunkZ);
 	AChunk* Chunk = LoadedChunks.FindRef(ChunkPosition); //TODO: Fix crash here

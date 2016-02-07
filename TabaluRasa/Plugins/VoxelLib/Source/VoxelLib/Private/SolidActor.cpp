@@ -44,10 +44,8 @@ ASolidActor::ASolidActor(const FObjectInitializer& ObjectInitializer)
 	Voxel->SetMaterial(0, Material.Object);
 }
 
-void ASolidActor::BeginPlay()
+FORCEINLINE void ASolidActor::OnNodePlacedAdjacent()
 {
-	Super::BeginPlay();
-
 	//TODO: This check should not have to be performed
 	if (ContainingNode)
 	{
@@ -55,11 +53,10 @@ void ASolidActor::BeginPlay()
 	}
 }
 
-void ASolidActor::OnNodePlacedAdjacent()
+FORCEINLINE void ASolidActor::OnNodePlacedOnSide(const EVoxelSide& Side)
 {
-	//TODO: This check should not have to be performed
 	if (ContainingNode)
 	{
-		Voxel->SetSidesToRender(ContainingNode->Chunk->GetRenderFaceMask(LocalChunkPosition));
+		Voxel->ToggleSideToRender(Side);
 	}
 }
