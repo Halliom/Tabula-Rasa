@@ -19,7 +19,7 @@ bool FWorldPosition::IsWithinBounds(const FWorldPosition& Bounds) const
 	return false;
 }
 
-AOctreeNode::AOctreeNode()
+OctreeNode::OctreeNode()
 {
 	Children.SetNumZeroed(8);
 	Size = 0;
@@ -28,7 +28,25 @@ AOctreeNode::AOctreeNode()
 	NodeData = NULL;
 }
 
-void AOctreeNode::InsertNode(const FWorldPosition& InsertPosition, ASolidActor* NewNodeData)
+OctreeNode::~OctreeNode()
+{
+	if (NodeData)
+	{
+		NodeData->Destroy();
+		NodeData = NULL;
+	}
+	if (Children[0] == NULL)
+	{
+		for (auto Child : Children)
+		{
+			delete Child;
+		}
+	}
+	Chunk = NULL;
+	ParentNode = NULL;
+}
+
+void OctreeNode::InsertNode(const FWorldPosition& InsertPosition, ASolidActor* NewNodeData)
 {
 	if (NewNodeData == NULL)
 		return;
@@ -70,7 +88,7 @@ void AOctreeNode::InsertNode(const FWorldPosition& InsertPosition, ASolidActor* 
 				NewCenter.X += HalfSize * (i & 4 ? 0.5f : -0.5f);
 				NewCenter.Y += HalfSize * (i & 2 ? 0.5f : -0.5f);
 				NewCenter.Z += HalfSize * (i & 1 ? 0.5f : -0.5f);
-				Children[i] = new AOctreeNode(this, NewCenter, Chunk, HalfSize);
+				Children[i] = new OctreeNode(this, NewCenter, Chunk, HalfSize);
 			}
 
 			// Insert the new node
@@ -88,7 +106,7 @@ void AOctreeNode::InsertNode(const FWorldPosition& InsertPosition, ASolidActor* 
 	}
 }
 
-FORCEINLINE AOctreeNode* AOctreeNode::GetNodeAtPosition(const FWorldPosition& Position) const
+FORCEINLINE OctreeNode* OctreeNode::GetNodeAtPosition(const FWorldPosition& Position) const
 {
 	if (Children[0] == NULL)
 	{
@@ -96,7 +114,7 @@ FORCEINLINE AOctreeNode* AOctreeNode::GetNodeAtPosition(const FWorldPosition& Po
 		{
 			if ((NodeData->LocalChunkPosition == Position))
 			{
-				return (AOctreeNode*) this;
+				return (OctreeNode*) this;
 			}
 		}
 		return NULL;
@@ -107,7 +125,7 @@ FORCEINLINE AOctreeNode* AOctreeNode::GetNodeAtPosition(const FWorldPosition& Po
 	}
 }
 
-FORCEINLINE AOctreeNode* AOctreeNode::RemoveNodeAtPosition(const FWorldPosition& Position)
+FORCEINLINE OctreeNode* OctreeNode::RemoveNodeAtPosition(const FWorldPosition& Position)
 {
 	if (Children[0] == NULL)
 	{
@@ -143,7 +161,7 @@ AChunk::~AChunk()
 void AChunk::BuildOctree(int Size)
 {
 	int HalfSize = Size >> 1;
-	RootNode = new AOctreeNode(NULL, FVector(HalfSize, HalfSize, HalfSize), this, Size);
+	RootNode = new OctreeNode(NULL, FVector(HalfSize, HalfSize, HalfSize), this, Size);
 }
 
 void AChunk::BeginPlay()
@@ -153,7 +171,7 @@ void AChunk::BeginPlay()
 
 ASolidActor* AChunk::GetNode(const FWorldPosition LocalTreePosition)
 {
-	AOctreeNode* Node = RootNode->GetNodeAtPosition(LocalTreePosition);
+	OctreeNode* Node = RootNode->GetNodeAtPosition(LocalTreePosition);
 	return Node ? Node->NodeData : NULL;
 }
 

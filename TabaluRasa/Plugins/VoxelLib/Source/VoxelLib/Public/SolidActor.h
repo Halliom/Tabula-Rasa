@@ -50,7 +50,7 @@ public:
 	UPROPERTY()
 	FWorldPosition LocalChunkPosition;
 
-	AOctreeNode* ContainingNode;
+	OctreeNode* ContainingNode;
 
 private:
 

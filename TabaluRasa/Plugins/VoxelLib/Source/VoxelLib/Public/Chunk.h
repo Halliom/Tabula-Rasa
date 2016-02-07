@@ -38,14 +38,14 @@ public:
 class ASolidActor;
 
 //TODO: Should this be marked abstract?
-class AOctreeNode
+class OctreeNode
 {
 	friend class AChunk;
 public:
 
-	AOctreeNode();
+	OctreeNode();
 
-	AOctreeNode(AOctreeNode* Parent, FVector Center, AChunk* Chunk, int Size) : 
+	OctreeNode(OctreeNode* Parent, FVector Center, AChunk* Chunk, int Size) : 
 		ParentNode(Parent),
 		Center(Center),
 		Chunk(Chunk),
@@ -55,11 +55,13 @@ public:
 		Children.SetNumZeroed(8);
 	}
 
+	~OctreeNode();
+
 	void InsertNode(const FWorldPosition& InsertPosition, ASolidActor* NodeData);
 
-	AOctreeNode* GetNodeAtPosition(const FWorldPosition& Position) const;
+	OctreeNode* GetNodeAtPosition(const FWorldPosition& Position) const;
 
-	AOctreeNode* RemoveNodeAtPosition(const FWorldPosition& Position);
+	OctreeNode* RemoveNodeAtPosition(const FWorldPosition& Position);
 
 	inline int GetOctantForPosition(const FWorldPosition& Position) const
 	{
@@ -83,18 +85,18 @@ public:
 
 private:
 
-	AOctreeNode* RemoveChild(AOctreeNode* Node)
+	OctreeNode* RemoveChild(OctreeNode* Node)
 	{
 		int32 Index = Children.Find(Node);
-		AOctreeNode* Removed = Children[Index];
+		OctreeNode* Removed = Children[Index];
 		Children.RemoveAt(Index, 1, false);
 
 		return Removed;
 	}
 
-	AOctreeNode* ParentNode;
+	OctreeNode* ParentNode;
 
-	TArray<AOctreeNode*, TInlineAllocator<8>> Children;
+	TArray<OctreeNode*, TInlineAllocator<8>> Children;
 
 };
 
@@ -142,5 +144,5 @@ private:
 	/**
 	 * The root node of the tree
 	 */
-	AOctreeNode* RootNode;
+	OctreeNode* RootNode;
 };
