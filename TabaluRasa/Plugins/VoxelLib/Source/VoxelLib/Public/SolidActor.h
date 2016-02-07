@@ -19,12 +19,12 @@ public:
 	}
 
 	UFUNCTION(Category = "Solid", BlueprintCallable)
-	static ASolidActor* SpawnSolidAt(FWorldPosition SpawnPosition);
+	static ASolidActor* SpawnSolidAt(AActor* ParentActor, FWorldPosition SpawnPosition);
 	
 	UFUNCTION(Category = "Solid", BlueprintCallable)
-	static ASolidActor* SpawnSolid(int32 X, int32 Y, int32 Z)
+	static ASolidActor* SpawnSolid(AActor* ParentActor, int32 X, int32 Y, int32 Z)
 	{
-		return ASolidActor::SpawnSolidAt(FWorldPosition(X, Y, Z));
+		return ASolidActor::SpawnSolidAt(ParentActor, FWorldPosition(X, Y, Z));
 	}
 
 	UFUNCTION(Category = "Solid", BlueprintCallable)

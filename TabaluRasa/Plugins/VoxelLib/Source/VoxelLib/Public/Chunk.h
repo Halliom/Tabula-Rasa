@@ -45,11 +45,15 @@ public:
 
 	AOctreeNode();
 
-	AOctreeNode(AOctreeNode* Parent, FVector Center, AChunk* Chunk) : 
+	AOctreeNode(AOctreeNode* Parent, FVector Center, AChunk* Chunk, int Size) : 
 		ParentNode(Parent),
 		Center(Center),
-		Chunk(Chunk)
-	{}
+		Chunk(Chunk),
+		Size(Size),
+		NodeData(NULL)
+	{
+		Children.SetNumZeroed(8);
+	}
 
 	void InsertNode(const FWorldPosition& InsertPosition, ASolidActor* NodeData);
 
@@ -69,16 +73,12 @@ public:
 		return Result;
 	}
 
-	UPROPERTY(Category = "World|Chunk", BlueprintReadOnly)
 	ASolidActor* NodeData;
 
-	UPROPERTY(Category = "World|Chunk", BlueprintReadOnly)
 	int Size;
 
-	UPROPERTY(Category = "World|Chunk", BlueprintReadOnly)
 	FVector Center;
 
-	UPROPERTY(Category = "World|Chunk", BlueprintReadOnly)
 	AChunk* Chunk;
 
 private:
@@ -143,5 +143,4 @@ private:
 	 * The root node of the tree
 	 */
 	AOctreeNode* RootNode;
-
 };

@@ -28,7 +28,7 @@ AChunk* AChunkManager::GetChunkFromPosition(FWorldPosition Position)
 	return *(LoadedChunks.Find(ChunkPos));
 }
 
-AChunk* AChunkManager::GetOrCreateChunkFromWorldPosition(FWorldPosition Position)
+AChunk* AChunkManager::GetOrCreateChunkFromWorldPosition(AActor* ParentActor, FWorldPosition Position)
 {
 	if (Position.PositionX != 0 && Position.PositionY != 0 && Position.PositionZ != 0)
 	{
@@ -44,7 +44,7 @@ AChunk* AChunkManager::GetOrCreateChunkFromWorldPosition(FWorldPosition Position
 		}
 		else
 		{
-			Chunk = UGameplayStatics::GetGameMode(this)->GetWorld()->SpawnActor<AChunk>();
+			Chunk = ParentActor->GetWorld()->SpawnActor<AChunk>();
 			if (Chunk)
 			{
 				Chunk->ChunkPosition = FWorldPosition(ChunkX * INITIAL_CHUNK_SIZE, ChunkY * INITIAL_CHUNK_SIZE, ChunkZ * INITIAL_CHUNK_SIZE);

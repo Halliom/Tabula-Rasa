@@ -21,10 +21,18 @@ bool FWorldPosition::IsWithinBounds(const FWorldPosition& Bounds) const
 
 AOctreeNode::AOctreeNode()
 {
+	Children.SetNumZeroed(8);
+	Size = 0;
+	Center = FVector::ZeroVector;
+	Chunk = NULL;
+	NodeData = NULL;
 }
 
-void AOctreeNode::InsertNode(const FWorldPosition& InsertPosition, ASolidActor* NodeData)
+void AOctreeNode::InsertNode(const FWorldPosition& InsertPosition, ASolidActor* NewNodeData)
 {
+	if (NewNodeData == NULL)
+		return;
+
 	int HalfSize = Size >> 1;
 
 	// This tests whether we are a "leaf node" or not. A leaf node doesn't contain
@@ -35,9 +43,9 @@ void AOctreeNode::InsertNode(const FWorldPosition& InsertPosition, ASolidActor* 
 	{
 		// No worries this node is empty, just set the data. Or this is as far down
 		// the tree as we will go and then we will have to replace the
-		if (NodeData == NULL || HalfSize == 0)
+		if (this->NodeData == NULL || HalfSize == 0)
 		{
-			this->NodeData = NodeData;
+			this->NodeData = NewNodeData;
 			this->NodeData->LocalChunkPosition = InsertPosition;
 			this->NodeData->ContainingNode = this;
 
@@ -62,11 +70,11 @@ void AOctreeNode::InsertNode(const FWorldPosition& InsertPosition, ASolidActor* 
 				NewCenter.X += HalfSize * (i & 4 ? 0.5f : -0.5f);
 				NewCenter.Y += HalfSize * (i & 2 ? 0.5f : -0.5f);
 				NewCenter.Z += HalfSize * (i & 1 ? 0.5f : -0.5f);
-				Children[i] = new AOctreeNode(this, NewCenter, Chunk);
+				Children[i] = new AOctreeNode(this, NewCenter, Chunk, HalfSize);
 			}
 
 			// Insert the new node
-			Children[GetOctantForPosition(InsertPosition)]->InsertNode(InsertPosition, NodeData);
+			Children[GetOctantForPosition(InsertPosition)]->InsertNode(InsertPosition, NewNodeData);
 
 			// (Re)Insert the old node
 			Children[GetOctantForPosition(OldNodeData->LocalChunkPosition)]->InsertNode(OldNodeData->LocalChunkPosition, OldNodeData);
@@ -84,14 +92,14 @@ FORCEINLINE AOctreeNode* AOctreeNode::GetNodeAtPosition(const FWorldPosition& Po
 {
 	if (Children[0] == NULL)
 	{
-		if (NodeData && (NodeData->LocalChunkPosition == Position))
+		if (NodeData)
 		{
-			return (AOctreeNode*) this;
+			if ((NodeData->LocalChunkPosition == Position))
+			{
+				return (AOctreeNode*) this;
+			}
 		}
-		else
-		{
-			return NULL;
-		}
+		return NULL;
 	}
 	else
 	{
@@ -134,14 +142,8 @@ AChunk::~AChunk()
 
 void AChunk::BuildOctree(int Size)
 {
-	RootNode = new AOctreeNode();
-
 	int HalfSize = Size >> 1;
-	RootNode->Center = FVector(HalfSize, HalfSize, HalfSize);
-	//TODO: Set the world position of the node
-
-	RootNode->Chunk = this;
-	RootNode->Size = Size;
+	RootNode = new AOctreeNode(NULL, FVector(HalfSize, HalfSize, HalfSize), this, Size);
 }
 
 void AChunk::BeginPlay()
@@ -157,7 +159,15 @@ ASolidActor* AChunk::GetNode(const FWorldPosition LocalTreePosition)
 
 void AChunk::InsertIntoChunk(FWorldPosition LocalTreePosition, ASolidActor* Node)
 {
-	RootNode->InsertNode(LocalTreePosition, Node);
+	if (RootNode)
+	{
+		RootNode->InsertNode(LocalTreePosition, Node);
+	}
+	else
+	{
+		BuildOctree(INITIAL_CHUNK_SIZE);
+		RootNode->InsertNode(LocalTreePosition, Node);
+	}
 }
 
 FORCEINLINE TArray<ASolidActor*, TInlineAllocator<6>> AChunk::GetSurroundingBlocks(const FWorldPosition& Position)
@@ -176,7 +186,7 @@ FORCEINLINE TArray<ASolidActor*, TInlineAllocator<6>> AChunk::GetSurroundingBloc
 
 unsigned int AChunk::GetRenderFaceMask(const FWorldPosition& Position)
 {
-	unsigned int Result;
+	unsigned int Result = 0;
 
 	if (!GetNode(FWorldPosition(Position.PositionX, Position.PositionY, Position.PositionZ + 1)))
 	{

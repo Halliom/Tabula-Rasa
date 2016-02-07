@@ -58,7 +58,7 @@ public:
 
 	void AddChunk(FWorldPosition ChunkPosition, AChunk* Chunk);
 
-	AChunk* GetOrCreateChunkFromWorldPosition(FWorldPosition Position);
+	AChunk* GetOrCreateChunkFromWorldPosition(AActor* ParentActor, FWorldPosition Position);
 
 	bool DeleteChunkAtPosition(FWorldPosition ChunkPosition);
 
