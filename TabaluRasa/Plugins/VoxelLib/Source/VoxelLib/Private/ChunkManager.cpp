@@ -30,33 +30,29 @@ AChunk* AChunkManager::GetChunkFromPosition(FWorldPosition Position)
 
 AChunk* AChunkManager::GetOrCreateChunkFromWorldPosition(AActor* ParentActor, FWorldPosition Position)
 {
-	if (Position.PositionX != 0 && Position.PositionY != 0 && Position.PositionZ != 0)
-	{
-		int32 ChunkX = FMath::CeilToInt((float) Position.PositionX / (float) INITIAL_CHUNK_SIZE) * (Position.PositionX > 0 ? 1 : -1);
-		int32 ChunkY = FMath::CeilToInt((float) Position.PositionY / (float) INITIAL_CHUNK_SIZE) * (Position.PositionY > 0 ? 1 : -1);
-		int32 ChunkZ = FMath::CeilToInt((float) Position.PositionZ / (float) INITIAL_CHUNK_SIZE) * (Position.PositionZ > 0 ? 1 : -1);
+	int32 ChunkX = FMath::CeilToInt((float) Position.PositionX / (float) INITIAL_CHUNK_SIZE) * (Position.PositionX > 0 ? 1 : -1);
+	int32 ChunkY = FMath::CeilToInt((float) Position.PositionY / (float) INITIAL_CHUNK_SIZE) * (Position.PositionY > 0 ? 1 : -1);
+	int32 ChunkZ = FMath::CeilToInt((float) Position.PositionZ / (float) INITIAL_CHUNK_SIZE) * (Position.PositionZ > 0 ? 1 : -1);
 
-		ChunkPos ChunkPosition = ChunkPos(ChunkX, ChunkY, ChunkZ);
-		AChunk* Chunk = LoadedChunks.FindRef(ChunkPosition); //TODO: Fix crash here
+	ChunkPos ChunkPosition = ChunkPos(ChunkX, ChunkY, ChunkZ);
+	AChunk* Chunk = LoadedChunks.FindRef(ChunkPosition); //TODO: Fix crash here
+	if (Chunk)
+	{
+		return Chunk;
+	}
+	else
+	{
+		Chunk = ParentActor->GetWorld()->SpawnActor<AChunk>();
 		if (Chunk)
 		{
+			Chunk->ChunkPosition = FWorldPosition(ChunkX * INITIAL_CHUNK_SIZE, ChunkY * INITIAL_CHUNK_SIZE, ChunkZ * INITIAL_CHUNK_SIZE);
+
+			// Add it (save it) to the LoadedChunks map
+			LoadedChunks.Add(ChunkPosition, Chunk);
 			return Chunk;
 		}
-		else
-		{
-			Chunk = ParentActor->GetWorld()->SpawnActor<AChunk>();
-			if (Chunk)
-			{
-				Chunk->ChunkPosition = FWorldPosition(ChunkX * INITIAL_CHUNK_SIZE, ChunkY * INITIAL_CHUNK_SIZE, ChunkZ * INITIAL_CHUNK_SIZE);
-
-				// Add it (save it) to the LoadedChunks map
-				LoadedChunks.Add(ChunkPosition, Chunk);
-
-				return Chunk;
-			}
-		}
+		return NULL;
 	}
-	return NULL;
 }
 
 void AChunkManager::AddChunk(FWorldPosition ChunkPosition, AChunk* Chunk)
