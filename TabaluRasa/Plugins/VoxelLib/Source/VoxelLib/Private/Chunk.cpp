@@ -79,7 +79,12 @@ OctreeNode * AChunk::GetNode(const FWorldPosition& Position, OctreeNode* Node)
 		return NULL;
 	if (Node->Children != 0)
 	{
-		return GetNode(Position, Tree[(Node->Location << 3) | Node->GetOctantForPosition(Position)]);
+		uint32 Octant = Node->GetOctantForPosition(Position);
+
+		if ((Node->Children >> Octant) & 1)
+		{
+			return GetNode(Position, Tree[(Node->Location << 3) | Octant]);
+		}
 	}
 	else
 	{
@@ -93,6 +98,7 @@ OctreeNode * AChunk::GetNode(const FWorldPosition& Position, OctreeNode* Node)
 
 void AChunk::RemoveNode(const FWorldPosition& Position, OctreeNode* Node)
 {
+	//TODO: Needs complete rewrite to sparse voxel octree
 	OctreeNode* NodeToBeDeleted = GetNode(Position, Node);
 	if (NodeToBeDeleted)
 	{
@@ -121,6 +127,13 @@ void AChunk::InsertNode(const FWorldPosition& Position, ASolidActor* NewVoxel, O
 			Node->Position = Position;
 			Node->NodeData->Chunk = this;
 			Node->NodeData->OnNodePlacedAdjacent();
+
+			if (!Node->Location == 1) // The RootNode doesnt have a parent
+			{
+				// Set the children of the parent to this octant
+				uint32 Octant = Node->Location & 7; //0b111
+				Tree[(Node->Location >> 3)]->Children |= (1 << (Octant + 1));
+			}
 		}
 		else
 		{
@@ -130,24 +143,51 @@ void AChunk::InsertNode(const FWorldPosition& Position, ASolidActor* NewVoxel, O
 			Node->NodeData = NULL;
 
 			FWorldPosition OldPosition = Node->Position;
+			uint32 OldNodeOctant = Node->GetOctantForPosition(OldPosition);
+			uint32 NewNodeOctant = Node->GetOctantForPosition(Position);
 
-			for (uint32_t i = 0; i < 8; ++i)
+			if (OldNodeOctant == NewNodeOctant)
 			{
-				OctreeNode* SplitNode = new OctreeNode();
-				SplitNode->Location = (Node->Location << 3) | i;
-				SplitNode->Size = HalfSize;
-				Tree.Add(SplitNode->Location, SplitNode);
+				// Create one child node for this node and let the recursion handle
+				// the rest of the splitting
+				OctreeNode* OldNode = new OctreeNode();
+				OldNode->Location = (Node->Location << 3) | OldNodeOctant;
+				OldNode->Size = HalfSize;
+				Tree.Add(OldNode->Location, OldNode);
+
+				Node->Children |= (1 << (OldNodeOctant + 1));
+
+				InsertNode(OldPosition, OldData, OldNode);
+				InsertNode(Position, NewVoxel, OldNode);
 			}
+			else
+			{
+				OctreeNode* OldNode = new OctreeNode();
+				OldNode->Location = (Node->Location << 3) | OldNodeOctant;
+				OldNode->Size = HalfSize;
+				Tree.Add(OldNode->Location, OldNode);
 
-			Node->Children = 255;
+				OctreeNode* NewNode = new OctreeNode();
+				NewNode->Location = (Node->Location << 3) | NewNodeOctant;
+				NewNode->Size = HalfSize;
+				Tree.Add(NewNode->Location, NewNode);
 
-			InsertNode(OldPosition, OldData, Tree[(Node->Location << 3) | Node->GetOctantForPosition(OldPosition)]);
-			InsertNode(Position, NewVoxel, Tree[(Node->Location << 3) | Node->GetOctantForPosition(Position)]);
+				Node->Children |= (1 << (OldNodeOctant + 1));
+				Node->Children |= (1 << (NewNodeOctant + 1));
+
+				InsertNode(OldPosition, OldData, OldNode);
+				InsertNode(Position, NewVoxel, NewNode);
+			}
 		}
 	}
 	else
 	{
-		InsertNode(Position, NewVoxel, Tree[(Node->Location << 3) | Node->GetOctantForPosition(Position)]);
+		uint32 NodeOctant = Node->GetOctantForPosition(Position);
+
+		if ((Node->Children >> NodeOctant) & 1) // It has a child in that octant
+		{
+			InsertNode(Position, NewVoxel, Tree[(Node->Location << 3) | NodeOctant]);
+		}
 	}
 }
 
