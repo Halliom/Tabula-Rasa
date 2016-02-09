@@ -12,7 +12,7 @@ ASolidActor* ASolidActor::SpawnSolidAt(AActor* ParentActor, FWorldPosition Spawn
 	if (Chunk)
 	{
 		FTransform SpawnTransform;
-		SpawnTransform.SetLocation(FVector(SpawnPosition.PositionX * 50.0f, SpawnPosition.PositionY * 50.0f, SpawnPosition.PositionZ * 50.0f + 25.0f));
+		SpawnTransform.SetLocation(FVector(SpawnPosition.PositionX * 50.0f, SpawnPosition.PositionY * 50.0f, SpawnPosition.PositionZ * 50.0f));
 		ASolidActor* SpawnedActor = Cast<ASolidActor>(ParentActor->GetWorld()->SpawnActor(ASolidActor::StaticClass(), &SpawnTransform));
 
 		SpawnedActor->WorldPosition = SpawnPosition;
@@ -21,7 +21,7 @@ ASolidActor* ASolidActor::SpawnSolidAt(AActor* ParentActor, FWorldPosition Spawn
 			SpawnPosition.PositionX % INITIAL_CHUNK_SIZE,
 			SpawnPosition.PositionY % INITIAL_CHUNK_SIZE,
 			SpawnPosition.PositionZ % INITIAL_CHUNK_SIZE);
-		Chunk->InsertIntoChunk(LocalPosition, SpawnedActor);
+		Chunk->InsertNode(LocalPosition, SpawnedActor);
 
 		return SpawnedActor;
 	}
@@ -47,15 +47,15 @@ ASolidActor::ASolidActor(const FObjectInitializer& ObjectInitializer)
 FORCEINLINE void ASolidActor::OnNodePlacedAdjacent()
 {
 	//TODO: This check should not have to be performed
-	if (ContainingNode)
+	if (Chunk)
 	{
-		Voxel->SetSidesToRender(ContainingNode->Chunk->GetRenderFaceMask(LocalChunkPosition));
+		Voxel->SetSidesToRender(Chunk->GetRenderFaceMask(LocalChunkPosition));
 	}
 }
 
 FORCEINLINE void ASolidActor::OnNodePlacedOnSide(const EVoxelSide& Side)
 {
-	if (ContainingNode)
+	if (Chunk)
 	{
 		Voxel->ToggleSideToRender(Side);
 	}

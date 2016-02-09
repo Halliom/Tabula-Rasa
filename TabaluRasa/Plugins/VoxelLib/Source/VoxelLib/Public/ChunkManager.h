@@ -51,6 +51,8 @@ public:
 
 	AChunkManager(const FObjectInitializer& ObjectIntiailizer);
 
+	~AChunkManager();
+
 	static AChunkManager* GetStaticChunkManager();
 
 	//UPROPERTY(Category = "World|Chunk", BlueprintCallable)

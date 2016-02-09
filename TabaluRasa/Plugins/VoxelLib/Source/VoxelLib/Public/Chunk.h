@@ -40,67 +40,38 @@ class ASolidActor;
 //TODO: Should this be marked abstract?
 class OctreeNode
 {
-	friend class AChunk;
 public:
 
 	OctreeNode();
 
-	OctreeNode(OctreeNode* Parent, FVector Center, AChunk* Chunk, int Size) : 
-		ParentNode(Parent),
-		Center(Center),
-		Chunk(Chunk),
-		Size(Size),
-		NodeData(NULL)
-	{
-		Children.SetNumZeroed(8);
-	}
-
 	~OctreeNode();
-
-	void InsertNode(const FWorldPosition& InsertPosition, ASolidActor* NodeData);
-
-	OctreeNode* GetNodeAtPosition(const FWorldPosition& Position) const;
-
-	OctreeNode* RemoveNodeAtPosition(const FWorldPosition& Position);
 
 	inline int GetOctantForPosition(const FWorldPosition& Position) const
 	{
 		int Result = 0;
-		if (Position.PositionX >= Center.X) // We are on the high X values
+		int32 HalfSize = Size >> 1;
+		if (Position.PositionX >= HalfSize) // We are on the high X values
 			Result |= 4;
-		if (Position.PositionY >= Center.Y) // We are on the high Y values
+		if (Position.PositionY >= HalfSize) // We are on the high Y values
 			Result |= 2;
-		if (Position.PositionZ >= Center.Z)
+		if (Position.PositionZ >= HalfSize)
 			Result |= 1;
 		return Result;
 	}
 
 	ASolidActor* NodeData;
 
-	int Size;
+	uint32 Location;
 
-	FVector Center;
+	uint32 Size;
 
-	AChunk* Chunk;
+	uint8 Children;
 
-private:
-
-	OctreeNode* RemoveChild(OctreeNode* Node)
-	{
-		int32 Index = Children.Find(Node);
-		OctreeNode* Removed = Children[Index];
-		Children.RemoveAt(Index, 1, false);
-
-		return Removed;
-	}
-
-	OctreeNode* ParentNode;
-
-	TArray<OctreeNode*, TInlineAllocator<8>> Children;
+	FWorldPosition Position;
 
 };
 
-UCLASS()
+UCLASS(NotPlaceable)
 class VOXELLIB_API AChunk : public AActor
 {
 	GENERATED_BODY()
@@ -116,28 +87,39 @@ public:
 	 */
 	~AChunk();
 
-	//TODO: These need to be inlined or else...
-	UFUNCTION(Category = "World|Chunk", BlueprintCallable)
-	ASolidActor* GetNode(const FWorldPosition LocalTreePosition);
+	//OctreeNode* GetNodeAt(uint32_t Position);
 
-	UFUNCTION(Category = "World|Chunk", BlueprintCallable)
-	void InsertIntoChunk(FWorldPosition LocalTreePosition, ASolidActor* Node);
+	OctreeNode* GetNode(const FWorldPosition& Position, OctreeNode* Node);
 
-	TArray<ASolidActor*, TInlineAllocator<6>> GetSurroundingBlocks(const FWorldPosition& Position);
+	OctreeNode* GetNode(const FWorldPosition& Position)
+	{
+		return GetNode(Position, RootNode);
+	}
+
+	ASolidActor* GetNodeData(const FWorldPosition& Position)
+	{
+		OctreeNode* Node = GetNode(Position, RootNode);
+		return Node ? Node->NodeData : NULL;
+	}
+
+	void RemoveNode(const FWorldPosition& Position, OctreeNode* Node);
+
+	void RemoveNode(const FWorldPosition& Position)
+	{
+		RemoveNode(Position, RootNode);
+	}
+
+	void InsertNode(const FWorldPosition& Position, ASolidActor* NewVoxel, OctreeNode* Node);
+
+	void InsertNode(const FWorldPosition& Position, ASolidActor* NewVoxel)
+	{
+		InsertNode(Position, NewVoxel, RootNode);
+	}
 
 	unsigned int GetRenderFaceMask(const FWorldPosition& Position);
 
-	virtual void BeginPlay() override;
-
 	UPROPERTY(Category = "World|Chunk", BlueprintReadOnly)
 	FWorldPosition ChunkPosition;
-
-private:
-
-	/** 
-	 * Builds the octree
-	 */
-	void BuildOctree(int Size);
 
 private:
 
@@ -145,4 +127,10 @@ private:
 	 * The root node of the tree
 	 */
 	OctreeNode* RootNode;
+
+	TMap<uint32, OctreeNode*> Tree;
+
+	uint32 SizeX;
+	uint32 SizeY;
+	uint32 SizeZ;
 };

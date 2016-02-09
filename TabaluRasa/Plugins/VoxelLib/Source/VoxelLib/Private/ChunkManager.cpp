@@ -9,11 +9,30 @@ AChunkManager* AChunkManager::GetStaticChunkManager()
 	return AChunkManager::ChunkManager;
 }
 
-AChunkManager::AChunkManager(const FObjectInitializer& ObjectIntiailizer)
+AChunkManager::AChunkManager(const FObjectInitializer& ObjectInitializer) : 
+	Super(ObjectInitializer)
 {
 	if (AChunkManager::ChunkManager == NULL)
 	{
 		AChunkManager::ChunkManager = this;
+	}
+}
+
+AChunkManager::~AChunkManager()
+{
+	for (auto It = LoadedChunks.CreateConstIterator(); It; ++It)
+	{
+		AChunk* RemovedChunk = NULL;
+		LoadedChunks.RemoveAndCopyValue((*It).Key, RemovedChunk);
+		if (RemovedChunk)
+		{
+			delete RemovedChunk;
+		}
+	}
+	LoadedChunks.Empty();
+	if (AChunkManager::ChunkManager == this)
+	{
+		AChunkManager::ChunkManager = NULL;
 	}
 }
 
@@ -42,7 +61,7 @@ AChunk* AChunkManager::GetOrCreateChunkFromWorldPosition(AActor* ParentActor, FW
 		ChunkZ = 1;
 
 	ChunkPos ChunkPosition = ChunkPos(ChunkX, ChunkY, ChunkZ);
-	AChunk* Chunk = LoadedChunks.FindRef(ChunkPosition); //TODO: Fix crash here
+	AChunk* Chunk = LoadedChunks.FindRef(ChunkPosition);
 	if (Chunk)
 	{
 		return Chunk;
@@ -52,7 +71,7 @@ AChunk* AChunkManager::GetOrCreateChunkFromWorldPosition(AActor* ParentActor, FW
 		Chunk = ParentActor->GetWorld()->SpawnActor<AChunk>();
 		if (Chunk)
 		{
-			Chunk->ChunkPosition = FWorldPosition(ChunkX * INITIAL_CHUNK_SIZE, ChunkY * INITIAL_CHUNK_SIZE, ChunkZ * INITIAL_CHUNK_SIZE);
+			Chunk->ChunkPosition = FWorldPosition(ChunkX, ChunkY, ChunkZ);
 
 			// Add it (save it) to the LoadedChunks map
 			LoadedChunks.Add(ChunkPosition, Chunk);
