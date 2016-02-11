@@ -4,7 +4,14 @@
 
 FPrimitiveSceneProxy* UVoxelMeshComponent::CreateSceneProxy()
 {
-	return new FVoxelSceneProxy(this);
+	if (SidesToRender != 0)
+	{
+		return new FVoxelSceneProxy(this);
+	}
+	else
+	{
+		return NULL;
+	}
 }
 
 int32 UVoxelMeshComponent::GetNumMaterials() const

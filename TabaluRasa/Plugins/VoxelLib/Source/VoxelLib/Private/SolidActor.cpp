@@ -46,17 +46,10 @@ ASolidActor::ASolidActor(const FObjectInitializer& ObjectInitializer)
 
 FORCEINLINE void ASolidActor::OnNodePlacedAdjacent()
 {
-	//TODO: This check should not have to be performed
-	if (Chunk)
-	{
-		Voxel->SetSidesToRender(Chunk->GetRenderFaceMask(LocalChunkPosition));
-	}
+	Voxel->SetSidesToRender(Chunk->GetRenderFaceMask(LocalChunkPosition));
 }
 
 FORCEINLINE void ASolidActor::OnNodePlacedOnSide(const EVoxelSide& Side)
 {
-	if (Chunk)
-	{
-		Voxel->ToggleSideToRender(Side);
-	}
+	Voxel->RemoveSideToRender(Side);
 }

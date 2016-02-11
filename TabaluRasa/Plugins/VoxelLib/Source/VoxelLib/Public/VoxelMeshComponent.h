@@ -133,10 +133,13 @@ public:
 		MarkRenderStateDirty();
 	}
 
-	FORCEINLINE void ToggleSideToRender(const EVoxelSide& Side)
+	FORCEINLINE void RemoveSideToRender(const EVoxelSide& Side)
 	{
-		SidesToRender ^= Side;
-		MarkRenderStateDirty();
+		if ((SidesToRender & Side) == Side) // If the side is set we unset it
+		{
+			SidesToRender ^= Side;
+			MarkRenderStateDirty();
+		}
 	}
 
 private:

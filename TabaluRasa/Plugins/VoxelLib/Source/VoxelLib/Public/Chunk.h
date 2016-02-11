@@ -29,9 +29,16 @@ public:
 
 	bool IsWithinBounds(const FWorldPosition& Bounds) const;
 
-	bool operator==(const FWorldPosition& OtherPosition)
+	FORCEINLINE bool operator==(const FWorldPosition& OtherPosition)
 	{
 		return PositionX == OtherPosition.PositionX && PositionY == OtherPosition.PositionY && PositionZ == OtherPosition.PositionZ;
+	}
+
+	FORCEINLINE void operator += (const uint32& Operand)
+	{
+		this->PositionX += Operand;
+		this->PositionY += Operand;
+		this->PositionZ += Operand;
 	}
 };
 
@@ -50,11 +57,11 @@ public:
 	{
 		int Result = 0;
 		int32 HalfSize = Size >> 1;
-		if (Position.PositionX >= HalfSize) // We are on the high X values
+		if (Position.PositionX >= Center.PositionX) // We are on the high X values
 			Result |= 4;
-		if (Position.PositionY >= HalfSize) // We are on the high Y values
+		if (Position.PositionY >= Center.PositionY) // We are on the high Y values
 			Result |= 2;
-		if (Position.PositionZ >= HalfSize)
+		if (Position.PositionZ >= Center.PositionZ)
 			Result |= 1;
 		return Result;
 	}
@@ -68,6 +75,8 @@ public:
 	uint8 Children;
 
 	FWorldPosition Position;
+
+	FWorldPosition Center;
 
 };
 
@@ -109,7 +118,7 @@ public:
 		RemoveNode(Position, RootNode);
 	}
 
-	void InsertNode(const FWorldPosition& Position, ASolidActor* NewVoxel, OctreeNode* Node);
+	void InsertNode(const FWorldPosition& Position, ASolidActor* NewVoxel, OctreeNode* Node, bool IsNew = true);
 
 	void InsertNode(const FWorldPosition& Position, ASolidActor* NewVoxel)
 	{
@@ -130,7 +139,5 @@ private:
 
 	TMap<uint32, OctreeNode*> Tree;
 
-	uint32 SizeX;
-	uint32 SizeY;
-	uint32 SizeZ;
+	FWorldPosition Extent;
 };
