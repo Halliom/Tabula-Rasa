@@ -5,20 +5,6 @@
 #include "SolidActor.h"
 #include "Chunk.h"
 
-bool FWorldPosition::IsWithinBounds(const FWorldPosition& Bounds) const
-{
-	if ( (this->PositionX < Bounds.PositionX) && (this->PositionX >= 0) &&
-		 (this->PositionY < Bounds.PositionY) && (this->PositionY >= 0) &&
-		 (this->PositionZ < Bounds.PositionZ) && (this->PositionZ >= 0))
-	{
-		return true;
-	}
-	else
-	{
-		return false;
-	}
-}
-
 OctreeNode::OctreeNode() : 
 	Size(0),
 	NodeData(NULL),
@@ -150,9 +136,15 @@ void AChunk::InsertNode(const FWorldPosition& Position, ASolidActor* NewVoxel, O
 
 			if (Node->Location != 1) // The RootNode doesnt have a parent
 			{
+				OctreeNode* ParentNode = Tree[(Node->Location >> 3)];
+
 				// Set the children of the parent to this octant
 				uint32 Octant = Node->Location & 7; //0b111
-				Tree[(Node->Location >> 3)]->Children |= (1 << Octant);
+				ParentNode->Children |= (1 << Octant);
+
+				LastPlacedParentNode = ParentNode;
+				LastPlacedParentNodeBoxMin = ParentNode->Center - Node->Size;
+				LastPlacedParentNodeBoxMax = ParentNode->Center + Node->Size;
 			}
 		}
 		else

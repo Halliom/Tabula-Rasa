@@ -27,18 +27,62 @@ public:
 	UPROPERTY(Category = "Position", EditDefaultsOnly)
 	int32 PositionZ;
 
-	bool IsWithinBounds(const FWorldPosition& Bounds) const;
+	FORCEINLINE bool IsWithinBounds(const FWorldPosition& Bounds) const
+	{
+		if ((this->PositionX < Bounds.PositionX) && (this->PositionX >= 0) &&
+			(this->PositionY < Bounds.PositionY) && (this->PositionY >= 0) &&
+			(this->PositionZ < Bounds.PositionZ) && (this->PositionZ >= 0))
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+
+	FORCEINLINE bool IsContainedWithin(const FWorldPosition& Min, const FWorldPosition& Max) const
+	{
+		if ((this->PositionX < Max.PositionX) && (this->PositionX >= Min.PositionX) &&
+			(this->PositionY < Max.PositionY) && (this->PositionY >= Min.PositionY) &&
+			(this->PositionZ < Max.PositionZ) && (this->PositionZ >= Min.PositionZ))
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
 
 	FORCEINLINE bool operator==(const FWorldPosition& OtherPosition)
 	{
 		return PositionX == OtherPosition.PositionX && PositionY == OtherPosition.PositionY && PositionZ == OtherPosition.PositionZ;
 	}
 
-	FORCEINLINE void operator += (const uint32& Operand)
+	FORCEINLINE void operator += (const int32& Operand)
 	{
 		this->PositionX += Operand;
 		this->PositionY += Operand;
 		this->PositionZ += Operand;
+	}
+
+	FORCEINLINE FWorldPosition operator+(const int32& Operand)
+	{
+		FWorldPosition Result = FWorldPosition(*this);
+		Result.PositionX += Operand;
+		Result.PositionY += Operand;
+		Result.PositionZ += Operand;
+		return Result;
+	}
+
+	FORCEINLINE FWorldPosition operator-(const int32& Operand)
+	{
+		FWorldPosition Result = FWorldPosition(*this);
+		Result.PositionX -= Operand;
+		Result.PositionY -= Operand;
+		Result.PositionZ -= Operand;
+		return Result;
 	}
 };
 
@@ -122,7 +166,14 @@ public:
 
 	void InsertNode(const FWorldPosition& Position, ASolidActor* NewVoxel)
 	{
-		InsertNode(Position, NewVoxel, RootNode);
+		if (LastPlacedParentNode && Position.IsContainedWithin(LastPlacedParentNodeBoxMin, LastPlacedParentNodeBoxMax))
+		{
+			InsertNode(Position, NewVoxel, LastPlacedParentNode);
+		}
+		else
+		{
+			InsertNode(Position, NewVoxel, RootNode);
+		}
 	}
 
 	void FindAdjacentNodes(const FWorldPosition& Position, OctreeNode* Node, TArray<ASolidActor*>& OutArray);
@@ -138,6 +189,11 @@ private:
 	 * The root node of the tree
 	 */
 	OctreeNode* RootNode;
+
+	FWorldPosition LastPlacedParentNodeBoxMin;
+	FWorldPosition LastPlacedParentNodeBoxMax;
+
+	OctreeNode* LastPlacedParentNode;
 
 	TMap<uint32, OctreeNode*> Tree;
 
