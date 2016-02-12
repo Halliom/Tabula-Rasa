@@ -87,19 +87,24 @@ FORCEINLINE OctreeNode * AChunk::GetNode(const FWorldPosition& Position, OctreeN
 	return NULL;
 }
 
-void AChunk::RemoveNode(const FWorldPosition& Position, OctreeNode* Node)
+void AChunk::RemoveNode(const FWorldPosition& Position, OctreeNode* Node, bool IsUpwardsRecursive)
 {
 	//TODO: Needs complete rewrite to sparse voxel octree
 	OctreeNode* NodeToBeDeleted = GetNode(Position, Node);
 	if (NodeToBeDeleted)
 	{
-		if (NodeToBeDeleted->Children != 0)
+		if (NodeToBeDeleted->Children != 0 && !IsUpwardsRecursive)
 		{
-			// The node is now an empty node that just contains its children
-			delete NodeToBeDeleted->NodeData;
+			// Here we need to visit every child and add them to a list to then re-add them
+			// to the tree once this node is gone
 		}
-		else
+		else if (Node->Location != 1)
 		{
+			uint32 NodeOctant = Node->Location & 7;
+			OctreeNode* ParentNode = Tree[(Node->Location >> 3)];
+			ParentNode->Children ^= (1 << NodeOctant); // Remove from parents children
+			RemoveNode(ParentNode->Position, ParentNode, true);
+
 			Tree.Remove(NodeToBeDeleted->Location);
 			// Check if all the sister nodes are empty - if so, remove the parent node aswell
 			delete NodeToBeDeleted;

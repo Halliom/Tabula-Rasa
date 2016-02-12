@@ -149,13 +149,13 @@ public:
 		return GetNode(Position, RootNode);
 	}
 
-	ASolidActor* GetNodeData(const FWorldPosition& Position)
+	FORCEINLINE ASolidActor* GetNodeData(const FWorldPosition& Position)
 	{
 		OctreeNode* Node = GetNode(Position, RootNode);
 		return Node ? Node->NodeData : NULL;
 	}
 
-	void RemoveNode(const FWorldPosition& Position, OctreeNode* Node);
+	void RemoveNode(const FWorldPosition& Position, OctreeNode* Node, bool IsUpwardsRecursive = false);
 
 	void RemoveNode(const FWorldPosition& Position)
 	{
@@ -164,6 +164,7 @@ public:
 
 	void InsertNode(const FWorldPosition& Position, ASolidActor* NewVoxel, OctreeNode* Node, bool IsNew = true);
 
+	//TODO: Should this be inlined?
 	void InsertNode(const FWorldPosition& Position, ASolidActor* NewVoxel)
 	{
 		if (LastPlacedParentNode && Position.IsContainedWithin(LastPlacedParentNodeBoxMin, LastPlacedParentNodeBoxMax))
