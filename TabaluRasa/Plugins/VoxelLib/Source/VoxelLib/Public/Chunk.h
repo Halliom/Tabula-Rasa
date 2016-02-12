@@ -125,6 +125,8 @@ public:
 		InsertNode(Position, NewVoxel, RootNode);
 	}
 
+	void FindAdjacentNodes(const FWorldPosition& Position, OctreeNode* Node, TArray<ASolidActor*>& OutArray);
+
 	unsigned int GetRenderFaceMask(const FWorldPosition& Position);
 
 	UPROPERTY(Category = "World|Chunk", BlueprintReadOnly)

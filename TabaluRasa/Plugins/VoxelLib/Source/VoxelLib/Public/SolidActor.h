@@ -40,7 +40,7 @@ public:
 		return WorldPosition;
 	}
 
-	void OnNodePlacedAdjacent();
+	void OnNodePlacedAdjacent(const TArray<ASolidActor*>& SurroundingNodes);
 
 	void OnNodePlacedOnSide(const EVoxelSide& Side);
 

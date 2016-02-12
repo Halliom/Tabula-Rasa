@@ -44,9 +44,40 @@ ASolidActor::ASolidActor(const FObjectInitializer& ObjectInitializer)
 	Voxel->SetMaterial(0, Material.Object);
 }
 
-FORCEINLINE void ASolidActor::OnNodePlacedAdjacent()
+FORCEINLINE void ASolidActor::OnNodePlacedAdjacent(const TArray<ASolidActor*>& SurroundingNodes)
 {
-	Voxel->SetSidesToRender(Chunk->GetRenderFaceMask(LocalChunkPosition));
+	uint32 Result = 63;
+	if (SurroundingNodes[0])
+	{
+		Result ^= EVoxelSide::VS_SIDE_TOP;
+		SurroundingNodes[0]->OnNodePlacedOnSide(EVoxelSide::VS_SIDE_BOTTOM);
+	}
+	if (SurroundingNodes[1])
+	{
+		Result ^= EVoxelSide::VS_SIDE_BOTTOM;
+		SurroundingNodes[1]->OnNodePlacedOnSide(EVoxelSide::VS_SIDE_TOP);
+	}
+	if (SurroundingNodes[2])
+	{
+		Result ^= EVoxelSide::VS_SIDE_FRONT;
+		SurroundingNodes[2]->OnNodePlacedOnSide(EVoxelSide::VS_SIDE_BACK);
+	}
+	if (SurroundingNodes[3])
+	{
+		Result ^= EVoxelSide::VS_SIDE_BACK;
+		SurroundingNodes[3]->OnNodePlacedOnSide(EVoxelSide::VS_SIDE_FRONT);
+	}
+	if (SurroundingNodes[4])
+	{
+		Result ^= EVoxelSide::VS_SIDE_LEFT;
+		SurroundingNodes[4]->OnNodePlacedOnSide(EVoxelSide::VS_SIDE_RIGHT);
+	}
+	if (SurroundingNodes[5])
+	{
+		Result ^= EVoxelSide::VS_SIDE_RIGHT;
+		SurroundingNodes[5]->OnNodePlacedOnSide(EVoxelSide::VS_SIDE_LEFT);
+	}
+	Voxel->SetSidesToRender(Result);
 }
 
 FORCEINLINE void ASolidActor::OnNodePlacedOnSide(const EVoxelSide& Side)

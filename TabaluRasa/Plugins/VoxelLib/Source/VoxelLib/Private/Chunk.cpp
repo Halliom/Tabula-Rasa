@@ -73,7 +73,7 @@ AChunk::~AChunk()
 	AChunkManager::GetStaticChunkManager()->DeleteChunkAtPosition(ChunkPosition);
 }
 
-OctreeNode * AChunk::GetNode(const FWorldPosition& Position, OctreeNode* Node)
+FORCEINLINE OctreeNode * AChunk::GetNode(const FWorldPosition& Position, OctreeNode* Node)
 {
 	if (!Position.IsWithinBounds(Extent))
 	{
@@ -137,10 +137,18 @@ void AChunk::InsertNode(const FWorldPosition& Position, ASolidActor* NewVoxel, O
 			{
 				Node->NodeData->Chunk = this;
 				Node->NodeData->LocalChunkPosition = Position;
-				Node->NodeData->OnNodePlacedAdjacent();
+
+				if (Node->Location != 1)
+				{
+					TArray<ASolidActor*> AdjacentNodes;
+					AdjacentNodes.SetNum(6);
+					FindAdjacentNodes(Position, Tree[(Node->Location >> 3)], AdjacentNodes);
+
+					Node->NodeData->OnNodePlacedAdjacent(AdjacentNodes);
+				}
 			}
 
-			if (!Node->Location == 1) // The RootNode doesnt have a parent
+			if (Node->Location != 1) // The RootNode doesnt have a parent
 			{
 				// Set the children of the parent to this octant
 				uint32 Octant = Node->Location & 7; //0b111
@@ -165,9 +173,10 @@ void AChunk::InsertNode(const FWorldPosition& Position, ASolidActor* NewVoxel, O
 				OctreeNode* OldNode = new OctreeNode();
 				OldNode->Location = (Node->Location << 3) | OldNodeOctant;
 				OldNode->Size = HalfSize;
-				OldNode->Center.PositionX = Node->Center.PositionX + ((int32) QuarterSize) * ((OldNodeOctant & 4) ? 1 : -1);
-				OldNode->Center.PositionY = Node->Center.PositionY + ((int32) QuarterSize) * ((OldNodeOctant & 2) ? 1 : -1);
-				OldNode->Center.PositionZ = Node->Center.PositionZ + ((int32) QuarterSize) * ((OldNodeOctant & 1) ? 1 : -1);
+				OldNode->Center = Node->Center;
+				OldNode->Center.PositionX += ((int32) QuarterSize) * ((OldNodeOctant & 4) ? 1 : -1);
+				OldNode->Center.PositionY += ((int32) QuarterSize) * ((OldNodeOctant & 2) ? 1 : -1);
+				OldNode->Center.PositionZ += ((int32) QuarterSize) * ((OldNodeOctant & 1) ? 1 : -1);
 				Tree.Add(OldNode->Location, OldNode);
 
 				Node->Children |= (1 << OldNodeOctant);
@@ -180,17 +189,19 @@ void AChunk::InsertNode(const FWorldPosition& Position, ASolidActor* NewVoxel, O
 				OctreeNode* OldNode = new OctreeNode();
 				OldNode->Location = (Node->Location << 3) | OldNodeOctant;
 				OldNode->Size = HalfSize;
-				OldNode->Center.PositionX = Node->Center.PositionX + ((int32) QuarterSize) * ((OldNodeOctant & 4) ? 1 : -1);
-				OldNode->Center.PositionY = Node->Center.PositionY + ((int32) QuarterSize) * ((OldNodeOctant & 2) ? 1 : -1);
-				OldNode->Center.PositionZ = Node->Center.PositionZ + ((int32) QuarterSize) * ((OldNodeOctant & 1) ? 1 : -1);
+				OldNode->Center = Node->Center;
+				OldNode->Center.PositionX += ((int32) QuarterSize) * ((OldNodeOctant & 4) ? 1 : -1);
+				OldNode->Center.PositionY += ((int32) QuarterSize) * ((OldNodeOctant & 2) ? 1 : -1);
+				OldNode->Center.PositionZ += ((int32) QuarterSize) * ((OldNodeOctant & 1) ? 1 : -1);
 				Tree.Add(OldNode->Location, OldNode);
 
 				OctreeNode* NewNode = new OctreeNode();
 				NewNode->Location = (Node->Location << 3) | NewNodeOctant;
 				NewNode->Size = HalfSize;
-				NewNode->Center.PositionX = Node->Center.PositionX + ((int32) QuarterSize) * ((NewNodeOctant & 4) ? 1 : -1);
-				NewNode->Center.PositionY = Node->Center.PositionY + ((int32) QuarterSize) * ((NewNodeOctant & 2) ? 1 : -1);
-				NewNode->Center.PositionZ = Node->Center.PositionZ + ((int32) QuarterSize) * ((NewNodeOctant & 1) ? 1 : -1);
+				NewNode->Center = Node->Center;
+				NewNode->Center.PositionX += ((int32) QuarterSize) * ((NewNodeOctant & 4) ? 1 : -1);
+				NewNode->Center.PositionY += ((int32) QuarterSize) * ((NewNodeOctant & 2) ? 1 : -1);
+				NewNode->Center.PositionZ += ((int32) QuarterSize) * ((NewNodeOctant & 1) ? 1 : -1);
 				Tree.Add(NewNode->Location, NewNode);
 
 				Node->Children |= (1 << OldNodeOctant);
@@ -214,15 +225,26 @@ void AChunk::InsertNode(const FWorldPosition& Position, ASolidActor* NewVoxel, O
 			OctreeNode* NewNode = new OctreeNode();
 			NewNode->Location = (Node->Location << 3) | NodeOctant;
 			NewNode->Size = HalfSize;
-			NewNode->Center.PositionX = Node->Center.PositionX + ((int32) QuarterSize) * ((NodeOctant & 4) ? 1 : -1);
-			NewNode->Center.PositionY = Node->Center.PositionY + ((int32) QuarterSize) * ((NodeOctant & 2) ? 1 : -1);
-			NewNode->Center.PositionZ = Node->Center.PositionZ + ((int32) QuarterSize) * ((NodeOctant & 1) ? 1 : -1);
+			NewNode->Center = Node->Center;
+			NewNode->Center.PositionX += ((int32) QuarterSize) * ((NodeOctant & 4) ? 1 : -1);
+			NewNode->Center.PositionY += ((int32) QuarterSize) * ((NodeOctant & 2) ? 1 : -1);
+			NewNode->Center.PositionZ += ((int32) QuarterSize) * ((NodeOctant & 1) ? 1 : -1);
 			Node->Children |= (1 << NodeOctant);
 			Tree.Add(NewNode->Location, NewNode);
 
 			InsertNode(Position, NewVoxel, NewNode, true);
 		}
 	}
+}
+
+FORCEINLINE void AChunk::FindAdjacentNodes(const FWorldPosition& Position, OctreeNode* ParentNode, TArray<ASolidActor*>& OutArray)
+{
+	OutArray[0] = GetNodeData(FWorldPosition(Position.PositionX, Position.PositionY, Position.PositionZ + 1));
+	OutArray[1] = GetNodeData(FWorldPosition(Position.PositionX, Position.PositionY, Position.PositionZ - 1));
+	OutArray[2] = GetNodeData(FWorldPosition(Position.PositionX, Position.PositionY + 1, Position.PositionZ));
+	OutArray[3] = GetNodeData(FWorldPosition(Position.PositionX, Position.PositionY - 1, Position.PositionZ));
+	OutArray[4] = GetNodeData(FWorldPosition(Position.PositionX - 1, Position.PositionY, Position.PositionZ));
+	OutArray[5] = GetNodeData(FWorldPosition(Position.PositionX + 1, Position.PositionY, Position.PositionZ));
 }
 
 FORCEINLINE unsigned int AChunk::GetRenderFaceMask(const FWorldPosition& Position)
