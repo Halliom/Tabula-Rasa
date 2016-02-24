@@ -39,9 +39,9 @@ ASolidActor::ASolidActor(const FObjectInitializer& ObjectInitializer)
 	Voxel = ObjectInitializer.CreateDefaultSubobject<UVoxelMeshComponent>(this, TEXT("Voxel"));
 	RootComponent = Voxel;
 
-	static ConstructorHelpers::FObjectFinder<UMaterial> Material(TEXT("Material'/Game/BlankMaterial.BlankMaterial'"));
+	//static ConstructorHelpers::FObjectFinder<UMaterial> Material(TEXT("Material'/Game/BlankMaterial.BlankMaterial'"));
 	
-	Voxel->SetMaterial(0, Material.Object);
+	//Voxel->SetMaterial(0, Material.Object);
 }
 
 FORCEINLINE void ASolidActor::OnNodePlacedAdjacent(const TArray<ASolidActor*>& SurroundingNodes)

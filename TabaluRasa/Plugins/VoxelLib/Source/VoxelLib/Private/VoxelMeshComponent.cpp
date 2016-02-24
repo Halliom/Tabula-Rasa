@@ -103,50 +103,50 @@ FVoxelSceneProxy::FVoxelSceneProxy(UVoxelMeshComponent* Component) :
 		//-------Bottom level-------
 		FDynamicMeshVertex Vertex0;
 		Vertex0.Position = FVector(0, CUBE_SIZE, 0.0f);
-		Vertex0.Color = FColor(255, 255, 255);
+		Vertex0.Color = FColor(0, 255, 0);
 		//Vertex0.SetTangents(FVector(-1, 0, 0), FVector(0, 1, 0), FVector(0, 0, 1));
 		FVoxelSceneProxy::StandardVertices.Add(Vertex0);
 
 		FDynamicMeshVertex Vertex1;
 		Vertex1.Position = FVector(0, 0, 0.0f);
-		Vertex1.Color = FColor(255, 255, 255);
+		Vertex1.Color = FColor(0, 255, 0);
 		//Vertex1.SetTangents(FVector(-1, 0, 0), FVector(0, -1, 0), FVector(0, 0, 1));
 		FVoxelSceneProxy::StandardVertices.Add(Vertex1);
 
 		FDynamicMeshVertex Vertex2;
 		Vertex2.Position = FVector(CUBE_SIZE, CUBE_SIZE, 0.0f);
-		Vertex2.Color = FColor(255, 255, 255);
+		Vertex2.Color = FColor(0, 255, 0);
 		//Vertex2.SetTangents(FVector(1, 0, 0), FVector(0, 1, 0), FVector(0, 0, 1));
 		FVoxelSceneProxy::StandardVertices.Add(Vertex2);
 
 		FDynamicMeshVertex Vertex3;
 		Vertex3.Position = FVector(CUBE_SIZE, 0, 0.0f);
-		Vertex3.Color = FColor(255, 255, 255);
+		Vertex3.Color = FColor(0, 255, 0);
 		//Vertex3.SetTangents(FVector(1, 0, 0), FVector(0, -1, 0), FVector(0, 0, 1));
 		FVoxelSceneProxy::StandardVertices.Add(Vertex3);
 
 		//-------Top level-------
 		FDynamicMeshVertex Vertex4;
 		Vertex4.Position = FVector(0, CUBE_SIZE, CUBE_SIZE);
-		Vertex4.Color = FColor(255, 255, 255);
+		Vertex4.Color = FColor(0, 255, 0);
 		//Vertex4.SetTangents(FVector(-1, 0, 0), FVector(0, 1, 0), FVector(0, 0, -1));
 		FVoxelSceneProxy::StandardVertices.Add(Vertex4);
 
 		FDynamicMeshVertex Vertex5;
 		Vertex5.Position = FVector(0, 0, CUBE_SIZE);
-		Vertex5.Color = FColor(255, 255, 255);
+		Vertex5.Color = FColor(0, 255, 0);
 		//Vertex5.SetTangents(FVector(-1, 0, 0), FVector(0, -1, 0), FVector(0, 0, -1));
 		FVoxelSceneProxy::StandardVertices.Add(Vertex5);
 
 		FDynamicMeshVertex Vertex6;
 		Vertex6.Position = FVector(CUBE_SIZE, CUBE_SIZE, CUBE_SIZE);
-		Vertex6.Color = FColor(255, 255, 255);
+		Vertex6.Color = FColor(0, 255, 0);
 		//Vertex6.SetTangents(FVector(1, 0, 0), FVector(0, 1, 0), FVector(0, 0, -1));
 		FVoxelSceneProxy::StandardVertices.Add(Vertex6);
 
 		FDynamicMeshVertex Vertex7;
 		Vertex7.Position = FVector(CUBE_SIZE, 0, CUBE_SIZE);
-		Vertex7.Color = FColor(255, 255, 255);
+		Vertex7.Color = FColor(0, 255, 0);
 		//Vertex7.SetTangents(FVector(1, 0, 0), FVector(0, -1, 0), FVector(0, 0, -1));
 		FVoxelSceneProxy::StandardVertices.Add(Vertex7);
 
