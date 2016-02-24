@@ -44,3 +44,5 @@ TabulaRasa/Binaries/**
 TabaluRasa/TabaluRasa.VC.opendb
 *.ilk
 *.ilk
+TabulaRasa/Debug/TabulaRasa.ilk
+*.opendb

@@ -1,5 +1,7 @@
 #include "TextRender.h"
 
+#include <algorithm>
+
 #include "../Platform/Platform.h"
 #include "GL_shader.h"
 
@@ -10,20 +12,34 @@
 // Init the static shader to be NULL
 GLShaderProgram* TextRender::Shader = NULL;
 
-TextRender::TextRender()
+// Init the static projection matrix to be the size of the screen
+glm::mat4 TextRender::ProjectionMatrix = glm::ortho(0.0f, 800.0f, 600.0f, 0.0f); //TODO: Update this and be watchful of ints (use floats)
+
+// Init the static VAO to be 0 from the beginning
+GLuint TextRender::VAO = 0;
+
+// Init the RenderObjects
+std::vector<TextRenderData2D*> TextRender::RenderObjects = std::vector<TextRenderData2D*>();
+
+void TextRender::Initialize2DTextRendering()
 {
 	glGenVertexArrays(1, &VAO);
-	glGenBuffers(1, &VBO); //TODO: Merge these into the same glGenBuffers() call?
-	glGenBuffers(1, &IBO);
-	glGenTextures(1, &TextureID);
+
+	// Init the RenderObjects to hold 64 text objects by default (since it's a vector
+	// it will grow automatically if it needs to
+	RenderObjects.reserve(32);
 }
 
-TextRender::~TextRender()
+void TextRender::Destroy2DTextRendering()
 {
 	glDeleteVertexArrays(1, &VAO);
-	glDeleteBuffers(1, &VBO);
-	glDeleteBuffers(1, &IBO);
-	glDeleteTextures(1, &TextureID);
+
+	for (auto& It : RenderObjects)
+	{
+		if (It)
+			delete It;
+	}
+	RenderObjects.clear();
 }
 
 struct GlyphVertex
@@ -32,22 +48,20 @@ struct GlyphVertex
 	glm::vec2 Tex;
 };
 
-void TextRender::SetTextToRender(const char* Text, float Size, unsigned int RenderFont)
+TextRenderData2D* TextRender::AddTextToRender(const char* Text, float Size, unsigned int RenderFont)
 {
-	uint64_t Cycles_Beginning = __rdtsc();
-	ProjectionMatrix = glm::ortho(0.0f, 800.0f, 600.0f, 0.0f); //TODO: Update this and be watchful of ints (use floats)
-	uint64_t Cycles_ProjectionMatrix = __rdtsc();
-
 	glBindVertexArray(VAO);
 	if (Shader == NULL)
 		Shader = GLShaderProgram::CreateVertexFragmentShaderFromFile(std::string("vertex_font_render.glsl"), std::string("fragment_font_render.glsl"));
-	uint64_t Cycles_ShaderCreation = __rdtsc();
-
-	TextToRender = (char*) Text;
-
+	
 	Font* FontToUse = GetLoadedFont(RenderFont);
 	if (FontToUse == (Font*) 0xdddddddd) //TODO: Remove this
-		return;
+		return NULL;
+
+	TextRenderData2D* NewTextRenderObject = new TextRenderData2D();
+	glGenBuffers(1, &NewTextRenderObject->VBO);
+	glGenBuffers(1, &NewTextRenderObject->IBO);
+	glGenTextures(1, &NewTextRenderObject->TextureID);
 
 	unsigned int Width = 0;
 	unsigned int Height = 0;
@@ -89,13 +103,13 @@ void TextRender::SetTextToRender(const char* Text, float Size, unsigned int Rend
 
 	uint64_t Cycles_VertexCreation = __rdtsc();
 
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	glBindBuffer(GL_ARRAY_BUFFER, NewTextRenderObject->VBO);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(GlyphVertex) * 4 * TextLength, Vertices, GL_STATIC_DRAW);
 
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, NewTextRenderObject->IBO);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned short) * 6 * TextLength, Indices, GL_STATIC_DRAW);
 
-	glBindTexture(GL_TEXTURE_2D, TextureID);
+	glBindTexture(GL_TEXTURE_2D, NewTextRenderObject->TextureID);
 
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, Width, Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, FontImage);
 
@@ -107,9 +121,27 @@ void TextRender::SetTextToRender(const char* Text, float Size, unsigned int Rend
 	delete[] Vertices;
 	delete[] Indices;
 
-	uint64_t Cycles_Cleanup = __rdtsc(); //270000 cycles on average
+	// 6 vertices per glyph
+	NewTextRenderObject->VertexCount = TextLength * 6;
 
-	NumberOfVertices = TextLength;
+	RenderObjects.push_back(NewTextRenderObject);
+	return NewTextRenderObject;
+}
+
+void TextRender::RemoveText(TextRenderData2D* TextToRemove)
+{
+	auto Position = std::find(RenderObjects.begin(), RenderObjects.end(), TextToRemove);
+	if (Position != RenderObjects.end())
+	{
+		glDeleteBuffers(1, &(*Position)->VBO);
+		glDeleteBuffers(1, &(*Position)->VBO);
+		glDeleteTextures(1, &(*Position)->TextureID);
+		RenderObjects.erase(Position);
+
+		// This needs to be done since std::vector does not automatically
+		// destruct the object (if it's a pointer, which it is) when calling erase
+		delete (*Position);
+	}
 }
 
 void TextRender::Render()
@@ -119,15 +151,21 @@ void TextRender::Render()
 	Shader->Bind();
 	Shader->SetProjectionMatrix(ProjectionMatrix); //TODO: Do we need to update this every frame?
 
-	glBindTexture(GL_TEXTURE_2D, TextureID);
-	glActiveTexture(GL_TEXTURE0);
+	for (auto& It : RenderObjects)
+	{
+		if (!It)
+			continue;
 
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
-	glEnableVertexAttribArray(0);
-	glEnableVertexAttribArray(1);
-	
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(GlyphVertex), (void*) offsetof(GlyphVertex, Pos));
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(GlyphVertex), (void*) offsetof(GlyphVertex, Tex));
+		glBindTexture(GL_TEXTURE_2D, It->TextureID);
+		glActiveTexture(GL_TEXTURE0);
 
-	glDrawElements(GL_TRIANGLES, NumberOfVertices * 6, GL_UNSIGNED_SHORT, (void*) 0);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, It->IBO);
+		glEnableVertexAttribArray(0); // Vertex position
+		glEnableVertexAttribArray(1); // Vertex texture coordinate
+
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(GlyphVertex), (void*)offsetof(GlyphVertex, Pos));
+		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(GlyphVertex), (void*)offsetof(GlyphVertex, Tex));
+
+		glDrawElements(GL_TRIANGLES, It->VertexCount, GL_UNSIGNED_SHORT, (void*)0);
+	}
 }

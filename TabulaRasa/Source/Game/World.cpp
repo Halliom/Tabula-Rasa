@@ -18,6 +18,9 @@ World::World()
 	Shader = GLShaderProgram::CreateVertexFragmentShaderFromFile(std::string("VertexShader.glsl"), std::string("FragmentShader.glsl"));
 	CurrentPlayer = new Player();
 
+	TextRender::Initialize2DTextRendering();
+	TextRender::AddTextToRender("Hello World");
+
 	/*for (int i = 0; i < 16; ++i)
 	{
 		for (int j = 0; j < 16; ++j)
@@ -32,6 +35,8 @@ World::World()
 
 World::~World()
 {
+	TextRender::Destroy2DTextRendering();
+
 	if (Shader)
 	{
 		delete Shader;
@@ -44,24 +49,22 @@ World::~World()
 
 void World::Update(float DeltaTime)
 {
-	TextRender Text;
-	Text.SetTextToRender("Hello World", 36);
-	Text.Render();
+	TextRender::Render();
 
 	static float Angle = 0;
 	Angle += DeltaTime;
 
 	CurrentPlayer->Update(DeltaTime);
 
-	Shader->Bind();
+	//Shader->Bind();
 
-	glm::mat4 Projection = glm::perspective(glm::radians(70.0f), 4.0f / 3.0f, 0.1f, 100.f);
-	glm::mat4 View = CurrentPlayer->GetViewMatrix();
-	glm::mat4 Model = glm::mat4(1.0f);
+	//glm::mat4 Projection = glm::perspective(glm::radians(70.0f), 4.0f / 3.0f, 0.1f, 100.f);
+	//glm::mat4 View = CurrentPlayer->GetViewMatrix();
+	//glm::mat4 Model = glm::mat4(1.0f);
 	
-	Shader->SetProjectionMatrix(Projection);
-	Shader->SetViewMatrixLocation(View);
-	Shader->SetModelMatrix(Model);
+	//Shader->SetProjectionMatrix(Projection);
+	//Shader->SetViewMatrixLocation(View);
+	//Shader->SetModelMatrix(Model);
 
-	Chunk.Render();
+	//Chunk.Render();
 }

@@ -10,36 +10,50 @@
 
 class GLShaderProgram;
 
+struct TextRenderData2D
+{
+	/**
+	 * Vertex buffer object containing the vertex position data
+	 * gathered from the font .fnt file
+	 */
+	GLuint VBO;
+
+	/**
+	 * Index buffer object containing the vertex data for
+	 * rendering the font
+	 */
+	GLuint IBO;
+
+	//TODO: move this into separate font class (with library)
+	GLuint TextureID;
+
+	/**
+	 * Number of vertices to render (amount of indices really)
+	 */
+	GLuint VertexCount;
+};
+
 class TextRender
 {
 public:
-	TextRender();
 
-	~TextRender();
-	
-	void SetTextToRender(const char* Text, float Size = 100, unsigned int Font = 0);
+	static void Initialize2DTextRendering();
 
-	void Render();
+	static void Destroy2DTextRendering();
+
+	static TextRenderData2D* AddTextToRender(const char* Text, float Size = 100, unsigned int Font = 0);
+
+	static void RemoveText(TextRenderData2D* TextToRemove);
+
+	static void Render();
+
+	static std::vector<TextRenderData2D*> RenderObjects;
 
 private:
 
 	static GLShaderProgram* Shader;
 
-	char* TextToRender;
+	static glm::mat4 ProjectionMatrix;
 
-	//ADD PROJECTION MATRIX WHICH IS AN ORTHOGONAL PROJECTION AND ADD
-	//SIZE PARAMETER TO SETTEXTTORENDER
-
-	glm::mat4 ProjectionMatrix;
-
-	GLuint VBO;
-
-	GLuint IBO;
-
-	GLuint VAO;
-
-	//TODO: move this into separate font class (with library)
-	GLuint TextureID;
-
-	unsigned int NumberOfVertices;
+	static GLuint VAO;
 };

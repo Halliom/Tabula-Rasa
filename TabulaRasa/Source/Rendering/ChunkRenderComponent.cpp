@@ -1,6 +1,7 @@
 #include "ChunkRenderComponent.h"
 
-ChunkRenderComponent::ChunkRenderComponent()
+ChunkRenderComponent::ChunkRenderComponent() :
+	NumVertices(0)
 {
 	glGenVertexArrays(1, &VertexArrayObject);
 	glGenBuffers(1, &VertexBufferObject);
@@ -24,13 +25,11 @@ void ChunkRenderComponent::Render(float DeltaTime)
 	glVertexAttribPointer(1, 3, GL_UNSIGNED_BYTE, GL_FALSE, sizeof(VoxelVertex), (void*) offsetof(VoxelVertex, ColorRed));
 
 	glDrawArrays(GL_TRIANGLES, 0, NumVertices);
-
-	glDisableVertexAttribArray(0);
-	glDisableVertexAttribArray(1);
 }
 
 void ChunkRenderComponent::SetData(std::vector<VoxelVertex>& Vertices)
 {
+	glBindVertexArray(VertexArrayObject);
 	glBindBuffer(GL_ARRAY_BUFFER, VertexBufferObject);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(VoxelVertex) * Vertices.size(), &Vertices[0], GL_STATIC_DRAW);
 
