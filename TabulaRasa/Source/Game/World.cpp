@@ -19,7 +19,7 @@ World::World()
 	CurrentPlayer = new Player();
 
 	TextRender::Initialize2DTextRendering();
-	TextRender::AddTextToRender("Hello World");
+	TextRender::AddTextToRender("Hello World", 36.0f);
 
 	/*for (int i = 0; i < 16; ++i)
 	{

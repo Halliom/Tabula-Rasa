@@ -11,6 +11,6 @@ out vec2 frag_texCoord;
 void main()
 {
 	frag_texCoord = texCoord;
-	frag_color = vec3(1.0, 1.0, 1.0);
+	frag_color = vec3(1.0, 0.0, 0.0);
 	gl_Position = g_ProjectionMatrix * vec4(position, 1.0);
 }

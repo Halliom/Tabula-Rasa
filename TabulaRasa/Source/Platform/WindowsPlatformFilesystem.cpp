@@ -5,6 +5,8 @@
 
 #include "picopng.cpp"
 
+#define MAX_FILE_READ_SIZE 8192
+
 std::string PlatformFileSystem::LoadFile(const AssetDirectoryType& Directory, const char* FileName)
 {
 	std::string* AssetDir = GetAssetDirectory(Directory);
@@ -26,13 +28,13 @@ std::string PlatformFileSystem::LoadFile(const AssetDirectoryType& Directory, co
 		//return "";
 	}
 
-	char FileContents[1024];
+	char FileContents[MAX_FILE_READ_SIZE];
 	unsigned long NumberOfBytesRead;
 
 	bool Success = ReadFile(
 		FileHandle,
 		FileContents,
-		1024,
+		MAX_FILE_READ_SIZE,
 		&NumberOfBytesRead,
 		NULL);
 
