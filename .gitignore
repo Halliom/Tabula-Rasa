@@ -2,7 +2,14 @@
 
 /*/Intermediate/**
 Intermediate/
+CMakeFiles/
+TabulaRasa.dir/
 /*/Saved/**
+Debug/
+
+Win32/
+
+CMakeCache.txt
 
 *.lib
 *.idb
@@ -24,6 +31,9 @@ Intermediate/
 *.bmp
 *.obj
 *.pdb
+*.vcxproj
+*.filters
+*.cmake
 
 # Ignore local user Visual Studio files in any folder
 *.suo
@@ -32,3 +42,4 @@ Intermediate/
 
 TabulaRasa/Binaries/**
 TabaluRasa/TabaluRasa.VC.opendb
+*.ilk
