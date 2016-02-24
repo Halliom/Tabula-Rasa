@@ -25,6 +25,9 @@ void ChunkRenderComponent::Render(float DeltaTime)
 	glVertexAttribPointer(1, 3, GL_UNSIGNED_BYTE, GL_FALSE, sizeof(VoxelVertex), (void*) offsetof(VoxelVertex, ColorRed));
 
 	glDrawArrays(GL_TRIANGLES, 0, NumVertices);
+
+	glDisableVertexAttribArray(1);
+	glDisableVertexAttribArray(0);
 }
 
 void ChunkRenderComponent::SetData(std::vector<VoxelVertex>& Vertices)

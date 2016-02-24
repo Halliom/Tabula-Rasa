@@ -56,15 +56,15 @@ void World::Update(float DeltaTime)
 
 	CurrentPlayer->Update(DeltaTime);
 
-	//Shader->Bind();
+	/*Shader->Bind();
 
-	//glm::mat4 Projection = glm::perspective(glm::radians(70.0f), 4.0f / 3.0f, 0.1f, 100.f);
-	//glm::mat4 View = CurrentPlayer->GetViewMatrix();
-	//glm::mat4 Model = glm::mat4(1.0f);
+	glm::mat4 Projection = glm::perspective(glm::radians(70.0f), 4.0f / 3.0f, 0.1f, 100.f);
+	glm::mat4 View = CurrentPlayer->GetViewMatrix();
+	glm::mat4 Model = glm::mat4(1.0f);
 	
-	//Shader->SetProjectionMatrix(Projection);
-	//Shader->SetViewMatrixLocation(View);
-	//Shader->SetModelMatrix(Model);
+	Shader->SetProjectionMatrix(Projection);
+	Shader->SetViewMatrixLocation(View);
+	Shader->SetModelMatrix(Model);
 
-	//Chunk.Render();
+	Chunk.Render();*/
 }

@@ -167,5 +167,8 @@ void TextRender::Render()
 		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(GlyphVertex), (void*)offsetof(GlyphVertex, Tex));
 
 		glDrawElements(GL_TRIANGLES, It->VertexCount, GL_UNSIGNED_SHORT, (void*)0);
+
+		glDisableVertexAttribArray(1);
+		glDisableVertexAttribArray(0);
 	}
 }
