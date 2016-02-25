@@ -14,7 +14,7 @@ class PlatformFileSystem
 public:
 	static std::string LoadFile(const AssetDirectoryType& Directory, const char* FileName);
 
-	static std::string LoadFile(const AssetDirectoryType& Directory, const std::string& FileName)
+	static __forceinline std::string LoadFile(const AssetDirectoryType& Directory, const std::string& FileName)
 	{
 		return LoadFile(Directory, FileName.c_str());
 	}

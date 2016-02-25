@@ -59,15 +59,13 @@ TextRenderData2D* TextRender::AddTextToRender(const char* Text, float Size, unsi
 		return NULL;
 
 	TextRenderData2D* NewTextRenderObject = new TextRenderData2D();
-	glGenBuffers(1, &NewTextRenderObject->VBO);
-	glGenBuffers(1, &NewTextRenderObject->IBO);
-	glGenTextures(1, &NewTextRenderObject->TextureID);
+	glGenBuffers(1, &(NewTextRenderObject->VBO));
+	glGenBuffers(1, &(NewTextRenderObject->IBO));
+	glGenTextures(1, &(NewTextRenderObject->TextureID));
 
-	unsigned int Width = 0;
-	unsigned int Height = 0;
+	unsigned int Width = (unsigned int) FontToUse->SizeX;
+	unsigned int Height = (unsigned int) FontToUse->SizeY;
 	std::vector<unsigned char>* FontImage = FontToUse->FontImage;
-
-	uint64_t Cycles_ImageLoading = __rdtsc();
 
 	unsigned int TextLength = strlen(Text);
 	GlyphVertex* Vertices = new GlyphVertex[TextLength * 4];
@@ -111,7 +109,7 @@ TextRenderData2D* TextRender::AddTextToRender(const char* Text, float Size, unsi
 
 	glBindTexture(GL_TEXTURE_2D, NewTextRenderObject->TextureID);
 
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, Width, Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, FontImage);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, Width, Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, &(FontImage->at(0)));
 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -123,8 +121,8 @@ TextRenderData2D* TextRender::AddTextToRender(const char* Text, float Size, unsi
 
 	// 6 vertices per glyph
 	NewTextRenderObject->VertexCount = TextLength * 6;
-
 	RenderObjects.push_back(NewTextRenderObject);
+
 	return NewTextRenderObject;
 }
 
@@ -157,7 +155,7 @@ void TextRender::Render()
 			continue;
 
 		glBindTexture(GL_TEXTURE_2D, It->TextureID);
-		glActiveTexture(GL_TEXTURE0);
+		//glActiveTexture(GL_TEXTURE0);
 
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, It->IBO);
 		glEnableVertexAttribArray(0); // Vertex position

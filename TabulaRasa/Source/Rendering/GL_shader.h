@@ -40,7 +40,7 @@ public:
 
 	void GenerateUniformBindings();
 
-	inline GLint GetUniform(const char* UniformName)
+	__forceinline GLint GetUniform(const char* UniformName)
 	{
 		return glGetUniformLocation(Program, UniformName);
 	}
@@ -51,21 +51,21 @@ public:
 
 	bool CompileShaderProgram();
 
-	inline void Bind() { glUseProgram(Program); }
+	__forceinline void Bind() { glUseProgram(Program); }
 
-	inline void Unbind() { glUseProgram(0); }
+	__forceinline void Unbind() { glUseProgram(0); }
 
-	inline void SetProjectionMatrix(const glm::mat4& ProjectionMatrix)
+	__forceinline void SetProjectionMatrix(const glm::mat4& ProjectionMatrix)
 	{
 		glUniformMatrix4fv(ProjectionMatrixLocation, 1, GL_FALSE, glm::value_ptr(ProjectionMatrix));
 	}
 	
-	inline void SetModelMatrix(const glm::mat4& ModelMatrix)
+	__forceinline void SetModelMatrix(const glm::mat4& ModelMatrix)
 	{
 		glUniformMatrix4fv(ModelMatrixLocation, 1, GL_FALSE, glm::value_ptr(ModelMatrix));
 	}
 
-	inline void SetViewMatrixLocation(const glm::mat4& ViewMatrix)
+	__forceinline void SetViewMatrixLocation(const glm::mat4& ViewMatrix)
 	{
 		glUniformMatrix4fv(ViewMatrixLocation, 1, GL_FALSE, glm::value_ptr(ViewMatrix));
 	}
