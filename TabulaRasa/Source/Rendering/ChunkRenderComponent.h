@@ -41,7 +41,12 @@ public:
 
 private:
 
-	static GLuint ChunkRenderVAO;
+	static GLuint EastVAO;
+	static GLuint WestVAO;
+	static GLuint TopVAO;
+	static GLuint BottomVAO;
+	static GLuint NorthVAO;
+	static GLuint SouthVAO;
 
 	static GLuint EastVBO;
 	static GLuint EastIBO;
