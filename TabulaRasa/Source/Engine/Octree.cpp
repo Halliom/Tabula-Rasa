@@ -4,46 +4,53 @@
 
 #include "../Rendering/ChunkRenderComponent.h"
 
-uint32_t Chunk::DEPTH = 10;
+glm::uvec3 Chunk::VS_EAST_OFFSET = glm::uvec3(1, 0, 0);
+glm::uvec3 Chunk::VS_WEST_OFFSET = glm::uvec3(-1, 0, 0);
+glm::uvec3 Chunk::VS_TOP_OFFSET	= glm::uvec3(0, 1, 0);
+glm::uvec3 Chunk::VS_BOTTOM_OFFSET = glm::uvec3(0, -1, 0);
+glm::uvec3 Chunk::VS_NORTH_OFFSET = glm::uvec3(0, 0, 1);
+glm::uvec3 Chunk::VS_SOUTH_OFFSET = glm::uvec3(0, 0, -1);
+
+uint32_t Chunk::DEPTH = 7; // Chunk size is 2^7=128
 float Voxel::CUBE_SIZE = 1.0f;
 
-void Voxel::OnNodePlacedAdjacent(std::vector<Voxel*>& AdjacentNodes)
+void Voxel::OnNodePlacedAdjacent(Voxel* NodeEast, Voxel* NodeWest, Voxel* NodeTop, Voxel* NodeBottom, Voxel* NodeNorth, Voxel* NodeSouth)
 {
 	uint8_t Result = 63;
-	if (AdjacentNodes[0])
+	if (NodeEast)
 	{
 		Result ^= VoxelSide::SIDE_EAST;
-		AdjacentNodes[0]->OnNodePlacedOnSide(VoxelSide::SIDE_WEST);
+		NodeEast->OnNodePlacedOnSide(VoxelSide::SIDE_WEST);
 	}
-	if (AdjacentNodes[1])
+	if (NodeWest)
 	{
 		Result ^= VoxelSide::SIDE_WEST;
-		AdjacentNodes[1]->OnNodePlacedOnSide(VoxelSide::SIDE_EAST);
+		NodeWest->OnNodePlacedOnSide(VoxelSide::SIDE_EAST);
 	}
-	if (AdjacentNodes[2])
+	if (NodeTop)
 	{
 		Result ^= VoxelSide::SIDE_TOP;
-		AdjacentNodes[2]->OnNodePlacedOnSide(VoxelSide::SIDE_BOTTOM);
+		NodeTop->OnNodePlacedOnSide(VoxelSide::SIDE_BOTTOM);
 	}
-	if (AdjacentNodes[3])
+	if (NodeBottom)
 	{
 		Result ^= VoxelSide::SIDE_BOTTOM;
-		AdjacentNodes[3]->OnNodePlacedOnSide(VoxelSide::SIDE_TOP);
+		NodeBottom->OnNodePlacedOnSide(VoxelSide::SIDE_TOP);
 	}
-	if (AdjacentNodes[4])
+	if (NodeNorth)
 	{
 		Result ^= VoxelSide::SIDE_NORTH;
-		AdjacentNodes[4]->OnNodePlacedOnSide(VoxelSide::SIDE_SOUTH);
+		NodeNorth->OnNodePlacedOnSide(VoxelSide::SIDE_SOUTH);
 	}
-	if (AdjacentNodes[5])
+	if (NodeSouth)
 	{
 		Result ^= VoxelSide::SIDE_SOUTH;
-		AdjacentNodes[5]->OnNodePlacedOnSide(VoxelSide::SIDE_NORTH);
+		NodeSouth->OnNodePlacedOnSide(VoxelSide::SIDE_NORTH);
 	}
 	SidesToRender = Result;
 }
 
-void Voxel::OnNodePlacedOnSide(const VoxelSide & Side)
+__forceinline void Voxel::OnNodePlacedOnSide(const VoxelSide& Side)
 {
 	if ((SidesToRender & Side) == Side)
 	{
@@ -51,32 +58,24 @@ void Voxel::OnNodePlacedOnSide(const VoxelSide & Side)
 	}
 }
 
-inline bool IsWithinBounds(const glm::uvec3& Position, const glm::uvec3& Bounds)
+__forceinline bool IsWithinBounds(const glm::uvec3& Position, const glm::uvec3& Bounds) //TODO: SIMD optimize from custom vector class
 {
 	if ((Position.x < Bounds.x) && (Position.x >= 0) &&
 		(Position.y < Bounds.y) && (Position.y >= 0) &&
 		(Position.z < Bounds.z) && (Position.z >= 0))
-	{
 		return true;
-	}
 	else
-	{
 		return false;
-	}
 }
 
-inline bool IsContainedWithin(const glm::uvec3& Position, const glm::uvec3& Min, const glm::uvec3& Max)
+__forceinline bool IsContainedWithin(const glm::uvec3& Position, const glm::uvec3& Min, const glm::uvec3& Max) //TODO: SIMD optimize from custom vector class
 {
 	if ((Position.x < Max.x) && (Position.x >= Min.x) &&
 		(Position.y < Max.y) && (Position.y >= Min.y) &&
 		(Position.z < Max.z) && (Position.z >= Min.z))
-	{
 		return true;
-	}
 	else
-	{
 		return false;
-	}
 }
 
 OctreeNode::OctreeNode() : 
@@ -103,7 +102,7 @@ size_t OctreeNode::GetNodeDepth()
 	return msb / 3;
 }
 
-size_t OctreeNode::GetOctantForPosition(const glm::uvec3& Position)
+__forceinline size_t OctreeNode::GetOctantForPosition(const glm::uvec3& Position)
 {
 	size_t Result = 0;
 	uint32_t HalfSize = Size >> 1;
@@ -131,10 +130,14 @@ void Chunk::InsertNode(const glm::uvec3& Position, Voxel* NewVoxel, OctreeNode* 
 
 				if (Node->Location != 1)
 				{
-					std::vector<Voxel*> AdjacentNodes = std::vector<Voxel*>(6);
-					FindAdjacentNodes(Position, Nodes[(Node->Location >> 3)], AdjacentNodes);
-
-					Node->NodeData->OnNodePlacedAdjacent(AdjacentNodes);
+					Node->NodeData->OnNodePlacedAdjacent(
+						GetNodeData(Position + VS_EAST_OFFSET),
+						GetNodeData(Position + VS_WEST_OFFSET), 
+						GetNodeData(Position + VS_TOP_OFFSET),
+						GetNodeData(Position + VS_BOTTOM_OFFSET),
+						GetNodeData(Position + VS_NORTH_OFFSET),
+						GetNodeData(Position + VS_SOUTH_OFFSET)
+						);
 				}
 
 				UpdateRenderInformation();
@@ -235,16 +238,6 @@ void Chunk::InsertNode(const glm::uvec3& Position, Voxel* NewVoxel, OctreeNode* 
 	}
 }
 
-inline void Chunk::FindAdjacentNodes(const glm::uvec3 Position, OctreeNode * Node, std::vector<Voxel*>& Result)
-{
-	Result[0] = GetNodeData(glm::uvec3(Position.x + 1, Position.y, Position.z));
-	Result[1] = GetNodeData(glm::uvec3(Position.x - 1, Position.y, Position.z));
-	Result[2] = GetNodeData(glm::uvec3(Position.x, Position.y + 1, Position.z));
-	Result[3] = GetNodeData(glm::uvec3(Position.x, Position.y - 1, Position.z));
-	Result[4] = GetNodeData(glm::uvec3(Position.x, Position.y, Position.z + 1));
-	Result[5] = GetNodeData(glm::uvec3(Position.x, Position.y, Position.z - 1));
-}
-
 OctreeNode* Chunk::GetNode(uint32_t Position)
 {
 	const auto iter = Nodes.find(Position);
@@ -254,7 +247,7 @@ OctreeNode* Chunk::GetNode(uint32_t Position)
 		return (*iter).second;
 }
 
-inline OctreeNode* Chunk::GetNode(const glm::uvec3& Position, OctreeNode* Node)
+__forceinline OctreeNode* Chunk::GetNode(const glm::uvec3& Position, OctreeNode* Node)
 {
 	if (!IsWithinBounds(Position, Extent))
 	{

@@ -38,7 +38,7 @@ public:
 
 	static float CUBE_SIZE;
 
-	void OnNodePlacedAdjacent(std::vector<Voxel*>& AdjacentNodes);
+	void OnNodePlacedAdjacent(Voxel* NodeEast, Voxel* NodeWest, Voxel* NodeTop, Voxel* NodeBottom, Voxel* NodeNorth, Voxel* NodeSouth);
 
 	void OnNodePlacedOnSide(const VoxelSide& Side);
 
@@ -110,8 +110,6 @@ public:
 		return Node ? Node->NodeData : NULL;
 	}
 
-	void FindAdjacentNodes(const glm::uvec3 Position, OctreeNode* Node, std::vector<Voxel*>& Result);
-
 	void UpdateRenderInformation();
 
 	void Render();
@@ -133,5 +131,14 @@ private:
 	std::unordered_map<uint32_t, OctreeNode*> Nodes;
 
 	ChunkRenderComponent* m_RenderComponent;
+
+private:
+
+	static glm::uvec3 VS_EAST_OFFSET;
+	static glm::uvec3 VS_WEST_OFFSET;
+	static glm::uvec3 VS_TOP_OFFSET;
+	static glm::uvec3 VS_BOTTOM_OFFSET;
+	static glm::uvec3 VS_NORTH_OFFSET;
+	static glm::uvec3 VS_SOUTH_OFFSET;
 };
 
