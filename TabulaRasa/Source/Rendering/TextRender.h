@@ -51,9 +51,9 @@ public:
 
 private:
 
-	static GLShaderProgram* Shader;
+	static GLShaderProgram* TextRenderShader;
 
-	static glm::mat4 ProjectionMatrix;
+	static glm::mat4 TextRenderProjectionMatrix;
 
-	static GLuint VAO;
+	static GLuint TextRenderVAO;
 };

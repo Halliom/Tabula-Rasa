@@ -10,20 +10,20 @@
 #endif
 
 // Init the static shader to be NULL
-GLShaderProgram* TextRender::Shader = NULL;
+GLShaderProgram* TextRender::TextRenderShader = NULL;
 
 // Init the static projection matrix to be the size of the screen
-glm::mat4 TextRender::ProjectionMatrix = glm::ortho(0.0f, 800.0f, 600.0f, 0.0f); //TODO: Update this and be watchful of ints (use floats)
+glm::mat4 TextRender::TextRenderProjectionMatrix = glm::ortho(0.0f, 800.0f, 600.0f, 0.0f); //TODO: Update this and be watchful of ints (use floats)
 
 // Init the static VAO to be 0 from the beginning
-GLuint TextRender::VAO = 0;
+GLuint TextRender::TextRenderVAO = 0;
 
 // Init the RenderObjects
 std::vector<TextRenderData2D*> TextRender::RenderObjects = std::vector<TextRenderData2D*>();
 
 void TextRender::Initialize2DTextRendering()
 {
-	glGenVertexArrays(1, &VAO);
+	glGenVertexArrays(1, &TextRenderVAO);
 
 	// Init the RenderObjects to hold 64 text objects by default (since it's a vector
 	// it will grow automatically if it needs to
@@ -32,7 +32,7 @@ void TextRender::Initialize2DTextRendering()
 
 void TextRender::Destroy2DTextRendering()
 {
-	glDeleteVertexArrays(1, &VAO);
+	glDeleteVertexArrays(1, &TextRenderVAO);
 
 	for (auto& It : RenderObjects)
 	{
@@ -50,9 +50,9 @@ struct GlyphVertex
 
 TextRenderData2D* TextRender::AddTextToRender(const char* Text, float Size, unsigned int RenderFont)
 {
-	glBindVertexArray(VAO);
-	if (Shader == NULL)
-		Shader = GLShaderProgram::CreateVertexFragmentShaderFromFile(std::string("vertex_font_render.glsl"), std::string("fragment_font_render.glsl"));
+	glBindVertexArray(TextRenderVAO);
+	if (TextRenderShader == NULL)
+		TextRenderShader = GLShaderProgram::CreateVertexFragmentShaderFromFile(std::string("vertex_font_render.glsl"), std::string("fragment_font_render.glsl"));
 	
 	Font* FontToUse = GetLoadedFont(RenderFont);
 	if (FontToUse == (Font*) 0xdddddddd) //TODO: Remove this
@@ -122,6 +122,7 @@ TextRenderData2D* TextRender::AddTextToRender(const char* Text, float Size, unsi
 	// 6 vertices per glyph
 	NewTextRenderObject->VertexCount = TextLength * 6;
 	RenderObjects.push_back(NewTextRenderObject);
+	glBindVertexArray(0);
 
 	return NewTextRenderObject;
 }
@@ -144,10 +145,10 @@ void TextRender::RemoveText(TextRenderData2D* TextToRemove)
 
 void TextRender::Render()
 {
-	glBindVertexArray(VAO);
+	glBindVertexArray(TextRenderVAO);
 
-	Shader->Bind();
-	Shader->SetProjectionMatrix(ProjectionMatrix); //TODO: Do we need to update this every frame?
+	TextRenderShader->Bind();
+	TextRenderShader->SetProjectionMatrix(TextRenderProjectionMatrix); //TODO: Do we need to update this every frame?
 
 	for (auto& It : RenderObjects)
 	{
@@ -157,6 +158,7 @@ void TextRender::Render()
 		glBindTexture(GL_TEXTURE_2D, It->TextureID);
 		//glActiveTexture(GL_TEXTURE0);
 
+		glBindBuffer(GL_ARRAY_BUFFER, It->VBO);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, It->IBO);
 		glEnableVertexAttribArray(0); // Vertex position
 		glEnableVertexAttribArray(1); // Vertex texture coordinate

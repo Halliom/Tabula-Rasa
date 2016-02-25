@@ -34,9 +34,9 @@ int main(int argc, char* argv[])
 
 	World WorldObject;
 
-	float LastFrameTime = ((float) GetTickCount()) / 1000.0f;
-	float DeltaTime = 0.0f;
-	float CumulativeFrameTime = 0.0f;
+	double LastFrameTime = ((double) GetTickCount()) / 1000.0f;
+	double DeltaTime = 0.0f;
+	double CumulativeFrameTime = 0.0f;
 	uint16_t FramesPerSecond = 0;
 	while (Window.PrepareForRender())
 	{
@@ -46,9 +46,9 @@ int main(int argc, char* argv[])
 		// Swap the buffers
 		Window.PostRender();
 
-		float CurrentTime = ((float)GetTickCount()) / 1000.0f;
+		float CurrentTime = ((double)GetTickCount()) / 1000.0f;
 		DeltaTime = CurrentTime - LastFrameTime;
-		LastFrameTime = ((float) GetTickCount()) / 1000.0f;
+		LastFrameTime = ((double) GetTickCount()) / 1000.0f;
 		
 		CumulativeFrameTime += DeltaTime;
 		++FramesPerSecond;

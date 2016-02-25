@@ -1,27 +1,68 @@
 #pragma once
 
-#include "RenderComponent.h"
+#include <list>
+
+#include "glm\common.hpp"
+
+#include "GL_shader.h"
 #include "../Engine/Octree.h"
+#include "../Game/Player.h"
 
 struct VoxelVertex;
 
-class ChunkRenderComponent : public RenderComponent
+struct ChunkRenderData
+{
+	// Position Buffer Objects (PBOs)
+	GLuint EastFacePBO;
+	GLuint WestFacePBO;
+	GLuint TopFacePBO;
+	GLuint BottomFacePBO;
+	GLuint NorthFacePBO;
+	GLuint SouthFacePBO;
+
+	uint32_t NumWestFaces;
+	uint32_t NumTopFaces;
+	uint32_t NumBottomFaces;
+	uint32_t NumNorthFaces;
+	uint32_t NumSouthFaces;
+};
+
+class ChunkRenderer
 {
 public:
 
-	ChunkRenderComponent();
+	static void SetupChunkRenderer();
 
-	virtual ~ChunkRenderComponent();
+	static void DestroyChunkRenderer();
 
-	virtual void Render(float DeltaTime) override;
+	static void RenderAllChunks(Player* CurrentPlayer, float CumulativeTime);
 
 	void SetData(std::vector<VoxelVertex>& Vertices);
 
 private:
 
-	GLuint VertexArrayObject;
+	static GLuint ChunkRenderVAO;
 
-	GLuint VertexBufferObject;
+	static GLuint EastVBO;
+	static GLuint EastIBO;
 
-	uint32_t NumVertices;
+	static GLuint WestVBO;
+	static GLuint WestIBO;
+
+	static GLuint TopVBO;
+	static GLuint TopIBO;
+
+	static GLuint BottomVBO;
+	static GLuint BottomIBO;
+
+	static GLuint NorthVBO;
+	static GLuint NorthIBO;
+
+	static GLuint SouthVBO;
+	static GLuint SouthIBO;
+
+	static GLShaderProgram* ChunkRenderShader;
+
+	static std::list<ChunkRenderData*> ChunksToRender;
+
 };

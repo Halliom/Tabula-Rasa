@@ -140,7 +140,7 @@ void Chunk::InsertNode(const glm::uvec3& Position, Voxel* NewVoxel, OctreeNode* 
 						);
 				}
 
-				UpdateRenderInformation();
+				IsRenderStateDirty = true;
 			}
 
 			if (Node->Location != 1)
@@ -299,80 +299,20 @@ void Chunk::RemoveNode(const glm::uvec3& Position, OctreeNode* Node, bool IsUpwa
 	}
 }
 
-inline void Chunk::UpdateRenderInformation()
+void Chunk::Update()
 {
-	std::vector<VoxelVertex> Vertices;
-	Vertices.reserve(Nodes.size() * 6 * 6);
-	for (auto It = Nodes.begin(); It != Nodes.end(); ++It)
+	if (ContainsElementsToRemove)
 	{
-		Voxel* VoxelToRender = (*It).second->NodeData;
 
-		if (VoxelToRender && VoxelToRender->SidesToRender)
-		{
-			glm::vec3 VoxelPosition = (*It).second->ChunkPosition;
-			glm::vec3 Vertex1 = VoxelPosition;
-			glm::vec3 Vertex2 = VoxelPosition + glm::vec3(0.0f, Voxel::CUBE_SIZE, 0.0f);
-			glm::vec3 Vertex3 = VoxelPosition + glm::vec3(Voxel::CUBE_SIZE, Voxel::CUBE_SIZE, 0.0f);
-			glm::vec3 Vertex4 = VoxelPosition + glm::vec3(Voxel::CUBE_SIZE, 0, 0.0f);
-			glm::vec3 Vertex5 = VoxelPosition + glm::vec3(0.0f, 0.0f, -Voxel::CUBE_SIZE);
-			glm::vec3 Vertex6 = VoxelPosition + glm::vec3(0.0f, Voxel::CUBE_SIZE, -Voxel::CUBE_SIZE);
-			glm::vec3 Vertex7 = VoxelPosition + glm::vec3(Voxel::CUBE_SIZE, Voxel::CUBE_SIZE, -Voxel::CUBE_SIZE);
-			glm::vec3 Vertex8 = VoxelPosition + glm::vec3(Voxel::CUBE_SIZE, 0.0f, -Voxel::CUBE_SIZE);
-
-			if ((VoxelToRender->SidesToRender & VoxelSide::SIDE_EAST) == VoxelSide::SIDE_EAST)
-			{
-				Vertices.push_back({ Vertex4, VoxelToRender->ColorRed, VoxelToRender->ColorGreen, VoxelToRender->ColorBlue });
-				Vertices.push_back({ Vertex3, VoxelToRender->ColorRed, VoxelToRender->ColorGreen, VoxelToRender->ColorBlue });
-				Vertices.push_back({ Vertex7, VoxelToRender->ColorRed, VoxelToRender->ColorGreen, VoxelToRender->ColorBlue });
-				Vertices.push_back({ Vertex4, VoxelToRender->ColorRed, VoxelToRender->ColorGreen, VoxelToRender->ColorBlue });
-				Vertices.push_back({ Vertex7, VoxelToRender->ColorRed, VoxelToRender->ColorGreen, VoxelToRender->ColorBlue });
-				Vertices.push_back({ Vertex8, VoxelToRender->ColorRed, VoxelToRender->ColorGreen, VoxelToRender->ColorBlue });
-			}
-			if ((VoxelToRender->SidesToRender & VoxelSide::SIDE_WEST) == VoxelSide::SIDE_WEST)
-			{
-				Vertices.push_back({ Vertex5, VoxelToRender->ColorRed, VoxelToRender->ColorGreen, VoxelToRender->ColorBlue });
-				Vertices.push_back({ Vertex6, VoxelToRender->ColorRed, VoxelToRender->ColorGreen, VoxelToRender->ColorBlue });
-				Vertices.push_back({ Vertex2, VoxelToRender->ColorRed, VoxelToRender->ColorGreen, VoxelToRender->ColorBlue });
-				Vertices.push_back({ Vertex5, VoxelToRender->ColorRed, VoxelToRender->ColorGreen, VoxelToRender->ColorBlue });
-				Vertices.push_back({ Vertex2, VoxelToRender->ColorRed, VoxelToRender->ColorGreen, VoxelToRender->ColorBlue });
-				Vertices.push_back({ Vertex1, VoxelToRender->ColorRed, VoxelToRender->ColorGreen, VoxelToRender->ColorBlue });
-			}
-			if ((VoxelToRender->SidesToRender & VoxelSide::SIDE_TOP) == VoxelSide::SIDE_TOP)
-			{
-				//glVertex3fv(&Vertex2.x);
-				//glVertex3fv(&Vertex6.x);
-				//glVertex3fv(&Vertex7.x);
-				//glVertex3fv(&Vertex3.x);
-			}
-			if ((VoxelToRender->SidesToRender & VoxelSide::SIDE_BOTTOM) == VoxelSide::SIDE_BOTTOM)
-			{
-				//glVertex3fv(&Vertex1.x);
-				//glVertex3fv(&Vertex5.x);
-				//glVertex3fv(&Vertex8.x);
-				//glVertex3fv(&Vertex4.x);
-			}
-			if ((VoxelToRender->SidesToRender & VoxelSide::SIDE_NORTH) == VoxelSide::SIDE_NORTH)
-			{
-				//glVertex3fv(&Vertex8.x);
-				//glVertex3fv(&Vertex7.x);
-				//glVertex3fv(&Vertex6.x);
-				//glVertex3fv(&Vertex5.x);
-			}
-			if ((VoxelToRender->SidesToRender & VoxelSide::SIDE_SOUTH) == VoxelSide::SIDE_SOUTH)
-			{
-				//glVertex3fv(&Vertex1.x);
-				//glVertex3fv(&Vertex2.x);
-				//glVertex3fv(&Vertex3.x);
-				//glVertex3fv(&Vertex4.x);
-			}
-		}
 	}
-	m_RenderComponent->SetData(Vertices);
-}
+	if (ContainsElementsToAdd)
+	{
 
-void Chunk::Render()
-{
-	m_RenderComponent->Render(0.0f);
+	}
+	if (IsRenderStateDirty)
+	{
+
+	}
 }
 
 Chunk::Chunk()
@@ -388,17 +328,12 @@ Chunk::Chunk()
 	Extent = glm::uvec3(Chunk::DEPTH, Chunk::DEPTH, Chunk::DEPTH);
 
 	Nodes.insert({ 0b1, RootNode });
-
-	m_RenderComponent = new ChunkRenderComponent();
 }
 
 Chunk::~Chunk()
 {
 	Nodes.clear();
 	RootNode = NULL;
-
-	delete m_RenderComponent;
-	m_RenderComponent = NULL;
 
 	//TODO: Tell the chunk manager to remove this chunk
 }

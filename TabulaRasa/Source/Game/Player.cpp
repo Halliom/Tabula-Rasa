@@ -46,8 +46,8 @@ void Player::Update(float DeltaTime)
 	LastMouseX = Input::MouseX;
 	LastMouseY = Input::MouseY;
 	
-	if (DeltaMouseX || DeltaMouseY)
-		UpdateVectors();
+	/*if (DeltaMouseX || DeltaMouseY)
+		UpdateVectors();*/
 }
 
 void Player::UpdateVectors()

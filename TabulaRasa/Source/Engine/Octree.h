@@ -5,6 +5,7 @@
 #include "glm\common.hpp"
 
 #include <vector>
+#include <deque>
 #include <stdint.h>
 
 class Chunk;
@@ -110,9 +111,7 @@ public:
 		return Node ? Node->NodeData : NULL;
 	}
 
-	void UpdateRenderInformation();
-
-	void Render();
+	void Update();
 
 private:
 
@@ -130,7 +129,15 @@ private:
 
 	std::unordered_map<uint32_t, OctreeNode*> Nodes;
 
-	ChunkRenderComponent* m_RenderComponent;
+	std::deque<Voxel*> ElementsToAdd;
+
+	std::deque<Voxel*> ElementsToRemove;
+
+	bool ContainsElementsToAdd;
+
+	bool ContainsElementsToRemove;
+
+	bool IsRenderStateDirty;
 
 private:
 

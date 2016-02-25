@@ -3,6 +3,7 @@
 #include "glm\common.hpp"
 #include "glm\gtc\matrix_transform.hpp"
 #include "../Rendering/TextRender.h"
+#include "../Rendering/ChunkRenderComponent.h"
 
 struct Vertex
 {
@@ -15,11 +16,12 @@ struct Vertex
 
 World::World()
 {
-	Shader = GLShaderProgram::CreateVertexFragmentShaderFromFile(std::string("VertexShader.glsl"), std::string("FragmentShader.glsl"));
 	CurrentPlayer = new Player();
 
 	TextRender::Initialize2DTextRendering();
 	TextRender::AddTextToRender("Hello World", 36.0f);
+
+	ChunkRenderer::SetupChunkRenderer();
 
 	/*for (int i = 0; i < 16; ++i)
 	{
@@ -37,10 +39,8 @@ World::~World()
 {
 	TextRender::Destroy2DTextRendering();
 
-	if (Shader)
-	{
-		delete Shader;
-	}
+	ChunkRenderer::DestroyChunkRenderer();
+
 	if (CurrentPlayer)
 	{
 		delete CurrentPlayer;
@@ -49,10 +49,11 @@ World::~World()
 
 void World::Update(float DeltaTime)
 {
-	TextRender::Render();
-
 	static float Angle = 0;
 	Angle += DeltaTime;
+
+	ChunkRenderer::RenderAllChunks(CurrentPlayer, Angle);
+	TextRender::Render();
 
 	CurrentPlayer->Update(DeltaTime);
 
