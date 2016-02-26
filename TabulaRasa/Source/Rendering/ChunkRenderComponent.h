@@ -57,7 +57,9 @@ public:
 
 	static void InsertIntoBuffer(GLuint* FacePBO, uint32_t* NumFaces, uint32_t* BufferLength, ChunkRenderCoordinate& NewCoordinate);
 
-	//static void InsertBatchIntoBuffer(GLuint FacePBO, uint32_t* NumFaces, uint32_t* BufferLength, );
+	static void InsertBatchIntoBufferSide(ChunkRenderData* RenderData, const VoxelSide& Side, ChunkRenderCoordinate* RenderCoords, uint32_t& NumRenderCoords);
+
+	static void InsertBatchIntoBuffer(GLuint* FacePBO, uint32_t* NumFaces, uint32_t* BufferLength, ChunkRenderCoordinate* RenderCoords, uint32_t& NumRenderCoords);
 
 	static void SpliceFromBufferSide(ChunkRenderData* RenderData, const VoxelSide& Side, ChunkRenderCoordinate& Coordinate);
 

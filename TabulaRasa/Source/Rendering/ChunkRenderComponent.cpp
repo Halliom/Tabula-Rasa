@@ -34,7 +34,7 @@ GLuint ChunkRenderer::NorthIBO;
 GLuint ChunkRenderer::SouthVBO;
 GLuint ChunkRenderer::SouthIBO;
 
-#define INITIAL_BUFFER_SIZE 32
+#define INITIAL_BUFFER_SIZE 2
 #define INCREASE_AMOUNT 4
 
 void ChunkRenderer::SetupChunkRenderer()
@@ -332,21 +332,80 @@ __forceinline void ChunkRenderer::InsertIntoBufferSide(ChunkRenderData* RenderDa
 	glUnmapBuffer(GL_ARRAY_BUFFER);
 }
 
-void ChunkRenderer::InsertIntoBuffer(GLuint* FacePBO, uint32_t * NumFaces, uint32_t * BufferLength, ChunkRenderCoordinate& NewCoordinate)
+void ChunkRenderer::InsertIntoBuffer(GLuint* FacePBO, uint32_t* NumFaces, uint32_t* BufferLength, ChunkRenderCoordinate& NewCoordinate)
 {
 	glBindBuffer(GL_ARRAY_BUFFER, *FacePBO);
 	uint8_t* BufferStorage = (uint8_t*)glMapBuffer(GL_ARRAY_BUFFER, GL_READ_WRITE);
-	if ((*NumFaces) < ((*BufferLength) - 1))
+	if ((*NumFaces) >= (*BufferLength))
 	{
-		BufferStorage += (3 * (*NumFaces));
-
-		memcpy(BufferStorage, &NewCoordinate.X, 3);
-		++(*NumFaces);
-	}
-	else
-	{
+		// This automatically unmaps the buffer
 		glBufferData(GL_ARRAY_BUFFER, (*NumFaces) + INCREASE_AMOUNT, BufferStorage, 0);
+		*BufferLength = (*NumFaces) + INCREASE_AMOUNT;
 	}
+	BufferStorage += (3 * (*NumFaces));
+
+	memcpy(BufferStorage, &NewCoordinate.X, 3);
+	++(*NumFaces);
+}
+
+__forceinline void ChunkRenderer::InsertBatchIntoBufferSide(ChunkRenderData* RenderData, const VoxelSide& Side, ChunkRenderCoordinate* RenderCoords, uint32_t& NumRenderCoords)
+{
+	switch (Side)
+	{
+		case SIDE_EAST:
+		{
+			InsertBatchIntoBuffer(&RenderData->EastFacePBO, &RenderData->NumEastFaces, &RenderData->EastFacesBufferLength, RenderCoords, NumRenderCoords);
+			break;
+		}
+		case SIDE_WEST:
+		{
+			InsertBatchIntoBuffer(&RenderData->WestFacePBO, &RenderData->NumWestFaces, &RenderData->WestFacesBufferLength, RenderCoords, NumRenderCoords);
+			break;
+		}
+		case SIDE_TOP:
+		{
+			InsertBatchIntoBuffer(&RenderData->TopFacePBO, &RenderData->NumTopFaces, &RenderData->TopFacesBufferLength, RenderCoords, NumRenderCoords);
+			break;
+		}
+		case SIDE_BOTTOM:
+		{
+			InsertBatchIntoBuffer(&RenderData->BottomFacePBO, &RenderData->NumBottomFaces, &RenderData->BottomFacesBufferLength, RenderCoords, NumRenderCoords);
+			break;
+		}
+		case SIDE_NORTH:
+		{
+			InsertBatchIntoBuffer(&RenderData->NorthFacePBO, &RenderData->NumNorthFaces, &RenderData->NorthFacesBufferLength, RenderCoords, NumRenderCoords);
+			break;
+		}
+		case SIDE_SOUTH:
+		{
+			InsertBatchIntoBuffer(&RenderData->SouthFacePBO, &RenderData->NumSouthFaces, &RenderData->SouthFacesBufferLength, RenderCoords, NumRenderCoords);
+			break;
+		}
+		default: { break; }
+	}
+	glUnmapBuffer(GL_ARRAY_BUFFER);
+}
+
+void ChunkRenderer::InsertBatchIntoBuffer(GLuint* FacePBO, uint32_t* NumFaces, uint32_t* BufferLength, ChunkRenderCoordinate* RenderCoords, uint32_t& NumRenderCoords)
+{
+	glBindBuffer(GL_ARRAY_BUFFER, *FacePBO);
+
+	uint8_t* BufferStorage = (uint8_t*) glMapBuffer(GL_ARRAY_BUFFER, GL_READ_WRITE);
+	if (((*NumFaces) + NumRenderCoords) >= (*BufferLength)) // We are going to have to reallocate
+	{
+		glBufferData(GL_ARRAY_BUFFER, (*NumFaces) + NumRenderCoords + INCREASE_AMOUNT, BufferStorage, 0);
+		*BufferLength = (*NumFaces) + NumRenderCoords + INCREASE_AMOUNT;
+
+		// Remaps the buffer since glBufferData automatically unmaps it
+		BufferStorage = (uint8_t*)glMapBuffer(GL_ARRAY_BUFFER, GL_READ_WRITE);
+	}
+
+	for (uint32_t Index = 0; Index < NumRenderCoords; ++Index)
+	{
+		memcpy(BufferStorage + (Index + (*NumFaces)), &RenderCoords[Index].X, 3);
+	}
+	*NumFaces += NumRenderCoords;
 }
 
 __forceinline void ChunkRenderer::SpliceFromBufferSide(ChunkRenderData* RenderData, const VoxelSide& Side, ChunkRenderCoordinate& Coordinate)
