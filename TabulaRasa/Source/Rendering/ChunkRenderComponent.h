@@ -35,6 +35,14 @@ struct ChunkRenderData
 	uint32_t SouthFacesBufferLength;
 };
 
+struct ChunkRenderCoordinate
+{
+	ChunkRenderCoordinate(uint8_t X, uint8_t Y, uint8_t Z) : X(X), Y(Y), Z(Z) {}
+	uint8_t X;
+	uint8_t Y;
+	uint8_t Z;
+};
+
 class ChunkRenderer
 {
 public:
@@ -45,11 +53,15 @@ public:
 
 	static void RenderAllChunks(Player* CurrentPlayer, float CumulativeTime);
 
-	static void InsertIntoBuffer(ChunkRenderData* RenderData, const VoxelSide& Side, uint8_t NewX, uint8_t NewY, uint8_t NewZ);
+	static void InsertIntoBufferSide(ChunkRenderData* RenderData, const VoxelSide& Side, ChunkRenderCoordinate& NewCoordinate);
 
-	static void SpliceFromBufferSide(ChunkRenderData* RenderData, const VoxelSide& Side, uint8_t X, uint8_t Y, uint8_t Z);
+	static void InsertIntoBuffer(GLuint* FacePBO, uint32_t* NumFaces, uint32_t* BufferLength, ChunkRenderCoordinate& NewCoordinate);
 
-	static void SpliceFromBuffer(GLuint* FacePBO, uint32_t* NumFaces, uint32_t* BufferLength, uint8_t& X, uint8_t& Y, uint8_t& Z);
+	//static void InsertBatchIntoBuffer(GLuint FacePBO, uint32_t* NumFaces, uint32_t* BufferLength, );
+
+	static void SpliceFromBufferSide(ChunkRenderData* RenderData, const VoxelSide& Side, ChunkRenderCoordinate& Coordinate);
+
+	static void SpliceFromBuffer(GLuint* FacePBO, uint32_t* NumFaces, uint32_t* BufferLength, ChunkRenderCoordinate& Coordinate);
 
 	void SetData(std::vector<VoxelVertex>& Vertices);
 

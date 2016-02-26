@@ -182,13 +182,13 @@ void ChunkRenderer::SetupChunkRenderer()
 	glBufferData(GL_ARRAY_BUFFER, INITIAL_BUFFER_SIZE * 3, NULL, GL_DYNAMIC_DRAW);
 	RenderData->SouthFacesBufferLength = INITIAL_BUFFER_SIZE;
 
-	ChunkRenderer::InsertIntoBuffer(RenderData, VoxelSide::SIDE_EAST, 1, 4, 2);
-	ChunkRenderer::InsertIntoBuffer(RenderData, VoxelSide::SIDE_EAST, 1, 3, 5);
-	ChunkRenderer::InsertIntoBuffer(RenderData, VoxelSide::SIDE_EAST, 1, 2, 3);
-	ChunkRenderer::InsertIntoBuffer(RenderData, VoxelSide::SIDE_EAST, 2, 6, 6);
-	ChunkRenderer::InsertIntoBuffer(RenderData, VoxelSide::SIDE_EAST, 7, 6, 2);
-	ChunkRenderer::InsertIntoBuffer(RenderData, VoxelSide::SIDE_EAST, 1, 2, 2);
-	ChunkRenderer::SpliceFromBufferSide(RenderData, VoxelSide::SIDE_EAST, 1, 2, 3);
+	ChunkRenderer::InsertIntoBufferSide(RenderData, VoxelSide::SIDE_EAST, ChunkRenderCoordinate(1, 4, 2));
+	ChunkRenderer::InsertIntoBufferSide(RenderData, VoxelSide::SIDE_EAST, ChunkRenderCoordinate(1, 3, 5));
+	ChunkRenderer::InsertIntoBufferSide(RenderData, VoxelSide::SIDE_EAST, ChunkRenderCoordinate(1, 2, 3));
+	ChunkRenderer::InsertIntoBufferSide(RenderData, VoxelSide::SIDE_EAST, ChunkRenderCoordinate(2, 6, 6));
+	ChunkRenderer::InsertIntoBufferSide(RenderData, VoxelSide::SIDE_EAST, ChunkRenderCoordinate(7, 6, 2));
+	ChunkRenderer::InsertIntoBufferSide(RenderData, VoxelSide::SIDE_EAST, ChunkRenderCoordinate(1, 2, 2));
+	ChunkRenderer::SpliceFromBufferSide(RenderData, VoxelSide::SIDE_EAST, ChunkRenderCoordinate(1, 2, 3));
 }
 
 void ChunkRenderer::DestroyChunkRenderer()
@@ -293,162 +293,38 @@ void ChunkRenderer::RenderAllChunks(Player* CurrentPlayer, float CumulativeTime)
 	}
 }
 
-void ChunkRenderer::InsertIntoBuffer(ChunkRenderData* RenderData, const VoxelSide& Side, uint8_t NewX, uint8_t NewY, uint8_t NewZ)
+__forceinline void ChunkRenderer::InsertIntoBufferSide(ChunkRenderData* RenderData, const VoxelSide& Side, ChunkRenderCoordinate& NewCoordinate)
 {
 	switch (Side)
 	{
 		case SIDE_EAST:
 		{
-			glBindBuffer(GL_ARRAY_BUFFER, RenderData->EastFacePBO);
-			uint8_t* BufferStorage = (uint8_t*)glMapBuffer(GL_ARRAY_BUFFER, GL_READ_WRITE);
-			if (RenderData->NumEastFaces < (RenderData->EastFacesBufferLength - 1))
-			{
-				BufferStorage += (3 * RenderData->NumEastFaces);
-
-				memcpy(BufferStorage, &NewX, 1);
-				memcpy(BufferStorage + 1, &NewY, 1);
-				memcpy(BufferStorage + 2, &NewZ, 1);
-				++RenderData->NumEastFaces;
-			}
-			else
-			{
-				glBufferData(GL_ARRAY_BUFFER, RenderData->NumEastFaces + INCREASE_AMOUNT, BufferStorage, 0);
-			}
-			break;
-		}
-		case SIDE_WEST :
-		{
-			glBindBuffer(GL_ARRAY_BUFFER, RenderData->WestFacePBO);
-			uint8_t* BufferStorage = (uint8_t*)glMapBuffer(GL_ARRAY_BUFFER, GL_READ_WRITE);
-			if (RenderData->NumWestFaces < (RenderData->WestFacesBufferLength - 1))
-			{
-				BufferStorage += (3 * RenderData->NumWestFaces);
-
-				memcpy(BufferStorage, &NewX, 1);
-				memcpy(BufferStorage + 1, &NewY, 1);
-				memcpy(BufferStorage + 2, &NewZ, 1);
-				RenderData->NumWestFaces += 1;
-			}
-			else
-			{
-				glBufferData(GL_ARRAY_BUFFER, RenderData->NumWestFaces + INCREASE_AMOUNT, BufferStorage, 0);
-			}
-			break;
-		}
-		case SIDE_TOP:
-		{
-			glBindBuffer(GL_ARRAY_BUFFER, RenderData->TopFacePBO);
-			uint8_t* BufferStorage = (uint8_t*)glMapBuffer(GL_ARRAY_BUFFER, GL_READ_WRITE);
-			if (RenderData->NumTopFaces < (RenderData->TopFacesBufferLength - 1))
-			{
-				BufferStorage += (3 * RenderData->NumTopFaces);
-
-				memcpy(BufferStorage, &NewX, 1);
-				memcpy(BufferStorage + 1, &NewY, 1);
-				memcpy(BufferStorage + 2, &NewZ, 1);
-				RenderData->NumTopFaces += 1;
-			}
-			else
-			{
-				glBufferData(GL_ARRAY_BUFFER, RenderData->NumTopFaces + INCREASE_AMOUNT, BufferStorage, 0);
-			}
-			break;
-		}
-		case SIDE_BOTTOM:
-		{
-			glBindBuffer(GL_ARRAY_BUFFER, RenderData->BottomFacePBO);
-			uint8_t* BufferStorage = (uint8_t*)glMapBuffer(GL_ARRAY_BUFFER, GL_READ_WRITE);
-			if (RenderData->NumBottomFaces < (RenderData->BottomFacesBufferLength - 1))
-			{
-				BufferStorage += (3 * RenderData->NumBottomFaces);
-
-				memcpy(BufferStorage, &NewX, 1);
-				memcpy(BufferStorage + 1, &NewY, 1);
-				memcpy(BufferStorage + 2, &NewZ, 1);
-				RenderData->NumBottomFaces += 1;
-			}
-			else
-			{
-				glBufferData(GL_ARRAY_BUFFER, RenderData->NumBottomFaces + INCREASE_AMOUNT, BufferStorage, 0);
-			}
-			break;
-		}
-		case SIDE_NORTH:
-		{
-			glBindBuffer(GL_ARRAY_BUFFER, RenderData->NorthFacePBO);
-			uint8_t* BufferStorage = (uint8_t*)glMapBuffer(GL_ARRAY_BUFFER, GL_READ_WRITE);
-			if (RenderData->NumNorthFaces < (RenderData->NorthFacesBufferLength - 1))
-			{
-				BufferStorage += (3 * RenderData->NumNorthFaces);
-
-				memcpy(BufferStorage, &NewX, 1);
-				memcpy(BufferStorage + 1, &NewY, 1);
-				memcpy(BufferStorage + 2, &NewZ, 1);
-				RenderData->NumNorthFaces += 1;
-			}
-			else
-			{
-				glBufferData(GL_ARRAY_BUFFER, RenderData->NumNorthFaces + INCREASE_AMOUNT, BufferStorage, 0);
-			}
-			break;
-		}
-		case SIDE_SOUTH:
-		{
-			glBindBuffer(GL_ARRAY_BUFFER, RenderData->SouthFacePBO);
-			uint8_t* BufferStorage = (uint8_t*)glMapBuffer(GL_ARRAY_BUFFER, GL_READ_WRITE);
-			if (RenderData->NumSouthFaces < (RenderData->SouthFacesBufferLength - 1))
-			{
-				BufferStorage += (3 * RenderData->NumSouthFaces);
-
-				memcpy(BufferStorage, &NewX, 1);
-				memcpy(BufferStorage + 1, &NewY, 1);
-				memcpy(BufferStorage + 2, &NewZ, 1);
-				RenderData->NumSouthFaces += 1;
-			}
-			else
-			{
-				glBufferData(GL_ARRAY_BUFFER, RenderData->NumSouthFaces + INCREASE_AMOUNT, BufferStorage, 0);
-			}
-			break;
-		}
-		default: { break; }
-	}
-	
-	glUnmapBuffer(GL_ARRAY_BUFFER);
-}
-
-__forceinline void ChunkRenderer::SpliceFromBufferSide(ChunkRenderData* RenderData, const VoxelSide& Side, uint8_t X, uint8_t Y, uint8_t Z)
-{
-	switch (Side)
-	{
-		case SIDE_EAST:
-		{
-			SpliceFromBuffer(&RenderData->EastFacePBO, &RenderData->NumEastFaces, &RenderData->EastFacesBufferLength, X, Y, Z);
+			InsertIntoBuffer(&RenderData->EastFacePBO, &RenderData->NumEastFaces, &RenderData->EastFacesBufferLength, NewCoordinate);
 			break;
 		}
 		case SIDE_WEST:
 		{
-			SpliceFromBuffer(&RenderData->WestFacePBO, &RenderData->NumWestFaces, &RenderData->WestFacesBufferLength, X, Y, Z);
+			InsertIntoBuffer(&RenderData->WestFacePBO, &RenderData->NumWestFaces, &RenderData->WestFacesBufferLength, NewCoordinate);
 			break;
 		}
 		case SIDE_TOP:
 		{
-			SpliceFromBuffer(&RenderData->TopFacePBO, &RenderData->NumTopFaces, &RenderData->TopFacesBufferLength, X, Y, Z);
+			InsertIntoBuffer(&RenderData->TopFacePBO, &RenderData->NumTopFaces, &RenderData->TopFacesBufferLength, NewCoordinate);
 			break;
 		}
 		case SIDE_BOTTOM:
 		{
-			SpliceFromBuffer(&RenderData->BottomFacePBO, &RenderData->NumBottomFaces, &RenderData->BottomFacesBufferLength, X, Y, Z);
+			InsertIntoBuffer(&RenderData->BottomFacePBO, &RenderData->NumBottomFaces, &RenderData->BottomFacesBufferLength, NewCoordinate);
 			break;
 		}
 		case SIDE_NORTH:
 		{
-			SpliceFromBuffer(&RenderData->NorthFacePBO, &RenderData->NumNorthFaces, &RenderData->NorthFacesBufferLength, X, Y, Z);
+			InsertIntoBuffer(&RenderData->NorthFacePBO, &RenderData->NumNorthFaces, &RenderData->NorthFacesBufferLength, NewCoordinate);
 			break;
 		}
 		case SIDE_SOUTH:
 		{
-			SpliceFromBuffer(&RenderData->SouthFacePBO, &RenderData->NumSouthFaces, &RenderData->SouthFacesBufferLength, X, Y, Z);
+			InsertIntoBuffer(&RenderData->SouthFacePBO, &RenderData->NumSouthFaces, &RenderData->SouthFacesBufferLength, NewCoordinate);
 			break;
 		}
 		default: { break; }
@@ -456,7 +332,63 @@ __forceinline void ChunkRenderer::SpliceFromBufferSide(ChunkRenderData* RenderDa
 	glUnmapBuffer(GL_ARRAY_BUFFER);
 }
 
-void ChunkRenderer::SpliceFromBuffer(GLuint * FacePBO, uint32_t * NumFaces, uint32_t * BufferLength, uint8_t & X, uint8_t & Y, uint8_t & Z)
+void ChunkRenderer::InsertIntoBuffer(GLuint* FacePBO, uint32_t * NumFaces, uint32_t * BufferLength, ChunkRenderCoordinate& NewCoordinate)
+{
+	glBindBuffer(GL_ARRAY_BUFFER, *FacePBO);
+	uint8_t* BufferStorage = (uint8_t*)glMapBuffer(GL_ARRAY_BUFFER, GL_READ_WRITE);
+	if ((*NumFaces) < ((*BufferLength) - 1))
+	{
+		BufferStorage += (3 * (*NumFaces));
+
+		memcpy(BufferStorage, &NewCoordinate.X, 3);
+		++(*NumFaces);
+	}
+	else
+	{
+		glBufferData(GL_ARRAY_BUFFER, (*NumFaces) + INCREASE_AMOUNT, BufferStorage, 0);
+	}
+}
+
+__forceinline void ChunkRenderer::SpliceFromBufferSide(ChunkRenderData* RenderData, const VoxelSide& Side, ChunkRenderCoordinate& Coordinate)
+{
+	switch (Side)
+	{
+		case SIDE_EAST:
+		{
+			SpliceFromBuffer(&RenderData->EastFacePBO, &RenderData->NumEastFaces, &RenderData->EastFacesBufferLength, Coordinate);
+			break;
+		}
+		case SIDE_WEST:
+		{
+			SpliceFromBuffer(&RenderData->WestFacePBO, &RenderData->NumWestFaces, &RenderData->WestFacesBufferLength, Coordinate);
+			break;
+		}
+		case SIDE_TOP:
+		{
+			SpliceFromBuffer(&RenderData->TopFacePBO, &RenderData->NumTopFaces, &RenderData->TopFacesBufferLength, Coordinate);
+			break;
+		}
+		case SIDE_BOTTOM:
+		{
+			SpliceFromBuffer(&RenderData->BottomFacePBO, &RenderData->NumBottomFaces, &RenderData->BottomFacesBufferLength, Coordinate);
+			break;
+		}
+		case SIDE_NORTH:
+		{
+			SpliceFromBuffer(&RenderData->NorthFacePBO, &RenderData->NumNorthFaces, &RenderData->NorthFacesBufferLength, Coordinate);
+			break;
+		}
+		case SIDE_SOUTH:
+		{
+			SpliceFromBuffer(&RenderData->SouthFacePBO, &RenderData->NumSouthFaces, &RenderData->SouthFacesBufferLength, Coordinate);
+			break;
+		}
+		default: { break; }
+	}
+	glUnmapBuffer(GL_ARRAY_BUFFER);
+}
+
+void ChunkRenderer::SpliceFromBuffer(GLuint * FacePBO, uint32_t * NumFaces, uint32_t * BufferLength, ChunkRenderCoordinate& Coordinate)
 {
 	glBindBuffer(GL_ARRAY_BUFFER, *FacePBO);
 
@@ -469,9 +401,9 @@ void ChunkRenderer::SpliceFromBuffer(GLuint * FacePBO, uint32_t * NumFaces, uint
 	uint8_t* BufferStorage = (uint8_t*)glMapBuffer(GL_ARRAY_BUFFER, GL_READ_WRITE);
 	unsigned int Index = 0;
 	do {
-		if (X == BufferStorage[0] &&
-			Y == BufferStorage[1] &&
-			Z == BufferStorage[2])
+		if (Coordinate.X == BufferStorage[0] &&
+			Coordinate.Y == BufferStorage[1] &&
+			Coordinate.Z == BufferStorage[2])
 		{
 			// We have found the index for the position
 			uint32_t UpperHalfLength = ((*BufferLength) - Index - 1) * 3; // 3 uint8_ts for every index
