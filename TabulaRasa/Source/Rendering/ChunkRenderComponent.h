@@ -33,6 +33,8 @@ struct ChunkRenderData
 	uint32_t BottomFacesBufferLength;
 	uint32_t NorthFacesBufferLength;
 	uint32_t SouthFacesBufferLength;
+
+	glm::vec3 ChunkWorldPosition;
 };
 
 struct ChunkRenderCoordinate
