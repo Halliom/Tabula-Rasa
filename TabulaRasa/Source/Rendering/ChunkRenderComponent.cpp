@@ -188,7 +188,7 @@ void ChunkRenderer::SetupChunkRenderer()
 	ChunkRenderer::InsertIntoBuffer(RenderData, VoxelSide::SIDE_EAST, 2, 6, 6);
 	ChunkRenderer::InsertIntoBuffer(RenderData, VoxelSide::SIDE_EAST, 7, 6, 2);
 	ChunkRenderer::InsertIntoBuffer(RenderData, VoxelSide::SIDE_EAST, 1, 2, 2);
-	ChunkRenderer::SpliceFromBuffer(RenderData, VoxelSide::SIDE_EAST, 1, 2, 3);
+	ChunkRenderer::SpliceFromBufferSide(RenderData, VoxelSide::SIDE_EAST, 1, 2, 3);
 }
 
 void ChunkRenderer::DestroyChunkRenderer()
