@@ -20,11 +20,19 @@ struct ChunkRenderData
 	GLuint NorthFacePBO;
 	GLuint SouthFacePBO;
 
+	uint32_t NumEastFaces;
 	uint32_t NumWestFaces;
 	uint32_t NumTopFaces;
 	uint32_t NumBottomFaces;
 	uint32_t NumNorthFaces;
 	uint32_t NumSouthFaces;
+
+	uint32_t EastFacesBufferLength;
+	uint32_t WestFacesBufferLength;
+	uint32_t TopFacesBufferLength;
+	uint32_t BottomFacesBufferLength;
+	uint32_t NorthFacesBufferLength;
+	uint32_t SouthFacesBufferLength;
 };
 
 class ChunkRenderer
@@ -36,6 +44,12 @@ public:
 	static void DestroyChunkRenderer();
 
 	static void RenderAllChunks(Player* CurrentPlayer, float CumulativeTime);
+
+	static void InsertIntoBuffer(ChunkRenderData* RenderData, const VoxelSide& Side, uint8_t NewX, uint8_t NewY, uint8_t NewZ);
+
+	static void SpliceFromBufferSide(ChunkRenderData* RenderData, const VoxelSide& Side, uint8_t X, uint8_t Y, uint8_t Z);
+
+	static void SpliceFromBuffer(GLuint* FacePBO, uint32_t* NumFaces, uint32_t* BufferLength, uint8_t& X, uint8_t& Y, uint8_t& Z);
 
 	void SetData(std::vector<VoxelVertex>& Vertices);
 

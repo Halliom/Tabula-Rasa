@@ -1,4 +1,6 @@
-in vec3 position;
+#version 400
+layout(location = 0) in vec3 position;
+layout(location = 2) in vec3 offset;
 //in vec3 in_color;
 
 uniform mat4 g_ProjectionMatrix;
