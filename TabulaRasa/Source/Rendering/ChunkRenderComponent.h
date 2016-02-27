@@ -1,8 +1,7 @@
 #pragma once
 
-#include <list>
-
 #include "glm\common.hpp"
+#include "DynamicArray.cpp"
 
 #include "GL_shader.h"
 #include "../Engine/Octree.h"
@@ -12,6 +11,9 @@ struct VoxelVertex;
 
 struct ChunkRenderData
 {
+	// The position (in world coordinates) that the chunk is in
+	glm::vec3 ChunkPosition;
+
 	// Position Buffer Objects (PBOs)
 	GLuint EastFacePBO;
 	GLuint WestFacePBO;
@@ -33,8 +35,6 @@ struct ChunkRenderData
 	uint32_t BottomFacesBufferLength;
 	uint32_t NorthFacesBufferLength;
 	uint32_t SouthFacesBufferLength;
-
-	glm::vec3 ChunkWorldPosition;
 };
 
 struct ChunkRenderCoordinate
@@ -69,6 +69,8 @@ public:
 
 	void SetData(std::vector<VoxelVertex>& Vertices);
 
+	static DynamicArray<ChunkRenderData*> ChunksToRender;
+
 private:
 
 	static GLuint EastVAO;
@@ -97,7 +99,5 @@ private:
 	static GLuint SouthIBO;
 
 	static GLShaderProgram* ChunkRenderShader;
-
-	static std::list<ChunkRenderData*> ChunksToRender;
 
 };
