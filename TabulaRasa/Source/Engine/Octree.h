@@ -2,14 +2,15 @@
 
 #include <unordered_map>
 
-#include "glm\common.hpp"
-
 #include <vector>
 #include <deque>
 #include <stdint.h>
 
+#include "glm\common.hpp"
+#include "DynamicArray.cpp"
+
 class Chunk;
-class ChunkRenderComponent;
+class ChunkRenderer;
 
 enum VoxelSide : uint32_t
 {

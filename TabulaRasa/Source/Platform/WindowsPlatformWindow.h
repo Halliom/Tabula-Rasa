@@ -2,6 +2,9 @@
 
 #include "windows.h" // Need to include windows.h before gl.h
 #include "windowsx.h"
+
+#include "SDL2\SDL.h"
+
 #include "GL\glew.h"
 #include "GL\wglew.h"
 
@@ -12,6 +15,8 @@ struct WindowParameters
 	unsigned int Height;
 	bool UseVSync;
 	bool UseDepthTest;
+	bool Fullscreen;
+	bool StartMaximized;
 	HINSTANCE Instance;
 };
 
@@ -23,6 +28,8 @@ public:
 	~PlatformWindow();
 
 	bool SetupWindowAndRenderContext();
+
+	void DestroyWindow();
 
 	void GetErrorMessage();
 
@@ -38,7 +45,7 @@ private:
 
 	static PlatformWindow* GlobalWindow;
 
-	HGLRC GLRenderContext;
+	SDL_Window* MainWindow;
 
-	HDC DeviceContext;
+	SDL_GLContext MainContext;
 };

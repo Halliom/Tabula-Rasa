@@ -303,15 +303,20 @@ void Chunk::Update()
 {
 	if (ContainsElementsToRemove)
 	{
-
+		for (auto& It : ElementsToRemove)
+		{
+			RemoveNode(It);
+		}
 	}
 	if (ContainsElementsToAdd)
 	{
-
+		for (auto& It : ElementsToAdd)
+		{
+			InsertNode(It.Position, It.Value);
+		}
 	}
 	if (IsRenderStateDirty)
 	{
-
 	}
 }
 

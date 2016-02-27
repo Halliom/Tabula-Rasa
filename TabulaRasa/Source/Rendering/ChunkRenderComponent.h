@@ -45,6 +45,14 @@ struct ChunkRenderCoordinate
 	uint8_t Z;
 };
 
+struct SideCoordinate
+{
+	VoxelSide Side;
+	uint8_t X;
+	uint8_t Y;
+	uint8_t Z;
+};
+
 class ChunkRenderer
 {
 public:

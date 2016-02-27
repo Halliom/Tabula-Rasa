@@ -19,7 +19,7 @@ int CALLBACK WinMain(
     int         nCmdShow
     )
 {
-	PlatformWindow Window = PlatformWindow({ "Testing", 800, 600, false, false, hInstance });
+	PlatformWindow Window = PlatformWindow({ "Testing", 800, 600, false, false, false, false, hInstance });
 #else
 int main(int argc, char* argv[])
 {

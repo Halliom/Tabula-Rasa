@@ -54,6 +54,8 @@
 Header part. Put this in a .h file:
 ******************************************************************************/
 
+#pragma once
+
 #include <memory.h>                              // For memcpy and memset
 #include <stdlib.h>                              // For exit in Error function
 #include <stdio.h>                               // Needed for example only
