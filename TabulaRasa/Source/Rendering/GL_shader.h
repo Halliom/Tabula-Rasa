@@ -70,6 +70,11 @@ public:
 		glUniformMatrix4fv(ViewMatrixLocation, 1, GL_FALSE, glm::value_ptr(ViewMatrix));
 	}
 
+	__forceinline void SetChunkPositionOffset(const glm::vec3& ChunkPositionOffset)
+	{
+		glUniform3fv(ChunkPositionOffsetLocation, 1, glm::value_ptr(ChunkPositionOffset));
+	}
+
 private:
 
 	GLint Program;
@@ -79,6 +84,8 @@ private:
 	GLint ViewMatrixLocation;
 
 	GLint ModelMatrixLocation;
+
+	GLint ChunkPositionOffsetLocation;
 
 	GLint TextureSamplers[4];
 };

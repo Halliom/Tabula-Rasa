@@ -75,12 +75,30 @@ public:
 	glm::uvec3 Center;
 };
 
+struct VoxelAddData
+{
+	glm::uvec3 Position;
+	Voxel* Value;
+};
+
 class Chunk
 {
 public:
 	Chunk();
 
 	~Chunk();
+
+	__forceinline void InsertVoxel(glm::uvec3 Position, Voxel* VoxelToAdd)
+	{
+		ElementsToAdd.push_back({ Position, VoxelToAdd });
+		ContainsElementsToAdd = true;
+	}
+
+	__forceinline void RemoveVoxel(glm::uvec3 Position)
+	{
+		ContainsElementsToRemove = true;
+		ElementsToRemove.push_back(Position);
+	}
 
 	OctreeNode* GetNode(uint32_t Position);
 
@@ -129,9 +147,9 @@ private:
 
 	std::unordered_map<uint32_t, OctreeNode*> Nodes;
 
-	std::deque<Voxel*> ElementsToAdd;
+	std::deque<VoxelAddData> ElementsToAdd;
 
-	std::deque<Voxel*> ElementsToRemove;
+	std::deque<glm::uvec3> ElementsToRemove;
 
 	bool ContainsElementsToAdd;
 

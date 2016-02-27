@@ -5,12 +5,14 @@ layout(location = 2) in uvec3 offset;
 
 uniform mat4 g_ProjectionMatrix;
 uniform mat4 g_ViewMatrix;
-uniform mat4 g_WorldTransformMatrix;
+
+uniform vec3 g_ChunkOffset;
 
 out vec4 frag_color;
 
 void main()
 {
-	gl_Position = g_ProjectionMatrix * g_ViewMatrix * g_WorldTransformMatrix * vec4(position + vec3(offset), 1.0f);
-	frag_color = vec4(((gl_VertexID + 0) % 3) / 3.0, ((gl_VertexID + 1) % 3) / 3.0, ((gl_VertexID + 2) % 3) / 3.0, 1.0);
+	vec3 transformedPosition = position + vec3(offset) + g_ChunkOffset;
+	gl_Position = g_ProjectionMatrix * g_ViewMatrix * vec4(transformedPosition, 1.0f);
+	frag_color = vec4(1.0, 1.0, 1.0, 1.0);
 }
