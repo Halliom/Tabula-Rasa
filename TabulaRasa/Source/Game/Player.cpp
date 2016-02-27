@@ -28,26 +28,26 @@ Player::~Player()
 
 void Player::Update(float DeltaTime)
 {
-	if (Input::Keys[KEY_W])
+	if (Input::Keys[SDL_SCANCODE_W])
 		Position += 2.0f * Front * DeltaTime;
-	if (Input::Keys[KEY_S])
+	if (Input::Keys[SDL_SCANCODE_S])
 		Position -= 2.0f * Front * DeltaTime;
-	if (Input::Keys[KEY_D])
+	if (Input::Keys[SDL_SCANCODE_D])
 		Position += 2.0f * Right * DeltaTime;
-	if (Input::Keys[KEY_A])
+	if (Input::Keys[SDL_SCANCODE_A])
 		Position -= 2.0f * Right * DeltaTime;
 
 	int32_t DeltaMouseX = Input::MouseX - LastMouseX;
 	int32_t DeltaMouseY = Input::MouseY - LastMouseY;
 
-	Yaw += DeltaMouseX * 25.0f * DeltaTime;
-	Pitch += DeltaMouseY * -25.0f * DeltaTime;
+	Yaw += DeltaMouseX * 100.0f * DeltaTime;
+	Pitch += DeltaMouseY * -100.0f * DeltaTime;
 
 	LastMouseX = Input::MouseX;
 	LastMouseY = Input::MouseY;
 	
-	/*if (DeltaMouseX || DeltaMouseY)
-		UpdateVectors();*/
+	if (DeltaMouseX || DeltaMouseY)
+		UpdateVectors();
 }
 
 void Player::UpdateVectors()

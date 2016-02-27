@@ -2,6 +2,8 @@
 
 #include <stdint.h>
 
+#include "SDL2\SDL.h"
+
 class Input
 {
 public:

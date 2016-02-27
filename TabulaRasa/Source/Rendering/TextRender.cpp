@@ -132,14 +132,15 @@ void TextRender::RemoveText(TextRenderData2D* TextToRemove)
 	auto Position = std::find(RenderObjects.begin(), RenderObjects.end(), TextToRemove);
 	if (Position != RenderObjects.end())
 	{
-		glDeleteBuffers(1, &(*Position)->VBO);
-		glDeleteBuffers(1, &(*Position)->VBO);
-		glDeleteTextures(1, &(*Position)->TextureID);
+		TextRenderData2D* RenderData = *Position;
+		glDeleteBuffers(1, &RenderData->VBO);
+		glDeleteBuffers(1, &RenderData->IBO);
+		glDeleteTextures(1, &RenderData->TextureID);
 		RenderObjects.erase(Position);
 
 		// This needs to be done since std::vector does not automatically
 		// destruct the object (if it's a pointer, which it is) when calling erase
-		delete (*Position);
+		delete RenderData;
 	}
 }
 

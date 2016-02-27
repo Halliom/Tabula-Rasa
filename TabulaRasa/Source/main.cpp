@@ -4,6 +4,7 @@
 
 #include "Platform/Platform.h"
 #include "Game/World.h"
+#include "Rendering\TextRender.h"
 
 #define println(str) OutputDebugStringA(str)
 
@@ -12,6 +13,24 @@
 #define WIN32_LEAN_AND_MEAN
 #include "windows.h"
 
+double GetTimeMicroseconds()
+{
+	LARGE_INTEGER PerformanceCounter;
+	LARGE_INTEGER PerformanceFreq;
+	QueryPerformanceFrequency(&PerformanceFreq);
+	QueryPerformanceCounter(&PerformanceCounter);
+
+	PerformanceCounter.QuadPart *= 1000000; // Multiply with 10^6
+	PerformanceCounter.QuadPart /= PerformanceFreq.QuadPart;
+	return (double) PerformanceCounter.QuadPart / 1000000.0;
+}
+
+double GetTimeMilliseconds()
+{
+	auto duration = std::chrono::high_resolution_clock::now().time_since_epoch();
+	return std::chrono::duration_cast<std::chrono::milliseconds>(duration).count() / 1000.0;
+}
+
 int CALLBACK WinMain(
     HINSTANCE   hInstance,
     HINSTANCE   hPrevInstance,
@@ -19,7 +38,7 @@ int CALLBACK WinMain(
     int         nCmdShow
     )
 {
-	PlatformWindow Window = PlatformWindow({ "Testing", 800, 600, false, false, false, false, hInstance });
+	PlatformWindow Window = PlatformWindow({ "Testing", 1280, 720, false, false, false, false, hInstance });
 #else
 int main(int argc, char* argv[])
 {
@@ -33,10 +52,17 @@ int main(int argc, char* argv[])
 	}
 
 	World WorldObject;
+	TextRenderData2D* FPSCounter = TextRender::AddTextToRender("Hello World", 16.0f);
 
-	double LastFrameTime = ((double) GetTickCount()) / 1000.0f;
-	double DeltaTime = 0.0f;
-	double CumulativeFrameTime = 0.0f;
+	//auto start = std::chrono::high_resolution_clock::now();
+	//auto finish = std::chrono::high_resolution_clock::now();
+	//std::cout << std::chrono::duration_cast<std::chrono::nanoseconds>(finish - start).count() << "ns\n"
+
+	clock_t t1 =	clock();
+	
+	double LastFrameTime = GetTimeMicroseconds();
+	double DeltaTime = 0.0;
+	double CumulativeFrameTime = 0.0;
 	uint16_t FramesPerSecond = 0;
 	while (Window.PrepareForRender())
 	{
@@ -46,19 +72,19 @@ int main(int argc, char* argv[])
 		// Swap the buffers
 		Window.PostRender();
 
-		float CurrentTime = ((double)GetTickCount()) / 1000.0f;
+		float CurrentTime = GetTimeMicroseconds();
 		DeltaTime = CurrentTime - LastFrameTime;
-		LastFrameTime = ((double) GetTickCount()) / 1000.0f;
+		LastFrameTime = GetTimeMicroseconds();
 		
-		CumulativeFrameTime += DeltaTime;
+		CumulativeFrameTime = CumulativeFrameTime + DeltaTime;
 		++FramesPerSecond;
 		if (CumulativeFrameTime >= 1.0f)
 		{
+			TextRender::RemoveText(FPSCounter);
+			char Buffer[48];
+			sprintf(Buffer, "FPS: %d", FramesPerSecond);
+			TextRender::AddTextToRender(Buffer, 32.0f);
 			CumulativeFrameTime = 0;
-
-			char OutputString[256];
-			sprintf_s(OutputString, "FPS: %d\n", FramesPerSecond);
-			OutputDebugStringA(OutputString);
 			FramesPerSecond = 0;
 		}
 	}

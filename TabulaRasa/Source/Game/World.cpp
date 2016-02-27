@@ -2,7 +2,6 @@
 
 #include "glm\common.hpp"
 #include "glm\gtc\matrix_transform.hpp"
-#include "../Rendering/TextRender.h"
 #include "../Rendering/ChunkRenderComponent.h"
 
 struct Vertex
@@ -19,8 +18,6 @@ World::World()
 	CurrentPlayer = new Player();
 
 	TextRender::Initialize2DTextRendering();
-	TextRender::AddTextToRender("Hello World", 36.0f);
-
 	ChunkRenderer::SetupChunkRenderer();
 
 	/*for (int i = 0; i < 16; ++i)

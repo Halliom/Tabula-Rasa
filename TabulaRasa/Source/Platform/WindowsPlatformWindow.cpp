@@ -45,6 +45,14 @@ bool PlatformWindow::SetupWindowAndRenderContext()
 		return false;
 	}
 
+	SDL_SetRelativeMouseMode(SDL_TRUE);
+
+	// Initializes the input for the mouse
+	int MouseX = 0, MouseY = 0;
+	SDL_GetMouseState(&MouseX, &MouseY);
+	Input::MouseX = MouseX;
+	Input::MouseY = MouseY;
+
 	SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
 	SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
 	SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
@@ -78,6 +86,7 @@ bool PlatformWindow::SetupWindowAndRenderContext()
 	glFrontFace(GL_CW);
 	glCullFace(GL_BACK);
 	glEnable(GL_CULL_FACE);
+
 	if (GlobalWindow->WindowParams.UseDepthTest)
 	{
 		glEnable(GL_DEPTH_TEST);
@@ -114,22 +123,36 @@ bool PlatformWindow::PrepareForRender()
 		{
 			case SDL_KEYDOWN:
 			{
+#ifdef _DEBUG
+				if (Event.key.keysym.scancode == SDL_SCANCODE_ESCAPE)
+				{
+					return false;
+				}
+#endif
+				SDL_SetRelativeMouseMode(SDL_TRUE);
+
+				Input::Keys[Event.key.keysym.scancode] = true;
 				break;
 			}
 			case SDL_KEYUP:
 			{
+				Input::Keys[Event.key.keysym.scancode] = false;
 				break;
 			}
 			case SDL_MOUSEBUTTONDOWN:
 			{
+				Input::MouseButtons[Event.button.button] = true;
 				break;
 			}
 			case SDL_MOUSEBUTTONUP:
 			{
+				Input::MouseButtons[Event.button.button] = false;
 				break;
 			}
 			case SDL_MOUSEMOTION:
 			{
+				Input::MouseX += Event.motion.xrel;
+				Input::MouseY += Event.motion.yrel;
 				break;
 			}
 		}
