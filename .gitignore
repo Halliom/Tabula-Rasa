@@ -1,11 +1,15 @@
 /*/*.sln
 
-/*/Intermediate/**
-Intermediate/
+
 CMakeFiles/
 TabulaRasa.dir/
 /*/Saved/**
 Debug/
+
+!.gitignore
+!glew32.dll
+!SDL2.dll
+!TabulaRasa/Debug/
 
 Win32/
 
@@ -14,7 +18,6 @@ CMakeCache.txt
 *.lib
 *.idb
 *.a
-*.dll
 *.exe
 *.png
 *.bz2
