@@ -1,5 +1,7 @@
 #include "ChunkRenderComponent.h"
 
+#include "../Engine/Octree.h"
+
 #include "glm\gtc\matrix_transform.hpp"
 
 // Init the chunk list
@@ -156,9 +158,109 @@ void ChunkRenderer::SetupChunkRenderer()
 	glBindVertexArray(SouthVAO);
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+}
 
-	//------------------------------------------
-	
+void ChunkRenderer::DestroyChunkRenderer()
+{
+	glDeleteVertexArrays(6, &EastVAO);
+
+	for (unsigned int Index = 0; Index < ChunksToRender.GetNum(); ++Index)
+	{
+		delete ChunksToRender[Index];
+	}
+	ChunksToRender.Reserve(0);
+
+	delete ChunkRenderShader;
+
+	glDeleteBuffers(12, &EastVBO);
+}
+
+#define PI 3.14159265359f
+
+#include <Windows.h>
+
+void ChunkRenderer::RenderAllChunks(Player* CurrentPlayer, float CumulativeTime)
+{
+	ChunkRenderShader->Bind();
+
+	glm::mat4 Projection = glm::perspective(glm::radians(70.0f), 4.0f / 3.0f, 0.1f, 100.f);
+	glm::mat4 View = CurrentPlayer->GetViewMatrix();
+
+	ChunkRenderShader->SetProjectionMatrix(Projection);
+	ChunkRenderShader->SetViewMatrixLocation(View);
+
+	for (unsigned int Index = 0; Index < ChunksToRender.GetNum(); ++Index)
+	{
+		if (!ChunksToRender[Index])
+			return;
+
+		ChunkRenderShader->SetChunkPositionOffset(ChunksToRender[Index]->ChunkPosition);
+
+		// Render the east face
+		glBindVertexArray(EastVAO);
+		glBindBuffer(GL_ARRAY_BUFFER, ChunksToRender[Index]->EastFacePBO);
+		glEnableVertexAttribArray(2);
+		glVertexAttribIPointer(2, 3, GL_UNSIGNED_BYTE, 0, 0);
+		glVertexAttribDivisor(2, 1);
+
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EastIBO);
+		glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, 0, ChunksToRender[Index]->NumEastFaces);
+
+		// Render the west face
+		glBindVertexArray(WestVAO);
+		glBindBuffer(GL_ARRAY_BUFFER, ChunksToRender[Index]->WestFacePBO);
+		glEnableVertexAttribArray(2);
+		glVertexAttribIPointer(2, 3, GL_UNSIGNED_BYTE, 0, 0);
+		glVertexAttribDivisor(2, 1);
+
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, WestIBO);
+		glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, 0, ChunksToRender[Index]->NumWestFaces);
+
+		// Render the top face
+		glBindVertexArray(TopVAO);
+		glBindBuffer(GL_ARRAY_BUFFER, ChunksToRender[Index]->TopFacePBO);
+		glEnableVertexAttribArray(2);
+		glVertexAttribIPointer(2, 3, GL_UNSIGNED_BYTE, 0, 0);
+		glVertexAttribDivisor(2, 1);
+
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, TopIBO);
+		glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, 0, ChunksToRender[Index]->NumTopFaces);
+
+		// Render the bottom face
+		glBindVertexArray(BottomVAO);
+		glBindBuffer(GL_ARRAY_BUFFER, ChunksToRender[Index]->BottomFacePBO);
+		glEnableVertexAttribArray(2);
+		glVertexAttribIPointer(2, 3, GL_UNSIGNED_BYTE, 0, 0);
+		glVertexAttribDivisor(2, 1);
+
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, BottomIBO);
+		glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, 0, ChunksToRender[Index]->NumBottomFaces);
+
+		// Render the north face
+		glBindVertexArray(NorthVAO);
+		glEnableVertexAttribArray(2);
+		glBindBuffer(GL_ARRAY_BUFFER, ChunksToRender[Index]->NorthFacePBO);
+		glVertexAttribIPointer(2, 3, GL_UNSIGNED_BYTE, 0, 0);
+		glVertexAttribDivisor(2, 1);
+
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, NorthIBO);
+		glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, 0, ChunksToRender[Index]->NumNorthFaces);
+
+		// Render the south face
+		glBindVertexArray(SouthVAO);
+		glBindBuffer(GL_ARRAY_BUFFER, ChunksToRender[Index]->SouthFacePBO);
+		glEnableVertexAttribArray(2);
+		glVertexAttribIPointer(2, 3, GL_UNSIGNED_BYTE, 0, 0);
+		glVertexAttribDivisor(2, 1);
+
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, SouthIBO);
+		glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, 0, ChunksToRender[Index]->NumSouthFaces);
+	}
+	glBindVertexArray(0);
+}
+
+ChunkRenderData * ChunkRenderer::CreateRenderData(glm::vec3& Position)
+{
 	ChunkRenderData* RenderData = new ChunkRenderData();
 	glGenBuffers(6, &RenderData->EastFacePBO);
 
@@ -186,117 +288,11 @@ void ChunkRenderer::SetupChunkRenderer()
 	glBufferData(GL_ARRAY_BUFFER, INITIAL_BUFFER_SIZE * 3, NULL, GL_DYNAMIC_DRAW);
 	RenderData->SouthFacesBufferLength = INITIAL_BUFFER_SIZE;
 
-	RenderData->ChunkPosition = glm::vec3(-1.0f, -1.0f, -5.0f);
-
-	InsertIntoBufferSide(RenderData, VoxelSide::SIDE_NORTH, ChunkRenderCoordinate(0, 0, 0));
-	InsertIntoBufferSide(RenderData, VoxelSide::SIDE_NORTH, ChunkRenderCoordinate(0, 1, 0));
-	InsertIntoBufferSide(RenderData, VoxelSide::SIDE_NORTH, ChunkRenderCoordinate(1, 1, 0));
-	InsertIntoBufferSide(RenderData, VoxelSide::SIDE_NORTH, ChunkRenderCoordinate(1, 0, 0));
+	RenderData->ChunkPosition = Position;
 
 	ChunksToRender.Push(RenderData);
-}
 
-void ChunkRenderer::DestroyChunkRenderer()
-{
-	glDeleteVertexArrays(6, &EastVAO);
-
-	for (unsigned int Index = 0; Index < ChunksToRender.GetNum(); ++Index)
-	{
-		delete ChunksToRender[Index];
-	}
-	ChunksToRender.Reserve(0);
-
-	delete ChunkRenderShader;
-
-	glDeleteBuffers(12, &EastVBO);
-}
-
-#define PI 3.14159265359f
-
-void ChunkRenderer::RenderAllChunks(Player* CurrentPlayer, float CumulativeTime)
-{
-	ChunkRenderShader->Bind();
-
-	glm::mat4 Projection = glm::perspective(glm::radians(70.0f), 4.0f / 3.0f, 0.1f, 100.f);
-	glm::mat4 View = CurrentPlayer->GetViewMatrix();
-
-	ChunkRenderShader->SetProjectionMatrix(Projection);
-	ChunkRenderShader->SetViewMatrixLocation(View);
-
-	for (unsigned int Index = 0; Index < ChunksToRender.GetNum(); ++Index)
-	{
-		if (!ChunksToRender[Index])
-			return;
-
-		ChunkRenderShader->SetChunkPositionOffset(ChunksToRender[Index]->ChunkPosition);
-
-		// Render the east face
-		glBindVertexArray(EastVAO);
-		glBindBuffer(GL_ARRAY_BUFFER, ChunksToRender[Index]->EastFacePBO);
-		glEnableVertexAttribArray(2);
-		glVertexAttribIPointer(2, 3, GL_UNSIGNED_BYTE, 0, 0);
-		glVertexAttribDivisor(2, 1);
-
-		glBindBuffer(GL_ARRAY_BUFFER, EastVBO);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EastIBO);
-		glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, 0, ChunksToRender[Index]->NumEastFaces);
-
-		// Render the west face
-		glBindVertexArray(WestVAO);
-		glBindBuffer(GL_ARRAY_BUFFER, ChunksToRender[Index]->WestFacePBO);
-		glEnableVertexAttribArray(2);
-		glVertexAttribIPointer(2, 3, GL_UNSIGNED_BYTE, 0, 0);
-		glVertexAttribDivisor(2, 1);
-
-		glBindBuffer(GL_ARRAY_BUFFER, WestVBO);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, WestIBO);
-		glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, 0, ChunksToRender[Index]->NumWestFaces);
-
-		// Render the top face
-		glBindVertexArray(TopVAO);
-		glBindBuffer(GL_ARRAY_BUFFER, ChunksToRender[Index]->TopFacePBO);
-		glEnableVertexAttribArray(2);
-		glVertexAttribIPointer(2, 3, GL_UNSIGNED_BYTE, 0, 0);
-		glVertexAttribDivisor(2, 1);
-
-		glBindBuffer(GL_ARRAY_BUFFER, TopVBO);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, TopIBO);
-		glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, 0, ChunksToRender[Index]->NumTopFaces);
-
-		// Render the bottom face
-		glBindVertexArray(BottomVAO);
-		glBindBuffer(GL_ARRAY_BUFFER, ChunksToRender[Index]->BottomFacePBO);
-		glEnableVertexAttribArray(2);
-		glVertexAttribIPointer(2, 3, GL_UNSIGNED_BYTE, 0, 0);
-		glVertexAttribDivisor(2, 1);
-
-		glBindBuffer(GL_ARRAY_BUFFER, BottomVBO);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, BottomIBO);
-		glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, 0, ChunksToRender[Index]->NumBottomFaces);
-
-		// Render the north face
-		glBindVertexArray(NorthVAO);
-		glEnableVertexAttribArray(2);
-		glBindBuffer(GL_ARRAY_BUFFER, ChunksToRender[Index]->NorthFacePBO);
-		glVertexAttribIPointer(2, 3, GL_UNSIGNED_BYTE, 0, 0);
-		glVertexAttribDivisor(2, 1);
-
-		glBindBuffer(GL_ARRAY_BUFFER, NorthVBO);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, NorthIBO);
-		glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, 0, ChunksToRender[Index]->NumNorthFaces);
-
-		// Render the south face
-		glBindVertexArray(SouthVAO);
-		glBindBuffer(GL_ARRAY_BUFFER, ChunksToRender[Index]->SouthFacePBO);
-		glEnableVertexAttribArray(2);
-		glVertexAttribIPointer(2, 3, GL_UNSIGNED_BYTE, 0, 0);
-		glVertexAttribDivisor(2, 1);
-
-		glBindBuffer(GL_ARRAY_BUFFER, SouthVBO);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, SouthIBO);
-		glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, 0, ChunksToRender[Index]->NumSouthFaces);
-	}
-	glBindVertexArray(0);
+	return RenderData;
 }
 
 __forceinline void ChunkRenderer::InsertIntoBufferSide(ChunkRenderData* RenderData, const VoxelSide& Side, ChunkRenderCoordinate& NewCoordinate)
@@ -354,7 +350,7 @@ void ChunkRenderer::InsertIntoBuffer(GLuint* FacePBO, uint32_t* NumFaces, uint32
 	++(*NumFaces);
 }
 
-__forceinline void ChunkRenderer::InsertBatchIntoBufferSide(ChunkRenderData* RenderData, const VoxelSide& Side, ChunkRenderCoordinate* RenderCoords, uint32_t& NumRenderCoords)
+void ChunkRenderer::InsertBatchIntoBufferSide(ChunkRenderData* RenderData, const VoxelSide& Side, ChunkRenderCoordinate* RenderCoords, uint32_t NumRenderCoords)
 {
 	switch (Side)
 	{
@@ -393,7 +389,7 @@ __forceinline void ChunkRenderer::InsertBatchIntoBufferSide(ChunkRenderData* Ren
 	glUnmapBuffer(GL_ARRAY_BUFFER);
 }
 
-void ChunkRenderer::InsertBatchIntoBuffer(GLuint* FacePBO, uint32_t* NumFaces, uint32_t* BufferLength, ChunkRenderCoordinate* RenderCoords, uint32_t& NumRenderCoords)
+void ChunkRenderer::InsertBatchIntoBuffer(GLuint* FacePBO, uint32_t* NumFaces, uint32_t* BufferLength, ChunkRenderCoordinate* RenderCoords, uint32_t NumRenderCoords)
 {
 	glBindBuffer(GL_ARRAY_BUFFER, *FacePBO);
 
@@ -407,10 +403,7 @@ void ChunkRenderer::InsertBatchIntoBuffer(GLuint* FacePBO, uint32_t* NumFaces, u
 		BufferStorage = (uint8_t*) glMapBuffer(GL_ARRAY_BUFFER, GL_READ_WRITE);
 	}
 
-	for (uint32_t Index = 0; Index < NumRenderCoords; ++Index)
-	{
-		memcpy(BufferStorage + (Index + (*NumFaces)), &RenderCoords[Index].X, 3);
-	}
+	memcpy(BufferStorage + (*NumFaces), &RenderCoords[0].X, 3 * NumRenderCoords);
 	*NumFaces += NumRenderCoords;
 }
 

@@ -60,7 +60,7 @@ int main(int argc, char* argv[])
 
 	clock_t t1 =	clock();
 	
-	double LastFrameTime = GetTimeMicroseconds();
+	double LastFrameTime = SDL_GetTicks() / 1000.0;
 	double DeltaTime = 0.0;
 	double CumulativeFrameTime = 0.0;
 	uint16_t FramesPerSecond = 0;
@@ -72,9 +72,9 @@ int main(int argc, char* argv[])
 		// Swap the buffers
 		Window.PostRender();
 
-		float CurrentTime = GetTimeMicroseconds();
+		double CurrentTime = SDL_GetTicks() / 1000.0;
 		DeltaTime = CurrentTime - LastFrameTime;
-		LastFrameTime = GetTimeMicroseconds();
+		LastFrameTime = SDL_GetTicks() / 1000.0;
 		
 		CumulativeFrameTime = CumulativeFrameTime + DeltaTime;
 		++FramesPerSecond;

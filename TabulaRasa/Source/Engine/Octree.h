@@ -9,8 +9,9 @@
 #include "glm\common.hpp"
 #include "DynamicArray.cpp"
 
+#include "../Rendering/ChunkRenderComponent.h"
+
 class Chunk;
-class ChunkRenderer;
 
 enum VoxelSide : uint32_t
 {
@@ -30,6 +31,16 @@ struct VoxelVertex
 	uint8_t ColorBlue;
 };
 
+struct VoxelBufferData
+{
+	std::vector<ChunkRenderCoordinate> EastFaces;
+	std::vector<ChunkRenderCoordinate> WestFaces;
+	std::vector<ChunkRenderCoordinate> TopFaces;
+	std::vector<ChunkRenderCoordinate> BottomFaces;
+	std::vector<ChunkRenderCoordinate> NorthFaces;
+	std::vector<ChunkRenderCoordinate> SouthFaces;
+};
+
 class Voxel
 {
 public:
@@ -40,9 +51,9 @@ public:
 
 	static float CUBE_SIZE;
 
-	void OnNodePlacedAdjacent(Voxel* NodeEast, Voxel* NodeWest, Voxel* NodeTop, Voxel* NodeBottom, Voxel* NodeNorth, Voxel* NodeSouth);
+	void OnNodeUpdatedAdjacent(VoxelBufferData* AddData, VoxelBufferData* RemoveData, const uint8_t& X, const uint8_t& Y, const uint8_t& Z, Voxel* NodeEast, Voxel* NodeWest, Voxel* NodeTop, Voxel* NodeBottom, Voxel* NodeNorth, Voxel* NodeSouth, const bool& Placed);
 
-	void OnNodePlacedOnSide(const VoxelSide& Side);
+	void OnNodeUpdatedOnSide(VoxelBufferData* AddData, VoxelBufferData* RemoveData, const uint8_t& X, const uint8_t& Y, const uint8_t& Z, const VoxelSide& Side, const bool& Placed);
 
 	uint8_t SidesToRender;
 	uint8_t ColorRed;
@@ -50,6 +61,12 @@ public:
 	uint8_t ColorBlue;
 
 	Chunk* Chunk;
+};
+
+struct VoxelAddData
+{
+	glm::uvec3 Position;
+	Voxel* Value;
 };
 
 class OctreeNode
@@ -66,7 +83,7 @@ public:
 	Voxel* NodeData;
 
 	uint32_t Location;
-	
+
 	uint32_t Size;
 
 	uint8_t Children;
@@ -74,12 +91,6 @@ public:
 	glm::uvec3 ChunkPosition;
 
 	glm::uvec3 Center;
-};
-
-struct VoxelAddData
-{
-	glm::uvec3 Position;
-	Voxel* Value;
 };
 
 class Chunk
@@ -91,14 +102,14 @@ public:
 
 	__forceinline void InsertVoxel(glm::uvec3 Position, Voxel* VoxelToAdd)
 	{
-		ElementsToAdd.push_back({ Position, VoxelToAdd });
+		ElementsToAdd.Push({ Position, VoxelToAdd });
 		ContainsElementsToAdd = true;
 	}
 
 	__forceinline void RemoveVoxel(glm::uvec3 Position)
 	{
 		ContainsElementsToRemove = true;
-		ElementsToRemove.push_back(Position);
+		ElementsToRemove.Push(Position);
 	}
 
 	OctreeNode* GetNode(uint32_t Position);
@@ -110,19 +121,10 @@ public:
 		return GetNode(Position, RootNode);
 	}
 
-	void RemoveNode(const glm::uvec3& Position, OctreeNode* Node, bool IsUpwardsRecursive = false);
+	void RemoveNode(VoxelBufferData* AddData, VoxelBufferData* RemoveData, const glm::uvec3& Position, OctreeNode* Node, bool IsUpwardsRecursive = false);
 
-	void RemoveNode(const glm::uvec3& Position)
-	{
-		RemoveNode(Position, RootNode);
-	}
 
-	void InsertNode(const glm::uvec3& Position, Voxel* NewVoxel, OctreeNode* Node, bool IsNew = true);
-
-	void InsertNode(const glm::uvec3& Position, Voxel* NewVoxel)
-	{
-		InsertNode(Position, NewVoxel, RootNode);
-	}
+	void InsertNode(VoxelBufferData* AddData, VoxelBufferData* RemoveData, const glm::uvec3& Position, Voxel* NewVoxel, OctreeNode* Node, bool IsNew = true);
 
 	inline Voxel* GetNodeData(const glm::uvec3& Position)
 	{
@@ -148,15 +150,17 @@ private:
 
 	std::unordered_map<uint32_t, OctreeNode*> Nodes;
 
-	std::deque<VoxelAddData> ElementsToAdd;
+	DynamicArray<VoxelAddData> ElementsToAdd;
 
-	std::deque<glm::uvec3> ElementsToRemove;
+	DynamicArray<glm::uvec3> ElementsToRemove;
 
 	bool ContainsElementsToAdd;
 
 	bool ContainsElementsToRemove;
 
 	bool IsRenderStateDirty;
+
+	ChunkRenderData* RenderData;
 
 private:
 
@@ -167,4 +171,3 @@ private:
 	static glm::uvec3 VS_NORTH_OFFSET;
 	static glm::uvec3 VS_SOUTH_OFFSET;
 };
-

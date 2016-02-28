@@ -121,6 +121,23 @@ bool PlatformWindow::PrepareForRender()
 
 		switch (Event.type)
 		{
+			case SDL_WINDOWEVENT:
+			{
+				switch (Event.window.event)
+				{
+					case SDL_WINDOWEVENT_SIZE_CHANGED:
+					{
+						glViewport(0, 0, Event.window.data1, Event.window.data2);
+						break;
+					}
+					case SDL_WINDOWEVENT_RESIZED:
+					{
+						glViewport(0, 0, Event.window.data1, Event.window.data2);
+						break;
+					}
+				}
+				break;
+			}
 			case SDL_KEYDOWN:
 			{
 #ifdef _DEBUG

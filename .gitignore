@@ -49,3 +49,6 @@ TabaluRasa/TabaluRasa.VC.opendb
 *.ilk
 TabulaRasa/Debug/TabulaRasa.ilk
 *.opendb
+*.ilk
+*.psess
+*.vspx

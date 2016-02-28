@@ -4,7 +4,6 @@
 #include "DynamicArray.cpp"
 
 #include "GL_shader.h"
-#include "../Engine/Octree.h"
 #include "../Game/Player.h"
 
 struct VoxelVertex;
@@ -40,10 +39,17 @@ struct ChunkRenderData
 struct ChunkRenderCoordinate
 {
 	ChunkRenderCoordinate(uint8_t X, uint8_t Y, uint8_t Z) : X(X), Y(Y), Z(Z) {}
+	ChunkRenderCoordinate() : X(0), Y(0), Z(0) {}
+	__forceinline bool operator==(const ChunkRenderCoordinate& Other)
+	{
+		return X == Other.X && Y == Other.Y && Z == Other.Z;
+	}
 	uint8_t X;
 	uint8_t Y;
 	uint8_t Z;
 };
+
+enum VoxelSide : uint32_t;
 
 struct SideCoordinate
 {
@@ -63,13 +69,15 @@ public:
 
 	static void RenderAllChunks(Player* CurrentPlayer, float CumulativeTime);
 
+	static ChunkRenderData* CreateRenderData(glm::vec3& Position);
+
 	static void InsertIntoBufferSide(ChunkRenderData* RenderData, const VoxelSide& Side, ChunkRenderCoordinate& NewCoordinate);
 
 	static void InsertIntoBuffer(GLuint* FacePBO, uint32_t* NumFaces, uint32_t* BufferLength, ChunkRenderCoordinate& NewCoordinate);
 
-	static void InsertBatchIntoBufferSide(ChunkRenderData* RenderData, const VoxelSide& Side, ChunkRenderCoordinate* RenderCoords, uint32_t& NumRenderCoords);
+	static void InsertBatchIntoBufferSide(ChunkRenderData* RenderData, const VoxelSide& Side, ChunkRenderCoordinate* RenderCoords, uint32_t NumRenderCoords);
 
-	static void InsertBatchIntoBuffer(GLuint* FacePBO, uint32_t* NumFaces, uint32_t* BufferLength, ChunkRenderCoordinate* RenderCoords, uint32_t& NumRenderCoords);
+	static void InsertBatchIntoBuffer(GLuint* FacePBO, uint32_t* NumFaces, uint32_t* BufferLength, ChunkRenderCoordinate* RenderCoords, uint32_t NumRenderCoords);
 
 	static void SpliceFromBufferSide(ChunkRenderData* RenderData, const VoxelSide& Side, ChunkRenderCoordinate& Coordinate);
 
