@@ -112,11 +112,12 @@ __forceinline void Voxel::OnNodePlacedOnSide(VoxelBufferData* AddData, VoxelBuff
 		{
 			case SIDE_EAST:
 			{
-				ChunkRenderCoordinate Coord = { X, Y, Z };
+				ChunkRenderCoordinate Coord = ChunkRenderCoordinate(X, Y, Z);
 				auto It = std::find(AddData->EastFaces.begin(), AddData->EastFaces.end(), Coord);
 				if (It != AddData->EastFaces.end())
 					AddData->EastFaces.erase(It);
-				RemoveData->EastFaces.push_back(Coord);
+				else
+					RemoveData->EastFaces.push_back(Coord);
 				//auto It = std::find(AddData->EastFaces.begin(), AddData->EastFaces.end(), Coord);
 				//if (It == AddData->EastFaces.end())
 				//else
@@ -124,47 +125,52 @@ __forceinline void Voxel::OnNodePlacedOnSide(VoxelBufferData* AddData, VoxelBuff
 			}
 			case SIDE_WEST:
 			{
-				ChunkRenderCoordinate Coord = { X, Y, Z };
+				ChunkRenderCoordinate Coord = ChunkRenderCoordinate(X, Y, Z);
 				auto It = std::find(AddData->WestFaces.begin(), AddData->WestFaces.end(), Coord);
 				if (It != AddData->WestFaces.end())
 					AddData->WestFaces.erase(It);
-				RemoveData->WestFaces.push_back(Coord);
+				else
+					RemoveData->WestFaces.push_back(Coord);
 				break;
 			}
 			case SIDE_TOP:
 			{
-				ChunkRenderCoordinate Coord = { X, Y, Z };
+				ChunkRenderCoordinate Coord = ChunkRenderCoordinate(X, Y, Z);
 				auto It = std::find(AddData->TopFaces.begin(), AddData->TopFaces.end(), Coord);
 				if (It != AddData->TopFaces.end())
 					AddData->TopFaces.erase(It);
-				RemoveData->TopFaces.push_back(Coord);
+				else
+					RemoveData->TopFaces.push_back(Coord);
 				break;
 			}
 			case SIDE_BOTTOM:
 			{
-				ChunkRenderCoordinate Coord = { X, Y, Z };
+				ChunkRenderCoordinate Coord = ChunkRenderCoordinate(X, Y, Z);
 				auto It = std::find(AddData->BottomFaces.begin(), AddData->BottomFaces.end(), Coord);
 				if (It != AddData->BottomFaces.end())
 					AddData->BottomFaces.erase(It);
-				RemoveData->BottomFaces.push_back(Coord);
+				else
+					RemoveData->BottomFaces.push_back(Coord);
 				break;
 			}
 			case SIDE_NORTH:
 			{
-				ChunkRenderCoordinate Coord = { X, Y, Z };
+				ChunkRenderCoordinate Coord = ChunkRenderCoordinate(X, Y, Z);
 				auto It = std::find(AddData->NorthFaces.begin(), AddData->NorthFaces.end(), Coord);
 				if (It != AddData->NorthFaces.end())
 					AddData->NorthFaces.erase(It);
-				RemoveData->NorthFaces.push_back(Coord);
+				else
+					RemoveData->NorthFaces.push_back(Coord);
 				break;
 			}
 			case SIDE_SOUTH:
 			{
-				ChunkRenderCoordinate Coord = { X, Y, Z };
+				ChunkRenderCoordinate Coord = ChunkRenderCoordinate(X, Y, Z);
 				auto It = std::find(AddData->SouthFaces.begin(), AddData->SouthFaces.end(), Coord);
 				if (It != AddData->SouthFaces.end())
 					AddData->SouthFaces.erase(It);
-				RemoveData->SouthFaces.push_back(Coord);
+				else
+					RemoveData->SouthFaces.push_back(Coord);
 				break;
 			}
 		}
@@ -458,12 +464,12 @@ Chunk::Chunk()
 	// Insert the root node
 	RootNode = new OctreeNode();
 	RootNode->Location = 1;
-	RootNode->Size = Chunk::DEPTH;
+	RootNode->Size = 1 << Chunk::DEPTH;
 
-	uint32_t HalfSize = Chunk::DEPTH >> 1;
+	uint32_t HalfSize = RootNode->Size >> 1;
 	RootNode->Center = glm::uvec3(HalfSize, HalfSize, HalfSize);
 
-	Extent = glm::uvec3(Chunk::DEPTH, Chunk::DEPTH, Chunk::DEPTH);
+	Extent = glm::uvec3(RootNode->Size, RootNode->Size, RootNode->Size);
 
 	Nodes.insert({ 0b1, RootNode });
 
