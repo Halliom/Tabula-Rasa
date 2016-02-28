@@ -20,16 +20,16 @@ World::World()
 	TextRender::Initialize2DTextRendering();
 	ChunkRenderer::SetupChunkRenderer();
 
-	/*for (int i = 0; i < 16; ++i)
+	for (int i = 0; i < 16; ++i)
 	{
 		for (int j = 0; j < 16; ++j)
 		{
 			for (int k = 0; k < 16; ++k)
 			{
-				Chunk.InsertNode(glm::uvec3(i, j, k), new Voxel());
+				Chunk.InsertVoxel(glm::uvec3(i, j, k), new Voxel());
 			}
 		}
-	}*/
+	}
 }
 
 World::~World()
@@ -53,6 +53,7 @@ void World::Update(float DeltaTime)
 	TextRender::Render();
 
 	CurrentPlayer->Update(DeltaTime);
+	Chunk.Update();
 
 	/*Shader->Bind();
 

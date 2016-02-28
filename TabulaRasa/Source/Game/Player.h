@@ -31,8 +31,8 @@ private:
 
 	float Pitch;
 
-	uint32_t LastMouseX;
+	int32_t LastMouseX;
 
-	uint32_t LastMouseY;
+	int32_t LastMouseY;
 
 };
