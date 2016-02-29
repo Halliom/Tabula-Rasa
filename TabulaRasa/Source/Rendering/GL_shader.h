@@ -65,7 +65,7 @@ public:
 		glUniformMatrix4fv(ModelMatrixLocation, 1, GL_FALSE, glm::value_ptr(ModelMatrix));
 	}
 
-	__forceinline void SetViewMatrixLocation(const glm::mat4& ViewMatrix)
+	__forceinline void SetViewMatrix(const glm::mat4& ViewMatrix)
 	{
 		glUniformMatrix4fv(ViewMatrixLocation, 1, GL_FALSE, glm::value_ptr(ViewMatrix));
 	}
@@ -75,6 +75,11 @@ public:
 		glUniform3fv(ChunkPositionOffsetLocation, 1, glm::value_ptr(ChunkPositionOffset));
 	}
 
+	__forceinline void SetProjectionViewMatrix(const glm::mat4& ViewProjectionMatrix)
+	{
+		glUniformMatrix4fv(ProjectionViewMatrixLocation, 1, GL_FALSE, glm::value_ptr(ViewProjectionMatrix));
+	}
+
 private:
 
 	GLint Program;
@@ -82,6 +87,8 @@ private:
 	GLint ProjectionMatrixLocation;
 
 	GLint ViewMatrixLocation;
+
+	GLint ProjectionViewMatrixLocation;
 
 	GLint ModelMatrixLocation;
 

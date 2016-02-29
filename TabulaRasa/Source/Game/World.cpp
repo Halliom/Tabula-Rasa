@@ -20,18 +20,18 @@ World::World()
 	TextRender::Initialize2DTextRendering();
 	ChunkRenderer::SetupChunkRenderer();
 
-	for (int i = 0; i < 4; ++i)
+	for (int i = 0; i < 16; ++i)
 	{
-		for (int j = 0; j < 4; ++j)
+		for (int j = 0; j < 16; ++j)
 		{
-			for (int k = 0; k < 4; ++k)
+			for (int k = 0; k < 16; ++k)
 			{
 				Chunk.InsertVoxel(glm::uvec3(i, j, k), new Voxel());
 			}
 		}
 	}
-	Chunk.Update();
-	Chunk.RemoveVoxel(glm::uvec3(0, 0, 0));
+	//Chunk.Update();
+	//Chunk.RemoveVoxel(glm::uvec3(0, 0, 0));
 }
 
 World::~World()

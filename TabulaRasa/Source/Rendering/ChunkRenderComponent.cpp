@@ -186,8 +186,7 @@ void ChunkRenderer::RenderAllChunks(Player* CurrentPlayer, float CumulativeTime)
 	glm::mat4 Projection = glm::perspective(glm::radians(70.0f), 4.0f / 3.0f, 0.1f, 100.f);
 	glm::mat4 View = CurrentPlayer->GetViewMatrix();
 
-	ChunkRenderShader->SetProjectionMatrix(Projection);
-	ChunkRenderShader->SetViewMatrixLocation(View);
+	ChunkRenderShader->SetProjectionViewMatrix(Projection * View);
 
 	for (unsigned int Index = 0; Index < ChunksToRender.GetNum(); ++Index)
 	{
@@ -407,7 +406,7 @@ void ChunkRenderer::InsertBatchIntoBuffer(GLuint* FacePBO, uint32_t* NumFaces, u
 	*NumFaces += NumRenderCoords;
 }
 
-__forceinline void ChunkRenderer::SpliceFromBufferSide(ChunkRenderData* RenderData, const VoxelSide& Side, ChunkRenderCoordinate& Coordinate)
+void ChunkRenderer::SpliceFromBufferSide(ChunkRenderData* RenderData, const VoxelSide& Side, ChunkRenderCoordinate& Coordinate)
 {
 	switch (Side)
 	{

@@ -46,10 +46,11 @@ GLShaderProgram* GLShaderProgram::CreateVertexFragmentShaderFromFile(std::string
 
 void GLShaderProgram::GenerateUniformBindings()
 {
-	ProjectionMatrixLocation = GetUniform("g_ProjectionMatrix");
-	ViewMatrixLocation = GetUniform("g_ViewMatrix");
-	ModelMatrixLocation = GetUniform("g_WorldTransformMatrix");
-	ChunkPositionOffsetLocation = GetUniform("g_ChunkOffset");
+	ProjectionMatrixLocation =			GetUniform("g_ProjectionMatrix");
+	ViewMatrixLocation =				GetUniform("g_ViewMatrix");
+	ProjectionViewMatrixLocation =		GetUniform("g_ProjectionViewMatrix");
+	ModelMatrixLocation =				GetUniform("g_WorldTransformMatrix");
+	ChunkPositionOffsetLocation =		GetUniform("g_ChunkOffset");
 
 	TextureSamplers[0] = GetUniform("textureSampler0");
 	TextureSamplers[1] = GetUniform("textureSampler1");
