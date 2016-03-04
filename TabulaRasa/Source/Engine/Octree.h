@@ -49,7 +49,7 @@ public:
 	{
 	}
 
-	static float CUBE_SIZE;
+	static constexpr float CUBE_SIZE = 1.0f;
 
 	void OnNodeUpdatedAdjacent(const uint8_t& X, const uint8_t& Y, const uint8_t& Z, Voxel* NodeEast, Voxel* NodeWest, Voxel* NodeTop, Voxel* NodeBottom, Voxel* NodeNorth, Voxel* NodeSouth, const bool& Placed);
 
@@ -133,9 +133,17 @@ public:
 
 	void Update();
 
+	static constexpr uint32_t SIZE = 32; // Related to DEPTH below
+
+	int ChunkX;
+
+	int ChunkY;
+
+	int ChunkZ;
+
 private:
 
-	static uint32_t DEPTH;
+	static constexpr uint32_t DEPTH = 5; // Chunk size is 2^5=32
 
 	OctreeNode* RootNode;
 
