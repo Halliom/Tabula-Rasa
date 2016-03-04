@@ -20,7 +20,9 @@ private:
 
 	Player* CurrentPlayer;
 
-	Chunk Chunk;
+	Chunk* LoadedChunks;
+
+	unsigned int NumLoadedChunks;
 
 	GLShaderProgram* Shader;
 };

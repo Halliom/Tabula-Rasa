@@ -4,15 +4,6 @@
 #include "glm\gtc\matrix_transform.hpp"
 #include "../Rendering/ChunkRenderComponent.h"
 
-struct Vertex
-{
-	Vertex(glm::vec3 Vert, glm::vec4 Color) :
-		Vert(Vert), Color(Color)
-	{}
-	glm::vec3 Vert;
-	glm::vec4 Color;
-};
-
 World::World()
 {
 	CurrentPlayer = new Player();
@@ -20,18 +11,8 @@ World::World()
 	TextRender::Initialize2DTextRendering();
 	ChunkRenderer::SetupChunkRenderer();
 
-	for (int i = 0; i < 16; ++i)
-	{
-		for (int j = 0; j < 16; ++j)
-		{
-			for (int k = 0; k < 16; ++k)
-			{
-				Chunk.InsertVoxel(glm::uvec3(i, j, k), new Voxel());
-			}
-		}
-	}
-	//Chunk.Update();
-	//Chunk.RemoveVoxel(glm::uvec3(0, 0, 0));
+	LoadedChunks = new Chunk[4];
+	NumLoadedChunks = 0;
 }
 
 World::~World()
@@ -44,6 +25,8 @@ World::~World()
 	{
 		delete CurrentPlayer;
 	}
+
+	delete[] LoadedChunks;
 }
 
 void World::Update(float DeltaTime)
@@ -55,17 +38,11 @@ void World::Update(float DeltaTime)
 	TextRender::Render();
 
 	CurrentPlayer->Update(DeltaTime);
-	Chunk.Update();
-
-	/*Shader->Bind();
-
-	glm::mat4 Projection = glm::perspective(glm::radians(70.0f), 4.0f / 3.0f, 0.1f, 100.f);
-	glm::mat4 View = CurrentPlayer->GetViewMatrix();
-	glm::mat4 Model = glm::mat4(1.0f);
 	
-	Shader->SetProjectionMatrix(Projection);
-	Shader->SetViewMatrixLocation(View);
-	Shader->SetModelMatrix(Model);
-
-	Chunk.Render();*/
+	for (unsigned int i = 0; i < NumLoadedChunks; ++i)
+	{
+		//TODO: Change this to be if the dirty flag is set then
+		// update the render data and add to multirender draw
+		LoadedChunks[i].Update();
+	}
 }

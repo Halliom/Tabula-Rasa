@@ -51,14 +51,13 @@ public:
 
 	static float CUBE_SIZE;
 
-	void OnNodeUpdatedAdjacent(VoxelBufferData* AddData, VoxelBufferData* RemoveData, const uint8_t& X, const uint8_t& Y, const uint8_t& Z, Voxel* NodeEast, Voxel* NodeWest, Voxel* NodeTop, Voxel* NodeBottom, Voxel* NodeNorth, Voxel* NodeSouth, const bool& Placed);
+	void OnNodeUpdatedAdjacent(const uint8_t& X, const uint8_t& Y, const uint8_t& Z, Voxel* NodeEast, Voxel* NodeWest, Voxel* NodeTop, Voxel* NodeBottom, Voxel* NodeNorth, Voxel* NodeSouth, const bool& Placed);
 
-	void OnNodeUpdatedOnSide(VoxelBufferData* AddData, VoxelBufferData* RemoveData, const uint8_t& X, const uint8_t& Y, const uint8_t& Z, const VoxelSide& Side, const bool& Placed);
+	void OnNodeUpdatedOnSide(const uint8_t& X, const uint8_t& Y, const uint8_t& Z, const VoxelSide& Side, const bool& Placed);
 
 	uint8_t SidesToRender;
-	uint8_t ColorRed;
-	uint8_t ColorGreen;
-	uint8_t ColorBlue;
+	
+	unsigned int BlockID;
 
 	Chunk* Chunk;
 };

@@ -188,7 +188,7 @@ void ChunkRenderer::RenderAllChunks(Player* CurrentPlayer, float CumulativeTime)
 
 	ChunkRenderShader->SetProjectionViewMatrix(Projection * View);
 
-	for (unsigned int Index = 0; Index < ChunksToRender.GetNum(); ++Index)
+	for (int Index = 0; Index < ChunksToRender.GetNum(); ++Index)
 	{
 		if (!ChunksToRender[Index])
 			return;

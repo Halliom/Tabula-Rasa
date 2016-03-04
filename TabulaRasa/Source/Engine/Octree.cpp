@@ -9,10 +9,10 @@ glm::uvec3 Chunk::VS_BOTTOM_OFFSET = glm::uvec3(0, -1, 0);
 glm::uvec3 Chunk::VS_NORTH_OFFSET = glm::uvec3(0, 0, 1);
 glm::uvec3 Chunk::VS_SOUTH_OFFSET = glm::uvec3(0, 0, -1);
 
-uint32_t Chunk::DEPTH = 7; // Chunk size is 2^7=128
+uint32_t Chunk::DEPTH = 5; // Chunk size is 2^5=32
 float Voxel::CUBE_SIZE = 1.0f;
 
-void Voxel::OnNodeUpdatedAdjacent(VoxelBufferData* AddData, VoxelBufferData* RemoveData, const uint8_t& X, const uint8_t& Y, const uint8_t& Z, Voxel* NodeEast, Voxel* NodeWest, Voxel* NodeTop, Voxel* NodeBottom, Voxel* NodeNorth, Voxel* NodeSouth, const bool& Placed)
+void Voxel::OnNodeUpdatedAdjacent(const uint8_t& X, const uint8_t& Y, const uint8_t& Z, Voxel* NodeEast, Voxel* NodeWest, Voxel* NodeTop, Voxel* NodeBottom, Voxel* NodeNorth, Voxel* NodeSouth, const bool& Placed)
 {
 	uint8_t Result = 63;
 	ChunkRenderCoordinate Coord = ChunkRenderCoordinate(X, Y, Z);
@@ -20,89 +20,42 @@ void Voxel::OnNodeUpdatedAdjacent(VoxelBufferData* AddData, VoxelBufferData* Rem
 	{
 		if (Placed)
 			Result ^= VoxelSide::SIDE_EAST;
-		NodeEast->OnNodeUpdatedOnSide(AddData, RemoveData, X + 1, Y, Z, VoxelSide::SIDE_WEST, Placed);
-	}
-	else
-	{
-		auto It = std::find(RemoveData->EastFaces.begin(), RemoveData->EastFaces.end(), Coord);
-		if (It != RemoveData->EastFaces.end())
-			RemoveData->EastFaces.erase(It);
-		AddData->EastFaces.push_back(Coord);
+		NodeEast->OnNodeUpdatedOnSide(X + 1, Y, Z, VoxelSide::SIDE_WEST, Placed);
 	}
 	if (NodeWest)
 	{
 		if (Placed)
 			Result ^= VoxelSide::SIDE_WEST;
-		NodeWest->OnNodeUpdatedOnSide(AddData, RemoveData, X - 1, Y, Z, VoxelSide::SIDE_EAST, Placed);
-	}
-	else
-	{
-		auto It = std::find(RemoveData->WestFaces.begin(), RemoveData->WestFaces.end(), Coord);
-		if (It != RemoveData->WestFaces.end())
-			RemoveData->WestFaces.erase(It);
-		AddData->WestFaces.push_back(Coord);
+		NodeWest->OnNodeUpdatedOnSide(X - 1, Y, Z, VoxelSide::SIDE_EAST, Placed);
 	}
 	if (NodeTop)
 	{
 		if (Placed)
 			Result ^= VoxelSide::SIDE_TOP;
-		NodeTop->OnNodeUpdatedOnSide(AddData, RemoveData, X, Y + 1, Z, VoxelSide::SIDE_BOTTOM, Placed);
-	}
-	else
-	{
-		auto It = std::find(RemoveData->TopFaces.begin(), RemoveData->TopFaces.end(), Coord);
-		if (It != RemoveData->TopFaces.end())
-			RemoveData->TopFaces.erase(It);
-		AddData->TopFaces.push_back(Coord);
+		NodeTop->OnNodeUpdatedOnSide(X, Y + 1, Z, VoxelSide::SIDE_BOTTOM, Placed);
 	}
 	if (NodeBottom)
 	{
 		if (Placed)
 			Result ^= VoxelSide::SIDE_BOTTOM;
-		NodeBottom->OnNodeUpdatedOnSide(AddData, RemoveData, X, Y - 1, Z, VoxelSide::SIDE_TOP, Placed);
-	}
-	else
-	{
-		auto It = std::find(RemoveData->BottomFaces.begin(), RemoveData->BottomFaces.end(), Coord);
-		if (It != RemoveData->BottomFaces.end())
-			RemoveData->BottomFaces.erase(It);
-		AddData->BottomFaces.push_back(Coord);
+		NodeBottom->OnNodeUpdatedOnSide(X, Y - 1, Z, VoxelSide::SIDE_TOP, Placed);
 	}
 	if (NodeNorth)
 	{
 		if (Placed)
 			Result ^= VoxelSide::SIDE_NORTH;
-		NodeNorth->OnNodeUpdatedOnSide(AddData, RemoveData, X, Y, Z + 1, VoxelSide::SIDE_SOUTH, Placed);
-	}
-	else
-	{
-		auto It = std::find(RemoveData->NorthFaces.begin(), RemoveData->NorthFaces.end(), Coord);
-		if (It != RemoveData->NorthFaces.end())
-			RemoveData->NorthFaces.erase(It);
-		AddData->NorthFaces.push_back(Coord);
+		NodeNorth->OnNodeUpdatedOnSide(X, Y, Z + 1, VoxelSide::SIDE_SOUTH, Placed);
 	}
 	if (NodeSouth)
 	{
 		if (Placed)
 			Result ^= VoxelSide::SIDE_SOUTH;
-		NodeSouth->OnNodeUpdatedOnSide(AddData, RemoveData, X, Y, Z - 1, VoxelSide::SIDE_NORTH, Placed);
+		NodeSouth->OnNodeUpdatedOnSide(X, Y, Z - 1, VoxelSide::SIDE_NORTH, Placed);
 	}
-	else
-	{
-		auto It = std::find(RemoveData->SouthFaces.begin(), RemoveData->SouthFaces.end(), Coord);
-		if (It != RemoveData->SouthFaces.end())
-			RemoveData->SouthFaces.erase(It);
-		AddData->SouthFaces.push_back(Coord);
-	}
+
 	if (!Placed)
 	{
 		SidesToRender = 0;
-		RemoveData->EastFaces.push_back(Coord);
-		RemoveData->WestFaces.push_back(Coord);
-		RemoveData->TopFaces.push_back(Coord);
-		RemoveData->BottomFaces.push_back(Coord);
-		RemoveData->NorthFaces.push_back(Coord);
-		RemoveData->SouthFaces.push_back(Coord);
 	}
 	else
 	{
@@ -111,93 +64,17 @@ void Voxel::OnNodeUpdatedAdjacent(VoxelBufferData* AddData, VoxelBufferData* Rem
 }
 
 // Placed means that the original block which called this function was placed not removed
-__forceinline void Voxel::OnNodeUpdatedOnSide(VoxelBufferData* AddData, VoxelBufferData* RemoveData, const uint8_t& X, const uint8_t& Y, const uint8_t& Z, const VoxelSide& Side, const bool& Placed)
+__forceinline void Voxel::OnNodeUpdatedOnSide(const uint8_t& X, const uint8_t& Y, const uint8_t& Z, const VoxelSide& Side, const bool& Placed)
 {
-	// Don't render on this side anymore
-	if ((SidesToRender & Side) == Side)
+	if (Placed)
 	{
+		// Make sure it does NOT render
 		SidesToRender ^= Side;
-		switch (Side)
-		{
-			case SIDE_EAST:
-			{
-				ChunkRenderCoordinate Coord = ChunkRenderCoordinate(X, Y, Z);
-				auto It = std::find(AddData->EastFaces.begin(), AddData->EastFaces.end(), Coord);
-				if (It != AddData->EastFaces.end())
-					if (Placed)
-						AddData->EastFaces.erase(It);
-					else
-						AddData->EastFaces.push_back(Coord);
-				else
-					RemoveData->EastFaces.push_back(Coord);
-				break;
-			}
-			case SIDE_WEST:
-			{
-				ChunkRenderCoordinate Coord = ChunkRenderCoordinate(X, Y, Z);
-				auto It = std::find(AddData->WestFaces.begin(), AddData->WestFaces.end(), Coord);
-				if (It != AddData->WestFaces.end())
-					if (Placed)
-						AddData->WestFaces.erase(It);
-					else
-						AddData->WestFaces.push_back(Coord);
-				else
-					RemoveData->WestFaces.push_back(Coord);
-				break;
-			}
-			case SIDE_TOP:
-			{
-				ChunkRenderCoordinate Coord = ChunkRenderCoordinate(X, Y, Z);
-				auto It = std::find(AddData->TopFaces.begin(), AddData->TopFaces.end(), Coord);
-				if (It != AddData->TopFaces.end())
-					if (Placed)
-						AddData->TopFaces.erase(It);
-					else
-						AddData->TopFaces.push_back(Coord);
-				else
-					RemoveData->TopFaces.push_back(Coord);
-				break;
-			}
-			case SIDE_BOTTOM:
-			{
-				ChunkRenderCoordinate Coord = ChunkRenderCoordinate(X, Y, Z);
-				auto It = std::find(AddData->BottomFaces.begin(), AddData->BottomFaces.end(), Coord);
-				if (It != AddData->BottomFaces.end())
-					if (Placed)
-						AddData->BottomFaces.erase(It);
-					else
-						AddData->BottomFaces.push_back(Coord);
-				else
-					RemoveData->BottomFaces.push_back(Coord);
-				break;
-			}
-			case SIDE_NORTH:
-			{
-				ChunkRenderCoordinate Coord = ChunkRenderCoordinate(X, Y, Z);
-				auto It = std::find(AddData->NorthFaces.begin(), AddData->NorthFaces.end(), Coord);
-				if (It != AddData->NorthFaces.end())
-					if (Placed)
-						AddData->NorthFaces.erase(It);
-					else
-						AddData->NorthFaces.push_back(Coord);
-				else
-					RemoveData->NorthFaces.push_back(Coord);
-				break;
-			}
-			case SIDE_SOUTH:
-			{
-				ChunkRenderCoordinate Coord = ChunkRenderCoordinate(X, Y, Z);
-				auto It = std::find(AddData->SouthFaces.begin(), AddData->SouthFaces.end(), Coord);
-				if (It != AddData->SouthFaces.end())
-					if (Placed)
-						AddData->SouthFaces.erase(It);
-					else
-						AddData->SouthFaces.push_back(Coord);
-				else
-					RemoveData->SouthFaces.push_back(Coord);
-				break;
-			}
-		}
+	}
+	else
+	{
+		// Make sure it DOES render
+		SidesToRender |= Side;
 	}
 }
 
@@ -272,8 +149,6 @@ void Chunk::InsertNode(VoxelBufferData* AddData, VoxelBufferData* RemoveData, co
 				//Node->NodeData->LocalChunkPosition = Position;
 
 				Node->NodeData->OnNodeUpdatedAdjacent(
-					AddData,
-					RemoveData,
 					(uint8_t) Position.x,
 					(uint8_t) Position.y,
 					(uint8_t) Position.z,
@@ -445,8 +320,6 @@ void Chunk::RemoveNode(VoxelBufferData* AddData, VoxelBufferData* RemoveData, co
 			OctreeNode* ParentNode = Nodes[(NodeToBeDeleted->Location >> 3)];
 			ParentNode->Children ^= (1 << NodeOctant); // Remove from parents children
 			NodeToBeDeleted->NodeData->OnNodeUpdatedAdjacent(
-				AddData, 
-				RemoveData, 
 				(uint8_t) Position.x,
 				(uint8_t) Position.y,
 				(uint8_t) Position.z,
