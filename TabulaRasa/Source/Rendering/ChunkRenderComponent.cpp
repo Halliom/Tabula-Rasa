@@ -1,6 +1,7 @@
 #include "ChunkRenderComponent.h"
 
 #include "../Engine/Octree.h"
+#include "../Engine/Camera.h"
 
 #include "glm\gtc\matrix_transform.hpp"
 
@@ -164,7 +165,7 @@ void ChunkRenderer::DestroyChunkRenderer()
 {
 	glDeleteVertexArrays(6, &EastVAO);
 
-	for (unsigned int Index = 0; Index < ChunksToRender.GetNum(); ++Index)
+	for (int Index = 0; Index < ChunksToRender.GetNum(); ++Index)
 	{
 		delete ChunksToRender[Index];
 	}
@@ -183,8 +184,8 @@ void ChunkRenderer::RenderAllChunks(Player* CurrentPlayer, float CumulativeTime)
 {
 	ChunkRenderShader->Bind();
 
-	glm::mat4 Projection = glm::perspective(glm::radians(70.0f), 4.0f / 3.0f, 0.1f, 100.f);
-	glm::mat4 View = CurrentPlayer->GetViewMatrix();
+	glm::mat4 Projection = *Camera::ActiveCamera->GetProjectionMatrix();
+	glm::mat4 View = *Camera::ActiveCamera->GetViewMatrix();
 
 	ChunkRenderShader->SetProjectionViewMatrix(Projection * View);
 

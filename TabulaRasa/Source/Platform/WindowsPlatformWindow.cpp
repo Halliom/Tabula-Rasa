@@ -3,6 +3,7 @@
 #include "glm\common.hpp"
 
 #include "../Engine/Input.h"
+#include "../Engine/Camera.h"
 
 #include "../Rendering/Fonts.h"
 
@@ -126,13 +127,20 @@ bool PlatformWindow::PrepareForRender()
 				switch (Event.window.event)
 				{
 					case SDL_WINDOWEVENT_SIZE_CHANGED:
-					{
-						glViewport(0, 0, Event.window.data1, Event.window.data2);
-						break;
-					}
 					case SDL_WINDOWEVENT_RESIZED:
 					{
 						glViewport(0, 0, Event.window.data1, Event.window.data2);
+
+						if (Camera::ActiveCamera)
+						{
+							Camera::ActiveCamera->WindowWidth = Event.window.data1;
+							Camera::ActiveCamera->WindowHeight = Event.window.data2;
+							Camera::ActiveCamera->IsScreenMatrixDirty = true;
+							Camera::ActiveCamera->IsProjectionMatrixDirty = true;
+						}
+
+						WindowParams.Width = Event.window.data1;
+						WindowParams.Height = Event.window.data2;
 						break;
 					}
 				}

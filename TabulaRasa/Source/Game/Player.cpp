@@ -11,31 +11,44 @@
 
 Player::Player()
 {
-	Position = glm::vec3(0.0f, 0.0f, 0.0f);
-	WorldUp = glm::vec3(0.0f, 1.0f, 0.0f);
+	PlayerCamera = new Camera();
 	Yaw = -90;
 	Pitch = 0.0f;
 
 	LastMouseX = 0;
 	LastMouseY = 0;
-
-	UpdateVectors();
 }
 
 Player::~Player()
 {
+	delete PlayerCamera;
 }
 
 void Player::Update(float DeltaTime)
 {
+	bool UpdatedMovement = false;
 	if (Input::Keys[SDL_SCANCODE_W])
-		Position += 2.0f * Front * DeltaTime;
+	{
+		PlayerCamera->Position += 2.0f * PlayerCamera->Front * DeltaTime;
+		UpdatedMovement = true;
+	}
 	if (Input::Keys[SDL_SCANCODE_S])
-		Position -= 2.0f * Front * DeltaTime;
+	{
+		PlayerCamera->Position -= 2.0f * PlayerCamera->Front * DeltaTime;
+		UpdatedMovement = true;
+	}
 	if (Input::Keys[SDL_SCANCODE_D])
-		Position += 2.0f * Right * DeltaTime;
+	{
+		PlayerCamera->Position += 2.0f * PlayerCamera->Right * DeltaTime;
+		UpdatedMovement = true;
+	}
 	if (Input::Keys[SDL_SCANCODE_A])
-		Position -= 2.0f * Right * DeltaTime;
+	{
+		PlayerCamera->Position -= 2.0f * PlayerCamera->Right * DeltaTime;
+		UpdatedMovement = true;
+	}
+
+	PlayerCamera->IsViewMatrixDirty = UpdatedMovement;
 
 	int32_t DeltaMouseX = Input::MouseX - LastMouseX;
 	int32_t DeltaMouseY = Input::MouseY - LastMouseY;
@@ -47,22 +60,10 @@ void Player::Update(float DeltaTime)
 	LastMouseY = Input::MouseY;
 	
 	if (DeltaMouseX || DeltaMouseY)
-		UpdateVectors();
+		PlayerCamera->UpdateCameraRotation(Yaw, Pitch);
 }
 
-void Player::UpdateVectors()
+void Player::BeginPlay()
 {
-	glm::vec3 front;
-	front.x = cos(glm::radians(this->Yaw)) * cos(glm::radians(this->Pitch));
-	front.y = sin(glm::radians(this->Pitch));
-	front.z = sin(glm::radians(this->Yaw)) * cos(glm::radians(this->Pitch));
-	this->Front = glm::normalize(front);
-	this->Right = glm::normalize(glm::cross(this->Front, this->WorldUp));
-	this->Up = glm::normalize(glm::cross(this->Right, this->Front));
-}
-
-
-glm::mat4 Player::GetViewMatrix()
-{
-	return glm::lookAt(Position, Position + Front, Up);
+	PlayerCamera->InitProjection();
 }

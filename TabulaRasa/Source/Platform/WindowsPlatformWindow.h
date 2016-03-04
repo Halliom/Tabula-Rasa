@@ -41,9 +41,9 @@ public:
 
 	WindowParameters WindowParams;
 
-private:
-
 	static PlatformWindow* GlobalWindow;
+
+private:
 
 	SDL_Window* MainWindow;
 
