@@ -13,27 +13,8 @@ struct ChunkRenderData
 	// The position (in world coordinates) that the chunk is in
 	glm::vec3 ChunkPosition;
 
-	// Position Buffer Objects (PBOs)
-	GLuint EastFacePBO;
-	GLuint WestFacePBO;
-	GLuint TopFacePBO;
-	GLuint BottomFacePBO;
-	GLuint NorthFacePBO;
-	GLuint SouthFacePBO;
-
-	uint32_t NumEastFaces;
-	uint32_t NumWestFaces;
-	uint32_t NumTopFaces;
-	uint32_t NumBottomFaces;
-	uint32_t NumNorthFaces;
-	uint32_t NumSouthFaces;
-
-	uint32_t EastFacesBufferLength;
-	uint32_t WestFacesBufferLength;
-	uint32_t TopFacesBufferLength;
-	uint32_t BottomFacesBufferLength;
-	uint32_t NorthFacesBufferLength;
-	uint32_t SouthFacesBufferLength;
+	GLuint VertexBufferObject;
+	GLuint IndexBufferObject;
 };
 
 struct ChunkRenderCoordinate
@@ -69,7 +50,7 @@ public:
 
 	static void RenderAllChunks(Player* CurrentPlayer, float CumulativeTime);
 
-	static ChunkRenderData* CreateRenderData(glm::vec3& Position);
+	static ChunkRenderData* CreateRenderData(const glm::vec3& Position, class Chunk* Voxels);
 
 	static void InsertIntoBufferSide(ChunkRenderData* RenderData, const VoxelSide& Side, ChunkRenderCoordinate& NewCoordinate);
 

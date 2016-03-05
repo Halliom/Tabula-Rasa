@@ -2,6 +2,7 @@
 
 #include "../Engine/Octree.h"
 #include "../Engine/Camera.h"
+#include "../Engine/Block.h"
 
 #include "glm\gtc\matrix_transform.hpp"
 
@@ -184,6 +185,7 @@ void ChunkRenderer::RenderAllChunks(Player* CurrentPlayer, float CumulativeTime)
 {
 	ChunkRenderShader->Bind();
 
+#if 0
 	glm::mat4 Projection = *Camera::ActiveCamera->GetProjectionMatrix();
 	glm::mat4 View = *Camera::ActiveCamera->GetViewMatrix();
 
@@ -257,39 +259,165 @@ void ChunkRenderer::RenderAllChunks(Player* CurrentPlayer, float CumulativeTime)
 		glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, 0, ChunksToRender[Index]->NumSouthFaces);
 	}
 	glBindVertexArray(0);
+#else
+
+	//TODO: Render
+
+#endif
 }
 
-ChunkRenderData * ChunkRenderer::CreateRenderData(glm::vec3& Position)
+int GetVoxelSide(Chunk* Chunk, const int& X, const int& Y, const int& Z, const VoxelSide& Side)
+{
+	Voxel* Node = Chunk->GetNodeData(glm::uvec3(X, Y, Z));
+	if (Node && ((Node->SidesToRender & Side) == Side))
+	{
+		BlockInfo Block = BlockManager::LoadedBlocks[Node->BlockID];
+		return Block.RenderType == RENDER_TYPE_SOLID ? Block.Textures[SideToInt(Side)] : -1;
+	}
+	return -1;
+}
+
+void GreedyMesh(Chunk* Voxels)
+{
+	std::vector<glm::vec3> Vertices;
+	std::vector<unsigned int> Indices;
+	bool Counter = false;
+
+	int ChunkSize = Chunk::SIZE;
+	for (bool BackFace = true; Counter != BackFace; BackFace = BackFace && Counter, Counter = !Counter)
+	{
+		for (int d = 0; d < 3; ++d)
+		{
+			int i = 0, j = 0, k = 0, l = 0;
+			int w = 0, h = 0;
+
+			// The other two sides
+			int u = (d + 1) % 3;
+			int v = (d + 2) % 3;
+
+			int x[3] = { 0, 0, 0 }; // This is just a vector of the x, y, z position
+			int q[3] = { 0, 0, 0 }; // This is the offset in the direction, d, that we are currently iterating through
+
+									// A mask of a "slice" of the cube, since we're going through
+									// the chunk depth first, this contains the groups of matching
+									// voxel faces in 6 directinos
+			int mask[Chunk::SIZE * Chunk::SIZE];
+
+			q[d] = 1;
+
+			VoxelSide Side = BackFace ? SIDE_WEST : SIDE_EAST; // if d == 0
+			if (d == 1)
+			{
+				Side = BackFace ? SIDE_BOTTOM : SIDE_TOP;
+			}
+			if (d == 2)
+			{
+				Side = BackFace ? SIDE_SOUTH : SIDE_NORTH;
+			}
+
+			for (x[d] = -1; x[d] < ChunkSize; ) // dimensions[d], but since they're all the same it just says CHUNK_WIDTH
+			{
+				int n = 0;
+				for (x[u] = 0; x[u] < ChunkSize; ++x[u])
+				{
+					for (x[v] = 0; x[v] < ChunkSize; n += 4)
+					{
+						int a0 = (0 <= x[d]				? GetVoxelSide(Voxels, x[0],		x[1],			x[2],			Side) : -1);
+						int b0 = (x[d] < ChunkSize - 1	? GetVoxelSide(Voxels, x[0] + q[0], x[1] + q[1],	x[2] + q[2],	Side) : -1);
+						mask[n + 0] = ((a0 != -1 && b0 != -1 && a0 == b0)) ? -1 : BackFace ? b0 : a0;
+						++x[v];
+						
+						int a1 = (0 <= x[d]				? GetVoxelSide(Voxels, x[0],		x[1],			x[2],			Side) : -1);
+						int b1 = (x[d] < ChunkSize - 1	? GetVoxelSide(Voxels, x[0] + q[0], x[1] + q[1],	x[2] + q[2],	Side) : -1);
+						mask[n + 1] = ((a1 != -1 && b1 != -1 && a1 == b1)) ? -1 : BackFace ? b1 : a1;
+						++x[v];
+
+						int a2 = (0 <= x[d]				? GetVoxelSide(Voxels, x[0],		x[1],			x[2],			Side) : -1);
+						int b2 = (x[d] < ChunkSize - 1	? GetVoxelSide(Voxels, x[0] + q[0], x[1] + q[1],	x[2] + q[2],	Side) : -1);
+						mask[n + 2] = ((a2 != -1 && b2 != -1 && a2 == b2)) ? -1 : BackFace ? b2 : a2;
+						++x[v];
+
+						int a3 = (0 <= x[d]				? GetVoxelSide(Voxels, x[0],		x[1],			x[2],			Side) : -1);
+						int b3 = (x[d] < ChunkSize - 1	? GetVoxelSide(Voxels, x[0] + q[0], x[1] + q[1],	x[2] + q[2],	Side) : -1);
+						mask[n + 3] = ((a3 != -1 && b3 != -1 && a3 == b3)) ? -1 : BackFace ? b3 : a3;
+						++x[v];
+					}
+				}
+
+				++x[d];
+
+				n = 0;
+				for (j = 0; j < ChunkSize; ++j)
+				{
+					for (i = 0; i < ChunkSize; )
+					{
+						int CurrentBlock = mask[n];
+						if (CurrentBlock)
+						{
+							// Go until the block in the mask at that coordinate changes
+							for (w = 1; (i + w) < ChunkSize && CurrentBlock == mask[n + w]; ++w)
+								;
+
+							for (h = 1; j + h < ChunkSize; ++h)
+							{
+								for (k = 0; k < w; ++k)
+								{
+									if (CurrentBlock != mask[n + k + h * ChunkSize])
+									{
+										goto endloop;
+									}
+								}
+							}
+						endloop:
+
+							// TODO: Add face
+							x[u] = i;
+							x[v] = j;
+							int du[3] = { 0, 0, 0 };
+							int dv[3] = { 0, 0, 0 };
+							du[u] = w;
+							dv[v] = h;
+
+#if 1
+							glm::vec3 QuadVert0 = glm::vec3(x[0], x[1], x[2]);
+							glm::vec3 QuadVert1 = glm::vec3(x[0] + du[0], x[1] + du[1], x[2] + du[2]);
+							glm::vec3 QuadVert2 = glm::vec3(x[0] + du[0] + dv[0], x[1] + du[1] + dv[1], x[2] + du[2] + dv[2]);
+							glm::vec3 QuadVert3 = glm::vec3(x[0] + dv[0], x[1] + dv[1], x[2] + dv[2]);
+#endif
+
+							// Reset mask memory
+							for (l = 0; l < h; ++l)
+							{
+								for (k = 0; k < w; ++k)
+								{
+									mask[n + k + l * ChunkSize] = false;
+								}
+							}
+
+							// Increment and move on
+							i += w;
+							n += w;
+						}
+						else
+						{
+							++i;
+							++n;
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
+ChunkRenderData * ChunkRenderer::CreateRenderData(const glm::vec3& Position, Chunk* Voxels)
 {
 	ChunkRenderData* RenderData = new ChunkRenderData();
-	glGenBuffers(6, &RenderData->EastFacePBO);
+	glGenBuffers(2, &RenderData->IndexBufferObject);
 
-	glBindBuffer(GL_ARRAY_BUFFER, RenderData->EastFacePBO);
-	glBufferData(GL_ARRAY_BUFFER, INITIAL_BUFFER_SIZE * 3, NULL, GL_DYNAMIC_DRAW);
-	RenderData->EastFacesBufferLength = INITIAL_BUFFER_SIZE;
-
-	glBindBuffer(GL_ARRAY_BUFFER, RenderData->WestFacePBO);
-	glBufferData(GL_ARRAY_BUFFER, INITIAL_BUFFER_SIZE * 3, NULL, GL_DYNAMIC_DRAW);
-	RenderData->WestFacesBufferLength = INITIAL_BUFFER_SIZE;
-
-	glBindBuffer(GL_ARRAY_BUFFER, RenderData->TopFacePBO);
-	glBufferData(GL_ARRAY_BUFFER, INITIAL_BUFFER_SIZE * 3, NULL, GL_DYNAMIC_DRAW);
-	RenderData->TopFacesBufferLength = INITIAL_BUFFER_SIZE;
-
-	glBindBuffer(GL_ARRAY_BUFFER, RenderData->BottomFacePBO);
-	glBufferData(GL_ARRAY_BUFFER, INITIAL_BUFFER_SIZE * 3, NULL, GL_DYNAMIC_DRAW);
-	RenderData->BottomFacesBufferLength = INITIAL_BUFFER_SIZE;
-
-	glBindBuffer(GL_ARRAY_BUFFER, RenderData->NorthFacePBO);
-	glBufferData(GL_ARRAY_BUFFER, INITIAL_BUFFER_SIZE * 3, NULL, GL_DYNAMIC_DRAW);
-	RenderData->NorthFacesBufferLength = INITIAL_BUFFER_SIZE;
-
-	glBindBuffer(GL_ARRAY_BUFFER, RenderData->SouthFacePBO);
-	glBufferData(GL_ARRAY_BUFFER, INITIAL_BUFFER_SIZE * 3, NULL, GL_DYNAMIC_DRAW);
-	RenderData->SouthFacesBufferLength = INITIAL_BUFFER_SIZE;
+	GreedyMesh(Voxels);
 
 	RenderData->ChunkPosition = Position;
-
 	ChunksToRender.Push(RenderData);
 
 	return RenderData;
@@ -297,6 +425,7 @@ ChunkRenderData * ChunkRenderer::CreateRenderData(glm::vec3& Position)
 
 __forceinline void ChunkRenderer::InsertIntoBufferSide(ChunkRenderData* RenderData, const VoxelSide& Side, ChunkRenderCoordinate& NewCoordinate)
 {
+#if 0
 	switch (Side)
 	{
 		case SIDE_EAST:
@@ -332,6 +461,7 @@ __forceinline void ChunkRenderer::InsertIntoBufferSide(ChunkRenderData* RenderDa
 		default: { break; }
 	}
 	glUnmapBuffer(GL_ARRAY_BUFFER);
+#endif
 }
 
 void ChunkRenderer::InsertIntoBuffer(GLuint* FacePBO, uint32_t* NumFaces, uint32_t* BufferLength, ChunkRenderCoordinate& NewCoordinate)
@@ -352,6 +482,7 @@ void ChunkRenderer::InsertIntoBuffer(GLuint* FacePBO, uint32_t* NumFaces, uint32
 
 void ChunkRenderer::InsertBatchIntoBufferSide(ChunkRenderData* RenderData, const VoxelSide& Side, ChunkRenderCoordinate* RenderCoords, uint32_t NumRenderCoords)
 {
+#if 0
 	switch (Side)
 	{
 		case SIDE_EAST:
@@ -387,6 +518,7 @@ void ChunkRenderer::InsertBatchIntoBufferSide(ChunkRenderData* RenderData, const
 		default: { break; }
 	}
 	glUnmapBuffer(GL_ARRAY_BUFFER);
+#endif
 }
 
 void ChunkRenderer::InsertBatchIntoBuffer(GLuint* FacePBO, uint32_t* NumFaces, uint32_t* BufferLength, ChunkRenderCoordinate* RenderCoords, uint32_t NumRenderCoords)
@@ -409,6 +541,7 @@ void ChunkRenderer::InsertBatchIntoBuffer(GLuint* FacePBO, uint32_t* NumFaces, u
 
 void ChunkRenderer::SpliceFromBufferSide(ChunkRenderData* RenderData, const VoxelSide& Side, ChunkRenderCoordinate& Coordinate)
 {
+#if 0
 	switch (Side)
 	{
 		case SIDE_EAST:
@@ -444,6 +577,7 @@ void ChunkRenderer::SpliceFromBufferSide(ChunkRenderData* RenderData, const Voxe
 		default: { break; }
 	}
 	glUnmapBuffer(GL_ARRAY_BUFFER);
+#endif
 }
 
 void ChunkRenderer::SpliceFromBuffer(GLuint * FacePBO, uint32_t * NumFaces, uint32_t * BufferLength, ChunkRenderCoordinate& Coordinate)

@@ -36,8 +36,6 @@ World::World()
 	NumLoadedChunks = CHUNK_LOADING_RADIUS * CHUNK_LOADING_RADIUS * CHUNK_LOADING_RADIUS;
 
 	AddBlock(33, 1, 1, 0);
-
-	NumLoadedChunks = 0;
 }
 
 World::~World()
@@ -112,8 +110,6 @@ void World::RemoveBlock(const int & X, const int & Y, const int & Z)
 	int ChunkX = X / Chunk::SIZE;
 	int ChunkY = Y / Chunk::SIZE;
 	int ChunkZ = Z / Chunk::SIZE;
-
-
 }
 
 Chunk * World::LoadChunk(const int & ChunkX, const int & ChunkY, const int & ChunkZ)

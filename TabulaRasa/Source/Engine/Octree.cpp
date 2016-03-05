@@ -129,7 +129,7 @@ __forceinline size_t OctreeNode::GetOctantForPosition(const glm::uvec3& Position
 	return Result;
 }
 
-void Chunk::InsertNode(VoxelBufferData* AddData, VoxelBufferData* RemoveData, const glm::uvec3& Position, Voxel* NewVoxel, OctreeNode* Node, bool IsNew)
+void Chunk::InsertNode(const glm::uvec3& Position, Voxel* NewVoxel, OctreeNode* Node, bool IsNew)
 {
 	uint32_t HalfSize = Node->Size >> 1;
 	uint32_t QuarterSize = HalfSize >> 1;
@@ -200,8 +200,8 @@ void Chunk::InsertNode(VoxelBufferData* AddData, VoxelBufferData* RemoveData, co
 				Nodes.insert({ OldNode->Location, OldNode });
 
 				Node->Children |= (1 << OldNodeOctant);
-				InsertNode(AddData, RemoveData, OldPosition, OldData, OldNode, false);
-				InsertNode(AddData, RemoveData, Position, NewVoxel, OldNode, true);
+				InsertNode(OldPosition, OldData, OldNode, false);
+				InsertNode(Position, NewVoxel, OldNode, true);
 			}
 			else
 			{
@@ -226,8 +226,8 @@ void Chunk::InsertNode(VoxelBufferData* AddData, VoxelBufferData* RemoveData, co
 				Node->Children |= (1 << OldNodeOctant);
 				Node->Children |= (1 << NewNodeOctant);
 
-				InsertNode(AddData, RemoveData, OldPosition, OldData, OldNode, false);
-				InsertNode(AddData, RemoveData, Position, NewVoxel, NewNode, true);
+				InsertNode(OldPosition, OldData, OldNode, false);
+				InsertNode(Position, NewVoxel, NewNode, true);
 			}
 		}
 	}
@@ -237,7 +237,7 @@ void Chunk::InsertNode(VoxelBufferData* AddData, VoxelBufferData* RemoveData, co
 
 		if ((Node->Children >> NodeOctant) & 1) // It has a child in that octant
 		{
-			InsertNode(AddData, RemoveData, Position, NewVoxel, Nodes[(Node->Location << 3) | NodeOctant]);
+			InsertNode(Position, NewVoxel, Nodes[(Node->Location << 3) | NodeOctant]);
 		}
 		else // It doesn't have a node in that octant, create it
 		{
@@ -251,7 +251,7 @@ void Chunk::InsertNode(VoxelBufferData* AddData, VoxelBufferData* RemoveData, co
 			Node->Children |= (1 << NodeOctant);
 			Nodes.insert({ NewNode->Location, NewNode });
 
-			InsertNode(AddData, RemoveData, Position, NewVoxel, NewNode, true);
+			InsertNode(Position, NewVoxel, NewNode, true);
 		}
 	}
 }
@@ -293,7 +293,7 @@ __forceinline OctreeNode* Chunk::GetNode(const glm::uvec3& Position, OctreeNode*
 	return NULL;
 }
 
-void Chunk::RemoveNode(VoxelBufferData* AddData, VoxelBufferData* RemoveData, const glm::uvec3& Position, OctreeNode* Node, bool IsUpwardsRecursive)
+void Chunk::RemoveNode(const glm::uvec3& Position, OctreeNode* Node, bool IsUpwardsRecursive)
 {
 	OctreeNode* NodeToBeDeleted = GetNode(Position, Node);
 	if (NodeToBeDeleted)
@@ -308,7 +308,7 @@ void Chunk::RemoveNode(VoxelBufferData* AddData, VoxelBufferData* RemoveData, co
 			// that one instead. Otherwise, the n
 			if ((Node->Children >> Octant) & 1)
 			{
-				RemoveNode(AddData, RemoveData, Position, Nodes.at((Node->Location << 3) | Octant));
+				RemoveNode(Position, Nodes.at((Node->Location << 3) | Octant));
 			}
 		}
 		else if (NodeToBeDeleted->Location != 1) // We are not the RootNode
@@ -339,14 +339,11 @@ void Chunk::RemoveNode(VoxelBufferData* AddData, VoxelBufferData* RemoveData, co
 
 void Chunk::Update()
 {
-	VoxelBufferData* AddData = new VoxelBufferData();
-	VoxelBufferData* RemoveData = new VoxelBufferData();
-
 	if (ContainsElementsToRemove)
 	{
 		while (ElementsToRemove.GetNum() > 0)
 		{
-			RemoveNode(AddData, RemoveData, ElementsToRemove.Pop(), RootNode);
+			RemoveNode(ElementsToRemove.Pop(), RootNode);
 		}
 		ContainsElementsToRemove = false;
 	}
@@ -355,49 +352,17 @@ void Chunk::Update()
 		while (ElementsToAdd.GetNum() > 0)
 		{
 			VoxelAddData Data = ElementsToAdd.Pop();
-			InsertNode(AddData, RemoveData, Data.Position, Data.Value, RootNode);
+			InsertNode(Data.Position, Data.Value, RootNode);
 		}
 		ContainsElementsToAdd = false;
 	}
 	if (IsRenderStateDirty)
 	{
-		if (RenderData == NULL)
-		{
-			RenderData = ChunkRenderer::CreateRenderData(glm::vec3(0.0f, 0.0f, 0.0f));
-		}
-
-		for (auto& It : RemoveData->EastFaces)
-		{
-			ChunkRenderer::SpliceFromBufferSide(RenderData, SIDE_EAST, It);
-		}
-		for (auto& It : RemoveData->WestFaces)
-		{
-			ChunkRenderer::SpliceFromBufferSide(RenderData, SIDE_WEST, It);
-		}
-		for (auto& It : RemoveData->TopFaces)
-		{
-			ChunkRenderer::SpliceFromBufferSide(RenderData, SIDE_TOP, It);
-		}
-		for (auto& It : RemoveData->BottomFaces)
-		{
-			ChunkRenderer::SpliceFromBufferSide(RenderData, SIDE_BOTTOM, It);
-		}
-		for (auto& It : RemoveData->NorthFaces)
-		{
-			ChunkRenderer::SpliceFromBufferSide(RenderData, SIDE_NORTH, It);
-		}
-		for (auto& It : RemoveData->SouthFaces)
-		{
-			ChunkRenderer::SpliceFromBufferSide(RenderData, SIDE_SOUTH, It);
-		}
-
-		ChunkRenderer::InsertBatchIntoBufferSide(RenderData, SIDE_EAST, &AddData->EastFaces[0], (uint32_t) AddData->EastFaces.size());
-		ChunkRenderer::InsertBatchIntoBufferSide(RenderData, SIDE_WEST, &AddData->WestFaces[0], (uint32_t) AddData->WestFaces.size());
-		ChunkRenderer::InsertBatchIntoBufferSide(RenderData, SIDE_TOP, &AddData->TopFaces[0], (uint32_t) AddData->TopFaces.size());
-		ChunkRenderer::InsertBatchIntoBufferSide(RenderData, SIDE_BOTTOM, &AddData->BottomFaces[0], (uint32_t) AddData->BottomFaces.size());
-		ChunkRenderer::InsertBatchIntoBufferSide(RenderData, SIDE_NORTH, &AddData->NorthFaces[0], (uint32_t) AddData->NorthFaces.size());
-		ChunkRenderer::InsertBatchIntoBufferSide(RenderData, SIDE_SOUTH, &AddData->SouthFaces[0], (uint32_t) AddData->SouthFaces.size());
-
+		if (RenderData)
+			delete RenderData;
+		
+		RenderData = ChunkRenderer::CreateRenderData(glm::vec3(ChunkX * Chunk::SIZE, ChunkY * Chunk::SIZE, ChunkZ * Chunk::SIZE), this);
+		
 		IsRenderStateDirty = false;
 	}
 }

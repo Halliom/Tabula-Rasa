@@ -23,22 +23,27 @@ enum VoxelSide : uint32_t
 	SIDE_SOUTH = 32
 };
 
-struct VoxelVertex
+__forceinline int SideToInt(const VoxelSide& Side)
 {
-	glm::vec3 Position;
-	uint8_t ColorRed;
-	uint8_t ColorGreen;
-	uint8_t ColorBlue;
-};
+	switch (Side)
+	{
+	case SIDE_EAST: { return 0; break; }
+	case SIDE_WEST: { return 1; break; }
+	case SIDE_TOP: { return 2; break; }
+	case SIDE_BOTTOM: { return 3; break; }
+	case SIDE_NORTH: { return 4; break; }
+	case SIDE_SOUTH: { return 5; break; }
+	}
+	return 0; // This won't ever be called but is there to comfort the compiler
+}
 
-struct VoxelBufferData
+struct VoxelInfo
 {
-	std::vector<ChunkRenderCoordinate> EastFaces;
-	std::vector<ChunkRenderCoordinate> WestFaces;
-	std::vector<ChunkRenderCoordinate> TopFaces;
-	std::vector<ChunkRenderCoordinate> BottomFaces;
-	std::vector<ChunkRenderCoordinate> NorthFaces;
-	std::vector<ChunkRenderCoordinate> SouthFaces;
+	uint8_t X;
+	uint8_t Y;
+	uint8_t Z;
+	uint8_t SidesToRender;
+	unsigned int BlockID;
 };
 
 class Voxel
@@ -120,10 +125,10 @@ public:
 		return GetNode(Position, RootNode);
 	}
 
-	void RemoveNode(VoxelBufferData* AddData, VoxelBufferData* RemoveData, const glm::uvec3& Position, OctreeNode* Node, bool IsUpwardsRecursive = false);
+	void RemoveNode(const glm::uvec3& Position, OctreeNode* Node, bool IsUpwardsRecursive = false);
 
 
-	void InsertNode(VoxelBufferData* AddData, VoxelBufferData* RemoveData, const glm::uvec3& Position, Voxel* NewVoxel, OctreeNode* Node, bool IsNew = true);
+	void InsertNode(const glm::uvec3& Position, Voxel* NewVoxel, OctreeNode* Node, bool IsNew = true);
 
 	inline Voxel* GetNodeData(const glm::uvec3& Position)
 	{
