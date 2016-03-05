@@ -6,15 +6,19 @@
 #include "GL_shader.h"
 #include "../Game/Player.h"
 
-struct VoxelVertex;
-
 struct ChunkRenderData
 {
 	// The position (in world coordinates) that the chunk is in
 	glm::vec3 ChunkPosition;
 
+	// Holds all the state for the rendering
+	GLuint VertexArrayObject;
+
+	// Vertex buffer and index buffer for the chunk
 	GLuint VertexBufferObject;
 	GLuint IndexBufferObject;
+
+	unsigned int NumVertices;
 };
 
 struct ChunkRenderCoordinate
@@ -63,8 +67,6 @@ public:
 	static void SpliceFromBufferSide(ChunkRenderData* RenderData, const VoxelSide& Side, ChunkRenderCoordinate& Coordinate);
 
 	static void SpliceFromBuffer(GLuint* FacePBO, uint32_t* NumFaces, uint32_t* BufferLength, ChunkRenderCoordinate& Coordinate);
-
-	void SetData(std::vector<VoxelVertex>& Vertices);
 
 	static DynamicArray<ChunkRenderData*> ChunksToRender;
 

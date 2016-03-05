@@ -45,9 +45,10 @@ void ChunkRenderer::SetupChunkRenderer()
 {
 	ChunksToRender.Reserve(16);
 
-	glGenVertexArrays(6, &EastVAO);
-
 	ChunkRenderShader = GLShaderProgram::CreateVertexFragmentShaderFromFile(std::string("VertexShader.glsl"), std::string("FragmentShader.glsl"));
+
+#if 0
+	glGenVertexArrays(6, &EastVAO);
 
 	// Generate all 12 buffers at once since they all should be adjacent in memory
 	glGenBuffers(12, &EastVBO);
@@ -160,6 +161,7 @@ void ChunkRenderer::SetupChunkRenderer()
 	glBindVertexArray(SouthVAO);
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+#endif
 }
 
 void ChunkRenderer::DestroyChunkRenderer()
@@ -183,9 +185,13 @@ void ChunkRenderer::DestroyChunkRenderer()
 
 void ChunkRenderer::RenderAllChunks(Player* CurrentPlayer, float CumulativeTime)
 {
-	ChunkRenderShader->Bind();
+	if (!Camera::ActiveCamera)
+	{
+		return;
+	}
 
-#if 0
+	ChunkRenderShader->Bind();
+	
 	glm::mat4 Projection = *Camera::ActiveCamera->GetProjectionMatrix();
 	glm::mat4 View = *Camera::ActiveCamera->GetViewMatrix();
 
@@ -194,9 +200,10 @@ void ChunkRenderer::RenderAllChunks(Player* CurrentPlayer, float CumulativeTime)
 	for (int Index = 0; Index < ChunksToRender.GetNum(); ++Index)
 	{
 		if (!ChunksToRender[Index])
-			return;
+			continue;
 
 		ChunkRenderShader->SetChunkPositionOffset(ChunksToRender[Index]->ChunkPosition);
+#if 0
 
 		// Render the east face
 		glBindVertexArray(EastVAO);
@@ -257,13 +264,14 @@ void ChunkRenderer::RenderAllChunks(Player* CurrentPlayer, float CumulativeTime)
 
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, SouthIBO);
 		glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, 0, ChunksToRender[Index]->NumSouthFaces);
+#else
+		glBindVertexArray(ChunksToRender[Index]->VertexArrayObject);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ChunksToRender[Index]->IndexBufferObject);
+
+		glDrawElements(GL_TRIANGLES, ChunksToRender[Index]->NumVertices, GL_UNSIGNED_INT, 0);
+#endif
 	}
 	glBindVertexArray(0);
-#else
-
-	//TODO: Render
-
-#endif
 }
 
 int GetVoxelSide(Chunk* Chunk, const int& X, const int& Y, const int& Z, const VoxelSide& Side)
@@ -277,10 +285,10 @@ int GetVoxelSide(Chunk* Chunk, const int& X, const int& Y, const int& Z, const V
 	return -1;
 }
 
-void GreedyMesh(Chunk* Voxels)
+static void GreedyMesh(Chunk* Voxels, ChunkRenderData* RenderData)
 {
-	std::vector<glm::vec3> Vertices;
-	std::vector<unsigned int> Indices;
+	DynamicArray<glm::vec3> Vertices;
+	DynamicArray<unsigned int> Indices;
 	bool Counter = false;
 
 	int ChunkSize = Chunk::SIZE;
@@ -324,22 +332,22 @@ void GreedyMesh(Chunk* Voxels)
 					{
 						int a0 = (0 <= x[d]				? GetVoxelSide(Voxels, x[0],		x[1],			x[2],			Side) : -1);
 						int b0 = (x[d] < ChunkSize - 1	? GetVoxelSide(Voxels, x[0] + q[0], x[1] + q[1],	x[2] + q[2],	Side) : -1);
-						mask[n + 0] = ((a0 != -1 && b0 != -1 && a0 == b0)) ? -1 : BackFace ? b0 : a0;
+						mask[n] = ((a0 != -1 && b0 != -1 && a0 == b0)) ? -1 : (BackFace ? b0 : a0);
 						++x[v];
 						
 						int a1 = (0 <= x[d]				? GetVoxelSide(Voxels, x[0],		x[1],			x[2],			Side) : -1);
 						int b1 = (x[d] < ChunkSize - 1	? GetVoxelSide(Voxels, x[0] + q[0], x[1] + q[1],	x[2] + q[2],	Side) : -1);
-						mask[n + 1] = ((a1 != -1 && b1 != -1 && a1 == b1)) ? -1 : BackFace ? b1 : a1;
+						mask[n + 1] = ((a1 != -1 && b1 != -1 && a1 == b1)) ? -1 : (BackFace ? b1 : a1);
 						++x[v];
 
 						int a2 = (0 <= x[d]				? GetVoxelSide(Voxels, x[0],		x[1],			x[2],			Side) : -1);
 						int b2 = (x[d] < ChunkSize - 1	? GetVoxelSide(Voxels, x[0] + q[0], x[1] + q[1],	x[2] + q[2],	Side) : -1);
-						mask[n + 2] = ((a2 != -1 && b2 != -1 && a2 == b2)) ? -1 : BackFace ? b2 : a2;
+						mask[n + 2] = ((a2 != -1 && b2 != -1 && a2 == b2)) ? -1 : (BackFace ? b2 : a2);
 						++x[v];
 
 						int a3 = (0 <= x[d]				? GetVoxelSide(Voxels, x[0],		x[1],			x[2],			Side) : -1);
 						int b3 = (x[d] < ChunkSize - 1	? GetVoxelSide(Voxels, x[0] + q[0], x[1] + q[1],	x[2] + q[2],	Side) : -1);
-						mask[n + 3] = ((a3 != -1 && b3 != -1 && a3 == b3)) ? -1 : BackFace ? b3 : a3;
+						mask[n + 3] = ((a3 != -1 && b3 != -1 && a3 == b3)) ? -1 : (BackFace ? b3 : a3);
 						++x[v];
 					}
 				}
@@ -352,25 +360,24 @@ void GreedyMesh(Chunk* Voxels)
 					for (i = 0; i < ChunkSize; )
 					{
 						int CurrentBlock = mask[n];
-						if (CurrentBlock)
+						if (CurrentBlock != -1)
 						{
 							// Go until the block in the mask at that coordinate changes
-							for (w = 1; (i + w) < ChunkSize && CurrentBlock == mask[n + w]; ++w)
+							for (w = 1; (i + w) < ChunkSize && mask[n + w] != -1 && CurrentBlock == mask[n + w]; ++w)
 								;
 
 							for (h = 1; j + h < ChunkSize; ++h)
 							{
 								for (k = 0; k < w; ++k)
 								{
-									if (CurrentBlock != mask[n + k + h * ChunkSize])
+									if (mask[n + k + h * ChunkSize] == -1 || CurrentBlock != mask[n + k + h * ChunkSize])
 									{
 										goto endloop;
 									}
 								}
 							}
-						endloop:
+							endloop:
 
-							// TODO: Add face
 							x[u] = i;
 							x[v] = j;
 							int du[3] = { 0, 0, 0 };
@@ -378,19 +385,45 @@ void GreedyMesh(Chunk* Voxels)
 							du[u] = w;
 							dv[v] = h;
 
-#if 1
-							glm::vec3 QuadVert0 = glm::vec3(x[0], x[1], x[2]);
-							glm::vec3 QuadVert1 = glm::vec3(x[0] + du[0], x[1] + du[1], x[2] + du[2]);
-							glm::vec3 QuadVert2 = glm::vec3(x[0] + du[0] + dv[0], x[1] + du[1] + dv[1], x[2] + du[2] + dv[2]);
-							glm::vec3 QuadVert3 = glm::vec3(x[0] + dv[0], x[1] + dv[1], x[2] + dv[2]);
-#endif
+							// Reserve 4 vertices
+							unsigned int StartIndex = Vertices.GetNum();
+							Vertices.Reserve(StartIndex + 4); // + 1 would be Vertices.size(), +4 again is the amount we're adding
+							glm::vec3 QuadVert0 = glm::vec3(x[0],					x[1],					x[2]);
+							glm::vec3 QuadVert1 = glm::vec3(x[0] + du[0],			x[1] + du[1],			x[2] + du[2]);
+							glm::vec3 QuadVert2 = glm::vec3(x[0] + du[0] + dv[0],	x[1] + du[1] + dv[1],	x[2] + du[2] + dv[2]);
+							glm::vec3 QuadVert3 = glm::vec3(x[0] + dv[0],			x[1] + dv[1],			x[2] + dv[2]);
+
+							Vertices.Push(glm::vec3(x[0],					x[1],					x[2]));
+							Vertices.Push(glm::vec3(x[0] + du[0],			x[1] + du[1],			x[2] + du[2]));
+							Vertices.Push(glm::vec3(x[0] + du[0] + dv[0],	x[1] + du[1] + dv[1],	x[2] + du[2] + dv[2]));
+							Vertices.Push(glm::vec3(x[0] + dv[0],			x[1] + dv[1],			x[2] + dv[2]));
+
+							Indices.Reserve(Indices.GetNum() + 6);
+							if (BackFace)
+							{
+								Indices.Push(StartIndex + 2);	//2
+								Indices.Push(StartIndex);		//0
+								Indices.Push(StartIndex + 1);	//1
+								Indices.Push(StartIndex + 1);	//1
+								Indices.Push(StartIndex + 3);	//3
+								Indices.Push(StartIndex + 2);	//2
+							}
+							else
+							{
+								Indices.Push(StartIndex + 2);	//2
+								Indices.Push(StartIndex + 3);	//3
+								Indices.Push(StartIndex + 1);	//1
+								Indices.Push(StartIndex + 1);	//1
+								Indices.Push(StartIndex);		//0
+								Indices.Push(StartIndex + 2);	//2
+							}
 
 							// Reset mask memory
 							for (l = 0; l < h; ++l)
 							{
 								for (k = 0; k < w; ++k)
 								{
-									mask[n + k + l * ChunkSize] = false;
+									mask[n + k + l * ChunkSize] = -1;
 								}
 							}
 
@@ -408,14 +441,30 @@ void GreedyMesh(Chunk* Voxels)
 			}
 		}
 	}
+
+	RenderData->NumVertices = Indices.GetNum();
+
+	glBindVertexArray(RenderData->VertexArrayObject);
+
+	glBindBuffer(GL_ARRAY_BUFFER, RenderData->VertexBufferObject);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * Vertices.GetNum(), &Vertices[0].x, GL_STATIC_DRAW);
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, RenderData->IndexBufferObject);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * Indices.GetNum(), &Indices[0], GL_STATIC_DRAW);
+
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	
+	glBindVertexArray(0); // Unbind so nothing else modifies it
 }
 
-ChunkRenderData * ChunkRenderer::CreateRenderData(const glm::vec3& Position, Chunk* Voxels)
+ChunkRenderData* ChunkRenderer::CreateRenderData(const glm::vec3& Position, Chunk* Voxels)
 {
 	ChunkRenderData* RenderData = new ChunkRenderData();
-	glGenBuffers(2, &RenderData->IndexBufferObject);
+	glGenVertexArrays(1, &RenderData->VertexArrayObject);
+	glGenBuffers(2, &RenderData->VertexBufferObject);
 
-	GreedyMesh(Voxels);
+	GreedyMesh(Voxels, RenderData);
 
 	RenderData->ChunkPosition = Position;
 	ChunksToRender.Push(RenderData);
@@ -616,8 +665,4 @@ void ChunkRenderer::SpliceFromBuffer(GLuint * FacePBO, uint32_t * NumFaces, uint
 		++Index;
 		BufferStorage += 3;
 	} while (Index < (*NumFaces));
-}
-
-void ChunkRenderer::SetData(std::vector<VoxelVertex>& Vertices)
-{
 }

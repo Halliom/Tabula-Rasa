@@ -9,6 +9,7 @@
 World::World()
 {
 	CurrentPlayer = new Player();
+	CurrentPlayer->BeginPlay();
 
 	TextRender::Initialize2DTextRendering();
 	ChunkRenderer::SetupChunkRenderer();
@@ -35,7 +36,7 @@ World::World()
 	}
 	NumLoadedChunks = CHUNK_LOADING_RADIUS * CHUNK_LOADING_RADIUS * CHUNK_LOADING_RADIUS;
 
-	AddBlock(33, 1, 1, 0);
+	AddBlock(0, 0, 1, 0);
 }
 
 World::~World()

@@ -37,15 +37,6 @@ __forceinline int SideToInt(const VoxelSide& Side)
 	return 0; // This won't ever be called but is there to comfort the compiler
 }
 
-struct VoxelInfo
-{
-	uint8_t X;
-	uint8_t Y;
-	uint8_t Z;
-	uint8_t SidesToRender;
-	unsigned int BlockID;
-};
-
 class Voxel
 {
 public:

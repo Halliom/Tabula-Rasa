@@ -8,7 +8,9 @@ class Camera
 {
 public:
 
-	void InitProjection(const float& FOV = 45.0f, const float& NearPlane = 0.01f, const float& FarPlane = 100.0f);
+	Camera();
+
+	void InitProjection(const float& FOV = 45.0f, const float& NearPlane = 0.1f, const float& FarPlane = 100.0f);
 
 	void UpdateCameraRotation(const float& Yaw, const float& Pitch);
 
@@ -16,7 +18,7 @@ public:
 	{
 		if (IsProjectionMatrixDirty)
 		{
-			ProjectionMatrix = glm::perspective(FOV, (float) WindowWidth / (float) WindowHeight, 0.01f, 100.0f);
+			ProjectionMatrix = glm::perspective(glm::radians(FOV), (float) WindowWidth / (float) WindowHeight, 0.01f, 100.0f);
 			IsProjectionMatrixDirty = false;
 		}
 		return &ProjectionMatrix;

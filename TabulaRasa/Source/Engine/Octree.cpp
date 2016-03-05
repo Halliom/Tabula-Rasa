@@ -129,6 +129,33 @@ __forceinline size_t OctreeNode::GetOctantForPosition(const glm::uvec3& Position
 	return Result;
 }
 
+Chunk::Chunk() :
+	RenderData(NULL),
+	IsRenderStateDirty(false),
+	ContainsElementsToAdd(false),
+	ContainsElementsToRemove(false)
+{
+	// Insert the root node
+	RootNode = new OctreeNode();
+	RootNode->Location = 1;
+	RootNode->Size = 1 << Chunk::DEPTH;
+
+	uint32_t HalfSize = RootNode->Size >> 1;
+	RootNode->Center = glm::uvec3(HalfSize, HalfSize, HalfSize);
+
+	Extent = glm::uvec3(RootNode->Size, RootNode->Size, RootNode->Size);
+
+	Nodes.insert({ 0b1, RootNode });
+}
+
+Chunk::~Chunk()
+{
+	Nodes.clear();
+	RootNode = NULL;
+
+	//TODO: Tell the chunk manager to remove this chunk
+}
+
 void Chunk::InsertNode(const glm::uvec3& Position, Voxel* NewVoxel, OctreeNode* Node, bool IsNew)
 {
 	uint32_t HalfSize = Node->Size >> 1;
@@ -365,29 +392,4 @@ void Chunk::Update()
 		
 		IsRenderStateDirty = false;
 	}
-}
-
-Chunk::Chunk()
-{
-	// Insert the root node
-	RootNode = new OctreeNode();
-	RootNode->Location = 1;
-	RootNode->Size = 1 << Chunk::DEPTH;
-
-	uint32_t HalfSize = RootNode->Size >> 1;
-	RootNode->Center = glm::uvec3(HalfSize, HalfSize, HalfSize);
-
-	Extent = glm::uvec3(RootNode->Size, RootNode->Size, RootNode->Size);
-
-	Nodes.insert({ 0b1, RootNode });
-
-	RenderData = NULL;
-}
-
-Chunk::~Chunk()
-{
-	Nodes.clear();
-	RootNode = NULL;
-
-	//TODO: Tell the chunk manager to remove this chunk
 }
