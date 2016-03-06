@@ -34,6 +34,7 @@ void RenderingEngine::Initialize(const bool& UseDepthTest)
 
 void RenderingEngine::RenderFrame(World* RenderWorld, const float & DeltaTime)
 {
+	// Renders all chunks with greedy meshing technique
 	ChunkRenderer::RenderAllChunks(RenderWorld->CurrentPlayer);
 
 	// To text rendering last so it is on top of everything else

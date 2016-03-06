@@ -29,6 +29,8 @@ Player::~Player()
 	delete PlayerCamera;
 }
 
+#include "../Rendering/TextRenderer.h"
+
 void Player::Update(float DeltaTime)
 {
 	bool UpdatedMovement = false;
@@ -55,17 +57,17 @@ void Player::Update(float DeltaTime)
 
 	PlayerCamera->IsViewMatrixDirty = UpdatedMovement;
 
-	int32_t DeltaMouseX = Input::MouseX - LastMouseX;
-	int32_t DeltaMouseY = Input::MouseY - LastMouseY;
+	int DeltaMouseX = Input::MouseX - LastMouseX;
+	int DeltaMouseY = Input::MouseY - LastMouseY;
 
-	Yaw += DeltaMouseX * 100.0f * DeltaTime;
-	Pitch += DeltaMouseY * -100.0f * DeltaTime;
+	Yaw += (float) DeltaMouseX * 100.0f * DeltaTime;
+	Pitch += (float) DeltaMouseY * -100.0f * DeltaTime;
 
 	LastMouseX = Input::MouseX;
 	LastMouseY = Input::MouseY;
-	
-	if (DeltaMouseX || DeltaMouseY)
-		PlayerCamera->UpdateCameraRotation(Yaw, Pitch);
+
+	//if (DeltaMouseX || DeltaMouseY)
+	PlayerCamera->UpdateCameraRotation(Yaw, Pitch);
 }
 
 void Player::BeginPlay()

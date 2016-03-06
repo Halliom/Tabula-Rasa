@@ -2,8 +2,8 @@
 
 #define MAX_NUM_BLOCKS 4096
 
-#define BLOCK_ID_GRASS 0
-#define BLOCK_ID_DIRT 1
+#define BLOCK_ID_GRASS 1
+#define BLOCK_ID_DIRT 2
 
 enum BlockRenderType
 {

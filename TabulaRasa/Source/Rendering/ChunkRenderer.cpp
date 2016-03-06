@@ -185,11 +185,6 @@ void ChunkRenderer::DestroyChunkRenderer()
 
 void ChunkRenderer::RenderAllChunks(Player* CurrentPlayer)
 {
-	if (!Camera::ActiveCamera)
-	{
-		return;
-	}
-
 	ChunkRenderShader->Bind();
 	
 	glm::mat4 Projection = *Camera::ActiveCamera->GetProjectionMatrix();
@@ -266,7 +261,6 @@ void ChunkRenderer::RenderAllChunks(Player* CurrentPlayer)
 		glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, 0, ChunksToRender[Index]->NumSouthFaces);
 #else
 		glBindVertexArray(ChunksToRender[Index]->VertexArrayObject);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ChunksToRender[Index]->IndexBufferObject);
 
 		glDrawElements(GL_TRIANGLES, ChunksToRender[Index]->NumVertices, GL_UNSIGNED_INT, 0);
 #endif
@@ -326,29 +320,29 @@ static void GreedyMesh(Chunk* Voxels, ChunkRenderData* RenderData)
 			for (x[d] = -1; x[d] < ChunkSize; ) // dimensions[d], but since they're all the same it just says CHUNK_WIDTH
 			{
 				int n = 0;
-				for (x[u] = 0; x[u] < ChunkSize; ++x[u])
+				for (x[v] = 0; x[v] < ChunkSize; ++x[v])
 				{
-					for (x[v] = 0; x[v] < ChunkSize; n += 4)
+					for (x[u] = 0; x[u] < ChunkSize; n += 4)
 					{
 						int a0 = (0 <= x[d]				? GetVoxelSide(Voxels, x[0],		x[1],			x[2],			Side) : -1);
 						int b0 = (x[d] < ChunkSize - 1	? GetVoxelSide(Voxels, x[0] + q[0], x[1] + q[1],	x[2] + q[2],	Side) : -1);
-						mask[n] = ((a0 != -1 && b0 != -1 && a0 == b0)) ? -1 : (BackFace ? b0 : a0);
-						++x[v];
+						mask[n] = (a0 != -1 && b0 != -1 && a0 == b0) ? -1 : (BackFace ? b0 : a0);
+						++x[u];
 						
 						int a1 = (0 <= x[d]				? GetVoxelSide(Voxels, x[0],		x[1],			x[2],			Side) : -1);
 						int b1 = (x[d] < ChunkSize - 1	? GetVoxelSide(Voxels, x[0] + q[0], x[1] + q[1],	x[2] + q[2],	Side) : -1);
-						mask[n + 1] = ((a1 != -1 && b1 != -1 && a1 == b1)) ? -1 : (BackFace ? b1 : a1);
-						++x[v];
+						mask[n + 1] = (a1 != -1 && b1 != -1 && a1 == b1) ? -1 : (BackFace ? b1 : a1);
+						++x[u];
 
 						int a2 = (0 <= x[d]				? GetVoxelSide(Voxels, x[0],		x[1],			x[2],			Side) : -1);
 						int b2 = (x[d] < ChunkSize - 1	? GetVoxelSide(Voxels, x[0] + q[0], x[1] + q[1],	x[2] + q[2],	Side) : -1);
-						mask[n + 2] = ((a2 != -1 && b2 != -1 && a2 == b2)) ? -1 : (BackFace ? b2 : a2);
-						++x[v];
+						mask[n + 2] = (a2 != -1 && b2 != -1 && a2 == b2) ? -1 : (BackFace ? b2 : a2);
+						++x[u];
 
 						int a3 = (0 <= x[d]				? GetVoxelSide(Voxels, x[0],		x[1],			x[2],			Side) : -1);
 						int b3 = (x[d] < ChunkSize - 1	? GetVoxelSide(Voxels, x[0] + q[0], x[1] + q[1],	x[2] + q[2],	Side) : -1);
-						mask[n + 3] = ((a3 != -1 && b3 != -1 && a3 == b3)) ? -1 : (BackFace ? b3 : a3);
-						++x[v];
+						mask[n + 3] = (a3 != -1 && b3 != -1 && a3 == b3) ? -1 : (BackFace ? b3 : a3);
+						++x[u];
 					}
 				}
 
@@ -387,7 +381,7 @@ static void GreedyMesh(Chunk* Voxels, ChunkRenderData* RenderData)
 
 							// Reserve 4 vertices
 							unsigned int StartIndex = Vertices.GetNum();
-							Vertices.Reserve(StartIndex + 4); // + 1 would be Vertices.size(), +4 again is the amount we're adding
+							Vertices.Reserve(StartIndex + 4); // +4 again is the amount we're adding
 							glm::vec3 QuadVert0 = glm::vec3(x[0],					x[1],					x[2]);
 							glm::vec3 QuadVert1 = glm::vec3(x[0] + du[0],			x[1] + du[1],			x[2] + du[2]);
 							glm::vec3 QuadVert2 = glm::vec3(x[0] + du[0] + dv[0],	x[1] + du[1] + dv[1],	x[2] + du[2] + dv[2]);
@@ -396,26 +390,26 @@ static void GreedyMesh(Chunk* Voxels, ChunkRenderData* RenderData)
 							Vertices.Push(glm::vec3(x[0],					x[1],					x[2]));
 							Vertices.Push(glm::vec3(x[0] + du[0],			x[1] + du[1],			x[2] + du[2]));
 							Vertices.Push(glm::vec3(x[0] + du[0] + dv[0],	x[1] + du[1] + dv[1],	x[2] + du[2] + dv[2]));
-							Vertices.Push(glm::vec3(x[0] + dv[0],			x[1] + dv[1],			x[2] + dv[2]));
+							Vertices.Push(glm::vec3(x[0] +         dv[0],	x[1] +         dv[1],	x[2] +		   dv[2]));
 
 							Indices.Reserve(Indices.GetNum() + 6);
 							if (BackFace)
 							{
-								Indices.Push(StartIndex + 2);	//2
-								Indices.Push(StartIndex);		//0
-								Indices.Push(StartIndex + 1);	//1
-								Indices.Push(StartIndex + 1);	//1
-								Indices.Push(StartIndex + 3);	//3
-								Indices.Push(StartIndex + 2);	//2
+								Indices.Push(StartIndex);
+								Indices.Push(StartIndex + 1);
+								Indices.Push(StartIndex + 2);
+								Indices.Push(StartIndex + 0);
+								Indices.Push(StartIndex + 2);
+								Indices.Push(StartIndex + 3);
 							}
 							else
 							{
-								Indices.Push(StartIndex + 2);	//2
-								Indices.Push(StartIndex + 3);	//3
-								Indices.Push(StartIndex + 1);	//1
-								Indices.Push(StartIndex + 1);	//1
-								Indices.Push(StartIndex);		//0
-								Indices.Push(StartIndex + 2);	//2
+								Indices.Push(StartIndex + 3);
+								Indices.Push(StartIndex + 2);
+								Indices.Push(StartIndex + 0);
+								Indices.Push(StartIndex + 2);
+								Indices.Push(StartIndex + 1);
+								Indices.Push(StartIndex);
 							}
 
 							// Reset mask memory

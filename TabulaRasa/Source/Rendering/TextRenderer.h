@@ -13,6 +13,11 @@ class GLShaderProgram;
 struct TextRenderData2D
 {
 	/**
+	 * Stores all the vertex attribute pointers state
+	 */
+	GLuint VAO;
+
+	/**
 	 * Vertex buffer object containing the vertex position data
 	 * gathered from the font .fnt file
 	 */
@@ -54,6 +59,4 @@ private:
 	static GLShaderProgram* TextRenderShader;
 
 	static glm::mat4 TextRenderProjectionMatrix;
-
-	static GLuint TextRenderVAO;
 };

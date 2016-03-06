@@ -15,16 +15,11 @@ GLShaderProgram* TextRenderer::TextRenderShader = NULL;
 // Init the static projection matrix to be the size of the screen
 glm::mat4 TextRenderer::TextRenderProjectionMatrix = glm::ortho(0.0f, 800.0f, 600.0f, 0.0f); //TODO: Update this and be watchful of ints (use floats)
 
-// Init the static VAO to be 0 from the beginning
-GLuint TextRenderer::TextRenderVAO = 0;
-
 // Init the RenderObjects
 std::vector<TextRenderData2D*> TextRenderer::RenderObjects = std::vector<TextRenderData2D*>();
 
 void TextRenderer::Initialize2DTextRendering()
 {
-	glGenVertexArrays(1, &TextRenderVAO);
-
 	// Init the RenderObjects to hold 64 text objects by default (since it's a vector
 	// it will grow automatically if it needs to
 	RenderObjects.reserve(32);
@@ -32,8 +27,6 @@ void TextRenderer::Initialize2DTextRendering()
 
 void TextRenderer::Destroy2DTextRendering()
 {
-	glDeleteVertexArrays(1, &TextRenderVAO);
-
 	for (auto& It : RenderObjects)
 	{
 		if (It)
@@ -50,7 +43,6 @@ struct GlyphVertex
 
 TextRenderData2D* TextRenderer::AddTextToRender(const char* Text, float Size, unsigned int RenderFont)
 {
-	glBindVertexArray(TextRenderVAO);
 	if (TextRenderShader == NULL)
 		TextRenderShader = GLShaderProgram::CreateVertexFragmentShaderFromFile(std::string("vertex_font_render.glsl"), std::string("fragment_font_render.glsl"));
 	
@@ -59,9 +51,13 @@ TextRenderData2D* TextRenderer::AddTextToRender(const char* Text, float Size, un
 		return NULL;
 
 	TextRenderData2D* NewTextRenderObject = new TextRenderData2D();
-	glGenBuffers(1, &(NewTextRenderObject->VBO));
-	glGenBuffers(1, &(NewTextRenderObject->IBO));
-	glGenTextures(1, &(NewTextRenderObject->TextureID));
+
+	glGenVertexArrays(1, &NewTextRenderObject->VAO);
+	glBindVertexArray(NewTextRenderObject->VAO);
+
+	glGenBuffers(1, &NewTextRenderObject->VBO);
+	glGenBuffers(1, &NewTextRenderObject->IBO);
+	glGenTextures(1, &NewTextRenderObject->TextureID);
 
 	unsigned int Width = (unsigned int) FontToUse->SizeX;
 	unsigned int Height = (unsigned int) FontToUse->SizeY;
@@ -105,6 +101,12 @@ TextRenderData2D* TextRenderer::AddTextToRender(const char* Text, float Size, un
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, NewTextRenderObject->IBO);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned short) * 6 * TextLength, Indices, GL_STATIC_DRAW);
 
+	glEnableVertexAttribArray(0); // Vertex position
+	glEnableVertexAttribArray(1); // Vertex texture coordinate
+
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(GlyphVertex), (void*)offsetof(GlyphVertex, Pos));
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(GlyphVertex), (void*)offsetof(GlyphVertex, Tex));
+
 	glBindTexture(GL_TEXTURE_2D, NewTextRenderObject->TextureID);
 
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, Width, Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, &(FontImage->at(0)));
@@ -142,8 +144,6 @@ void TextRenderer::RemoveText(TextRenderData2D* TextToRemove)
 
 void TextRenderer::Render()
 {
-	glBindVertexArray(TextRenderVAO);
-
 	TextRenderShader->Bind();
 	TextRenderShader->SetProjectionMatrix(TextRenderProjectionMatrix); //TODO: Do we need to update this every frame?
 
@@ -152,20 +152,9 @@ void TextRenderer::Render()
 		if (!It)
 			continue;
 
+		glBindVertexArray(It->VAO);
 		glBindTexture(GL_TEXTURE_2D, It->TextureID);
-		//glActiveTexture(GL_TEXTURE0);
-
-		glBindBuffer(GL_ARRAY_BUFFER, It->VBO);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, It->IBO);
-		glEnableVertexAttribArray(0); // Vertex position
-		glEnableVertexAttribArray(1); // Vertex texture coordinate
-
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(GlyphVertex), (void*)offsetof(GlyphVertex, Pos));
-		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(GlyphVertex), (void*)offsetof(GlyphVertex, Tex));
 
 		glDrawElements(GL_TRIANGLES, It->VertexCount, GL_UNSIGNED_SHORT, (void*)0);
-
-		glDisableVertexAttribArray(1);
-		glDisableVertexAttribArray(0);
 	}
 }

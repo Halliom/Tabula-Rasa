@@ -11,6 +11,6 @@ public:
 
 	static bool MouseButtons[65];
 
-	static uint32_t MouseX;
-	static uint32_t MouseY;
+	static int MouseX;
+	static int MouseY;
 };

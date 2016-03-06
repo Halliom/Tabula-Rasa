@@ -91,7 +91,7 @@ int main(int argc, char* argv[])
 			TextRenderer::RemoveText(FPSCounter);
 			char Buffer[48];
 			sprintf(Buffer, "FPS: %d", FramesPerSecond);
-			TextRenderer::AddTextToRender(Buffer, 16.0f);
+			//TextRenderer::AddTextToRender(Buffer, 16.0f);
 			CumulativeFrameTime = 0;
 			FramesPerSecond = 0;
 		}

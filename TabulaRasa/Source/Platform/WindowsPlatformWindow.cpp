@@ -28,7 +28,7 @@ bool PlatformWindow::SetupWindowAndRenderContext()
 		return false;
 	}
 	
-	uint32_t Flags = SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL;
+	uint32_t Flags = SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL | SDL_WINDOW_INPUT_GRABBED | SDL_WINDOW_INPUT_FOCUS | SDL_WINDOW_MOUSE_FOCUS | SDL_WINDOW_MOUSE_CAPTURE | SDL_WINDOW_ALLOW_HIGHDPI;
 
 	if (WindowParams.Fullscreen)
 	{
