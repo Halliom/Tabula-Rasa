@@ -2,8 +2,8 @@
 
 #include "../Platform/Platform.h"
 #include "../Game/Player.h"
-#include "TextRender.h"
-#include "ChunkRenderComponent.h"
+#include "TextRenderer.h"
+#include "ChunkRenderer.h"
 
 extern Player* g_Player;
 
@@ -12,7 +12,7 @@ RenderingEngine::~RenderingEngine()
 	UnloadFontLibrary();
 
 	ChunkRenderer::DestroyChunkRenderer();
-	TextRender::Destroy2DTextRendering();
+	TextRenderer::Destroy2DTextRendering();
 }
 
 void RenderingEngine::Initialize(const bool& UseDepthTest)
@@ -28,7 +28,7 @@ void RenderingEngine::Initialize(const bool& UseDepthTest)
 		glEnable(GL_DEPTH_TEST);
 	}
 
-	TextRender::Initialize2DTextRendering();
+	TextRenderer::Initialize2DTextRendering();
 	ChunkRenderer::SetupChunkRenderer();
 }
 
@@ -37,5 +37,5 @@ void RenderingEngine::RenderFrame(World* RenderWorld, const float & DeltaTime)
 	ChunkRenderer::RenderAllChunks(RenderWorld->CurrentPlayer);
 
 	// To text rendering last so it is on top of everything else
-	TextRender::Render();
+	TextRenderer::Render();
 }

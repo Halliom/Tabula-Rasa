@@ -33,7 +33,7 @@ struct TextRenderData2D
 	GLuint VertexCount;
 };
 
-class TextRender
+class TextRenderer
 {
 public:
 

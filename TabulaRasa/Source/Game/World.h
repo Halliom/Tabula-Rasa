@@ -2,7 +2,7 @@
 
 #include "../Rendering/GL_shader.h"
 
-#include "../Rendering/TextRender.h"
+#include "../Rendering/TextRenderer.h"
 
 #include "../Engine/Octree.h"
 #include "Player.h"

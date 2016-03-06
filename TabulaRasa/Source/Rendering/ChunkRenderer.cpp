@@ -1,4 +1,4 @@
-#include "ChunkRenderComponent.h"
+#include "ChunkRenderer.h"
 
 #include "../Engine/Octree.h"
 #include "../Engine/Camera.h"

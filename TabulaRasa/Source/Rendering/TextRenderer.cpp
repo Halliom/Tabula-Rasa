@@ -1,4 +1,4 @@
-#include "TextRender.h"
+#include "TextRenderer.h"
 
 #include <algorithm>
 
@@ -10,18 +10,18 @@
 #endif
 
 // Init the static shader to be NULL
-GLShaderProgram* TextRender::TextRenderShader = NULL;
+GLShaderProgram* TextRenderer::TextRenderShader = NULL;
 
 // Init the static projection matrix to be the size of the screen
-glm::mat4 TextRender::TextRenderProjectionMatrix = glm::ortho(0.0f, 800.0f, 600.0f, 0.0f); //TODO: Update this and be watchful of ints (use floats)
+glm::mat4 TextRenderer::TextRenderProjectionMatrix = glm::ortho(0.0f, 800.0f, 600.0f, 0.0f); //TODO: Update this and be watchful of ints (use floats)
 
 // Init the static VAO to be 0 from the beginning
-GLuint TextRender::TextRenderVAO = 0;
+GLuint TextRenderer::TextRenderVAO = 0;
 
 // Init the RenderObjects
-std::vector<TextRenderData2D*> TextRender::RenderObjects = std::vector<TextRenderData2D*>();
+std::vector<TextRenderData2D*> TextRenderer::RenderObjects = std::vector<TextRenderData2D*>();
 
-void TextRender::Initialize2DTextRendering()
+void TextRenderer::Initialize2DTextRendering()
 {
 	glGenVertexArrays(1, &TextRenderVAO);
 
@@ -30,7 +30,7 @@ void TextRender::Initialize2DTextRendering()
 	RenderObjects.reserve(32);
 }
 
-void TextRender::Destroy2DTextRendering()
+void TextRenderer::Destroy2DTextRendering()
 {
 	glDeleteVertexArrays(1, &TextRenderVAO);
 
@@ -48,7 +48,7 @@ struct GlyphVertex
 	glm::vec2 Tex;
 };
 
-TextRenderData2D* TextRender::AddTextToRender(const char* Text, float Size, unsigned int RenderFont)
+TextRenderData2D* TextRenderer::AddTextToRender(const char* Text, float Size, unsigned int RenderFont)
 {
 	glBindVertexArray(TextRenderVAO);
 	if (TextRenderShader == NULL)
@@ -99,8 +99,6 @@ TextRenderData2D* TextRender::AddTextToRender(const char* Text, float Size, unsi
 		CharacterOffset += Size;
 	}
 
-	uint64_t Cycles_VertexCreation = __rdtsc();
-
 	glBindBuffer(GL_ARRAY_BUFFER, NewTextRenderObject->VBO);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(GlyphVertex) * 4 * TextLength, Vertices, GL_STATIC_DRAW);
 
@@ -114,8 +112,6 @@ TextRenderData2D* TextRender::AddTextToRender(const char* Text, float Size, unsi
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
-	uint64_t Cycles_SendingToGPU = __rdtsc();
-
 	delete[] Vertices;
 	delete[] Indices;
 
@@ -127,7 +123,7 @@ TextRenderData2D* TextRender::AddTextToRender(const char* Text, float Size, unsi
 	return NewTextRenderObject;
 }
 
-void TextRender::RemoveText(TextRenderData2D* TextToRemove)
+void TextRenderer::RemoveText(TextRenderData2D* TextToRemove)
 {
 	auto Position = std::find(RenderObjects.begin(), RenderObjects.end(), TextToRemove);
 	if (Position != RenderObjects.end())
@@ -144,7 +140,7 @@ void TextRender::RemoveText(TextRenderData2D* TextToRemove)
 	}
 }
 
-void TextRender::Render()
+void TextRenderer::Render()
 {
 	glBindVertexArray(TextRenderVAO);
 

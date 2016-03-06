@@ -9,7 +9,7 @@
 #include "glm\common.hpp"
 #include "DynamicArray.cpp"
 
-#include "../Rendering/ChunkRenderComponent.h"
+#include "../Rendering/ChunkRenderer.h"
 
 class Chunk;
 

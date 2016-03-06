@@ -3,7 +3,7 @@
 
 #include "Platform/Platform.h"
 #include "Game/World.h"
-#include "Rendering\TextRender.h"
+#include "Rendering\TextRenderer.h"
 #include "Rendering\RenderingEngine.h"
 
 #define SAFE_DELETE(ptr) if (ptr) { delete ptr; }
@@ -63,7 +63,7 @@ int main(int argc, char* argv[])
 	g_RenderingEngine = new RenderingEngine();
 	g_RenderingEngine->Initialize(WindowParams.UseDepthTest);
 
-	TextRenderData2D* FPSCounter = TextRender::AddTextToRender("FPS: 0", 16.0f);
+	TextRenderData2D* FPSCounter = TextRenderer::AddTextToRender("FPS: 0", 16.0f);
 	
 	double LastFrameTime = SDL_GetTicks() / 1000.0;
 	double DeltaTime = 0.0;
@@ -74,6 +74,7 @@ int main(int argc, char* argv[])
 		// Update the world with the last frames delta time
 		g_World->Update(DeltaTime);
 
+		// Render the world
 		g_RenderingEngine->RenderFrame(g_World, DeltaTime);
 
 		// Swap the buffers
@@ -87,10 +88,10 @@ int main(int argc, char* argv[])
 		++FramesPerSecond;
 		if (CumulativeFrameTime >= 1.0f)
 		{
-			TextRender::RemoveText(FPSCounter);
+			TextRenderer::RemoveText(FPSCounter);
 			char Buffer[48];
 			sprintf(Buffer, "FPS: %d", FramesPerSecond);
-			TextRender::AddTextToRender(Buffer, 16.0f);
+			TextRenderer::AddTextToRender(Buffer, 16.0f);
 			CumulativeFrameTime = 0;
 			FramesPerSecond = 0;
 		}

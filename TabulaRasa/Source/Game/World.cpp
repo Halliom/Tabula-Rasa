@@ -2,7 +2,7 @@
 
 #include "glm\common.hpp"
 #include "glm\gtc\matrix_transform.hpp"
-#include "../Rendering/ChunkRenderComponent.h"
+#include "../Rendering/ChunkRenderer.h"
 
 #define CHUNK_LOADING_RADIUS 4
 
