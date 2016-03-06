@@ -15,6 +15,8 @@ public:
 
 	~World();
 
+	void Initialize();
+
 	void Update(float DeltaTime);
 
 	void AddBlock(const int& X, const int& Y, const int& Z, const unsigned int& BlockID);
@@ -23,9 +25,9 @@ public:
 
 	Chunk* LoadChunk(const int& ChunkX, const int& ChunkY, const int& ChunkZ);
 
-private:
-
 	Player* CurrentPlayer;
+
+private:
 
 	Chunk** LoadedChunks;
 

@@ -52,7 +52,7 @@ public:
 
 	static void DestroyChunkRenderer();
 
-	static void RenderAllChunks(Player* CurrentPlayer, float CumulativeTime);
+	static void RenderAllChunks(Player* CurrentPlayer);
 
 	static ChunkRenderData* CreateRenderData(const glm::vec3& Position, class Chunk* Voxels);
 

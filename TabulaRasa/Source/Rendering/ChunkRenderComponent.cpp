@@ -183,7 +183,7 @@ void ChunkRenderer::DestroyChunkRenderer()
 
 #include <Windows.h>
 
-void ChunkRenderer::RenderAllChunks(Player* CurrentPlayer, float CumulativeTime)
+void ChunkRenderer::RenderAllChunks(Player* CurrentPlayer)
 {
 	if (!Camera::ActiveCamera)
 	{

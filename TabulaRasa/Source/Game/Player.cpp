@@ -9,6 +9,8 @@
 #define KEY_A 0x41
 #define KEY_D 0x44
 
+Player* g_Player = NULL;
+
 Player::Player()
 {
 	PlayerCamera = new Camera();
@@ -21,6 +23,9 @@ Player::Player()
 
 Player::~Player()
 {
+	// Remove from global instance
+	g_Player = NULL;
+
 	delete PlayerCamera;
 }
 
@@ -65,5 +70,9 @@ void Player::Update(float DeltaTime)
 
 void Player::BeginPlay()
 {
+	// Init the projection
 	PlayerCamera->InitProjection();
+
+	// Set the global instance
+	g_Player = this;
 }

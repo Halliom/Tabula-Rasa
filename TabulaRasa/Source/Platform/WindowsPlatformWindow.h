@@ -10,7 +10,7 @@
 
 struct WindowParameters
 {
-	const char Title[64];
+	const char* Title;
 	unsigned int Width;
 	unsigned int Height;
 	bool UseVSync;

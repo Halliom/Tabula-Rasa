@@ -78,28 +78,11 @@ bool PlatformWindow::SetupWindowAndRenderContext()
 		SDL_GL_SetSwapInterval(0);
 	}
 
-	std::string* Directory = PlatformFileSystem::GetAssetDirectory(DT_FONTS);
-
-	LoadFontLibrary(Directory);
-
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-	glFrontFace(GL_CW);
-	glCullFace(GL_BACK);
-	glEnable(GL_CULL_FACE);
-
-	if (GlobalWindow->WindowParams.UseDepthTest)
-	{
-		glEnable(GL_DEPTH_TEST);
-	}
-
 	return true;
 }
 
 void PlatformWindow::DestroyWindow()
 {
-	UnloadFontLibrary();
-
 	SDL_GL_DeleteContext(MainContext);
 
 	SDL_DestroyWindow(MainWindow);

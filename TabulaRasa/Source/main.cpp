@@ -1,35 +1,20 @@
-#include <chrono>
 #include <stdio.h>
 #include <bitset>
 
 #include "Platform/Platform.h"
 #include "Game/World.h"
 #include "Rendering\TextRender.h"
+#include "Rendering\RenderingEngine.h"
 
-#define println(str) OutputDebugStringA(str)
+#define SAFE_DELETE(ptr) if (ptr) { delete ptr; }
+
+World* g_World = NULL;
+RenderingEngine* g_RenderingEngine = NULL;
 
 #ifdef _WIN32
 
 #define WIN32_LEAN_AND_MEAN
 #include "windows.h"
-
-double GetTimeMicroseconds()
-{
-	LARGE_INTEGER PerformanceCounter;
-	LARGE_INTEGER PerformanceFreq;
-	QueryPerformanceFrequency(&PerformanceFreq);
-	QueryPerformanceCounter(&PerformanceCounter);
-
-	PerformanceCounter.QuadPart *= 1000000; // Multiply with 10^6
-	PerformanceCounter.QuadPart /= PerformanceFreq.QuadPart;
-	return (double) PerformanceCounter.QuadPart / 1000000.0;
-}
-
-double GetTimeMilliseconds()
-{
-	auto duration = std::chrono::high_resolution_clock::now().time_since_epoch();
-	return std::chrono::duration_cast<std::chrono::milliseconds>(duration).count() / 1000.0;
-}
 
 int CALLBACK WinMain(
     HINSTANCE   hInstance,
@@ -38,12 +23,28 @@ int CALLBACK WinMain(
     int         nCmdShow
     )
 {
-	PlatformWindow Window = PlatformWindow({ "Testing", 1280, 720, false, false, false, false, hInstance });
+	WindowParameters WindowParams;
+	WindowParams.Title = "Tabula Rasa";
+	WindowParams.Width = 1280;
+	WindowParams.Height = 720;
+	WindowParams.UseVSync = false;
+	WindowParams.UseDepthTest = false;
+	WindowParams.Fullscreen = false;
+	WindowParams.StartMaximized = false;
+	WindowParams.Instance = hInstance;
 #else
 int main(int argc, char* argv[])
 {
-	PlatformWindow Window = PlatformWindow({ "Testing", 640, 480, true, false });
+	WindowParameters WindowParams;
+	WindowParams.Title = "Tabula Rasa";
+	WindowParams.Width = 1280;
+	WindowParams.Height = 720;
+	WindowParams.UseVSync = false;
+	WindowParams.UseDepthTest = false;
+	WindowParams.Fullscreen = false;
+	WindowParams.StartMaximized = false;
 #endif
+	PlatformWindow Window = PlatformWindow(WindowParams);
 	bool Success = Window.SetupWindowAndRenderContext();
 	if (!Success)
 	{
@@ -51,14 +52,18 @@ int main(int argc, char* argv[])
 		Window.GetErrorMessage();
 	}
 
-	World WorldObject;
-	TextRenderData2D* FPSCounter = TextRender::AddTextToRender("Hello World", 16.0f);
+	// Loads the font library
+	std::string* Directory = PlatformFileSystem::GetAssetDirectory(DT_FONTS);
+	LoadFontLibrary(Directory);
 
-	//auto start = std::chrono::high_resolution_clock::now();
-	//auto finish = std::chrono::high_resolution_clock::now();
-	//std::cout << std::chrono::duration_cast<std::chrono::nanoseconds>(finish - start).count() << "ns\n"
+	// Loads the world and initializes subobjects
+	g_World = new World();
+	g_World->Initialize();
 
-	clock_t t1 =	clock();
+	g_RenderingEngine = new RenderingEngine();
+	g_RenderingEngine->Initialize(WindowParams.UseDepthTest);
+
+	TextRenderData2D* FPSCounter = TextRender::AddTextToRender("FPS: 0", 16.0f);
 	
 	double LastFrameTime = SDL_GetTicks() / 1000.0;
 	double DeltaTime = 0.0;
@@ -67,7 +72,9 @@ int main(int argc, char* argv[])
 	while (Window.PrepareForRender())
 	{
 		// Update the world with the last frames delta time
-		WorldObject.Update(DeltaTime);
+		g_World->Update(DeltaTime);
+
+		g_RenderingEngine->RenderFrame(g_World, DeltaTime);
 
 		// Swap the buffers
 		Window.PostRender();
@@ -83,9 +90,14 @@ int main(int argc, char* argv[])
 			TextRender::RemoveText(FPSCounter);
 			char Buffer[48];
 			sprintf(Buffer, "FPS: %d", FramesPerSecond);
-			TextRender::AddTextToRender(Buffer, 32.0f);
+			TextRender::AddTextToRender(Buffer, 16.0f);
 			CumulativeFrameTime = 0;
 			FramesPerSecond = 0;
 		}
 	}
+
+	SAFE_DELETE(g_RenderingEngine);
+	SAFE_DELETE(g_World);
+
+	Window.DestroyWindow();
 }

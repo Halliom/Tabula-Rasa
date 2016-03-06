@@ -8,11 +8,27 @@
 
 World::World()
 {
+	CurrentPlayer = NULL;
+}
+
+World::~World()
+{
+	if (CurrentPlayer)
+	{
+		delete CurrentPlayer;
+	}
+
+	for (int i = 0; i < NumLoadedChunks; ++i)
+	{
+		delete LoadedChunks[i];
+	}
+	delete[] LoadedChunks;
+}
+
+void World::Initialize()
+{
 	CurrentPlayer = new Player();
 	CurrentPlayer->BeginPlay();
-
-	TextRender::Initialize2DTextRendering();
-	ChunkRenderer::SetupChunkRenderer();
 
 	ChunkLoadingCenterX = 0;
 	ChunkLoadingCenterY = 0;
@@ -28,9 +44,9 @@ World::World()
 				//TODO: This might be thrashing the cache a bit
 				int Index = i + CHUNK_LOADING_RADIUS * (j + CHUNK_LOADING_RADIUS * k);
 				int HalfChunkRadius = CHUNK_LOADING_RADIUS / 2;
-				LoadedChunks[Index] = LoadChunk(ChunkLoadingCenterX + i - HalfChunkRadius, 
-												ChunkLoadingCenterY + j - HalfChunkRadius, 
-												ChunkLoadingCenterZ + k - HalfChunkRadius);
+				LoadedChunks[Index] = LoadChunk(ChunkLoadingCenterX + i - HalfChunkRadius,
+					ChunkLoadingCenterY + j - HalfChunkRadius,
+					ChunkLoadingCenterZ + k - HalfChunkRadius);
 			}
 		}
 	}
@@ -39,32 +55,8 @@ World::World()
 	AddBlock(0, 0, 1, 0);
 }
 
-World::~World()
-{
-	TextRender::Destroy2DTextRendering();
-
-	ChunkRenderer::DestroyChunkRenderer();
-
-	if (CurrentPlayer)
-	{
-		delete CurrentPlayer;
-	}
-
-	for (int i = 0; i < NumLoadedChunks; ++i)
-	{
-		delete LoadedChunks[i];
-	}
-	delete[] LoadedChunks;
-}
-
 void World::Update(float DeltaTime)
 {
-	static float Angle = 0;
-	Angle += DeltaTime;
-
-	ChunkRenderer::RenderAllChunks(CurrentPlayer, Angle);
-	TextRender::Render();
-
 	CurrentPlayer->Update(DeltaTime);
 	
 	for (unsigned int i = 0; i < NumLoadedChunks; ++i)
