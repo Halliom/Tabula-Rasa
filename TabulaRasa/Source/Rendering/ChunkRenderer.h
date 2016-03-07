@@ -44,6 +44,13 @@ struct SideCoordinate
 	uint8_t Z;
 };
 
+struct TexturedQuadVertex
+{
+	glm::vec3 Position;
+	glm::vec2 Dimension;
+	unsigned short TextureCoord;
+};
+
 class ChunkRenderer
 {
 public:

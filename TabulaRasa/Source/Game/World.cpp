@@ -3,6 +3,7 @@
 #include "glm\common.hpp"
 #include "glm\gtc\matrix_transform.hpp"
 #include "../Rendering/ChunkRenderer.h"
+#include "../Engine/Block.h"
 
 #define CHUNK_LOADING_RADIUS 4
 
@@ -27,6 +28,8 @@ World::~World()
 
 void World::Initialize()
 {
+	BlockManager::SetupBlocks();
+
 	CurrentPlayer = new Player();
 	CurrentPlayer->BeginPlay();
 
@@ -52,7 +55,9 @@ void World::Initialize()
 	}
 	NumLoadedChunks = CHUNK_LOADING_RADIUS * CHUNK_LOADING_RADIUS * CHUNK_LOADING_RADIUS;
 
-	AddBlock(0, 0, 1, 0);
+	AddBlock(0, 0, 1, 1);
+	AddBlock(0, 0, 2, 1);
+	AddBlock(0, 0, 3, 1);
 }
 
 void World::Update(float DeltaTime)

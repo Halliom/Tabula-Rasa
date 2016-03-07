@@ -281,7 +281,7 @@ int GetVoxelSide(Chunk* Chunk, const int& X, const int& Y, const int& Z, const V
 
 static void GreedyMesh(Chunk* Voxels, ChunkRenderData* RenderData)
 {
-	DynamicArray<glm::vec3> Vertices;
+	DynamicArray<TexturedQuadVertex> Vertices;
 	DynamicArray<unsigned int> Indices;
 	bool Counter = false;
 
@@ -382,15 +382,11 @@ static void GreedyMesh(Chunk* Voxels, ChunkRenderData* RenderData)
 							// Reserve 4 vertices
 							unsigned int StartIndex = Vertices.GetNum();
 							Vertices.Reserve(StartIndex + 4); // +4 again is the amount we're adding
-							glm::vec3 QuadVert0 = glm::vec3(x[0],					x[1],					x[2]);
-							glm::vec3 QuadVert1 = glm::vec3(x[0] + du[0],			x[1] + du[1],			x[2] + du[2]);
-							glm::vec3 QuadVert2 = glm::vec3(x[0] + du[0] + dv[0],	x[1] + du[1] + dv[1],	x[2] + du[2] + dv[2]);
-							glm::vec3 QuadVert3 = glm::vec3(x[0] + dv[0],			x[1] + dv[1],			x[2] + dv[2]);
 
-							Vertices.Push(glm::vec3(x[0],					x[1],					x[2]));
-							Vertices.Push(glm::vec3(x[0] + du[0],			x[1] + du[1],			x[2] + du[2]));
-							Vertices.Push(glm::vec3(x[0] + du[0] + dv[0],	x[1] + du[1] + dv[1],	x[2] + du[2] + dv[2]));
-							Vertices.Push(glm::vec3(x[0] +         dv[0],	x[1] +         dv[1],	x[2] +		   dv[2]));
+							Vertices.Push({ glm::vec3(x[0],					x[1],					x[2]), glm::vec2((float) w, (float) h), (unsigned short) CurrentBlock});
+							Vertices.Push({ glm::vec3(x[0] + du[0],			x[1] + du[1],			x[2] + du[2]), glm::vec2((float) w, (float) h), (unsigned short) CurrentBlock });
+							Vertices.Push({ glm::vec3(x[0] + du[0] + dv[0],	x[1] + du[1] + dv[1],	x[2] + du[2] + dv[2]), glm::vec2((float) w, (float) h), (unsigned short) CurrentBlock });
+							Vertices.Push({ glm::vec3(x[0] +         dv[0],	x[1] +         dv[1],	x[2] +		   dv[2]), glm::vec2((float) w, (float) h), (unsigned short) CurrentBlock });
 
 							Indices.Reserve(Indices.GetNum() + 6);
 							if (BackFace)
@@ -441,13 +437,17 @@ static void GreedyMesh(Chunk* Voxels, ChunkRenderData* RenderData)
 	glBindVertexArray(RenderData->VertexArrayObject);
 
 	glBindBuffer(GL_ARRAY_BUFFER, RenderData->VertexBufferObject);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * Vertices.GetNum(), &Vertices[0].x, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(TexturedQuadVertex) * Vertices.GetNum(), &Vertices[0].Position.x, GL_STATIC_DRAW);
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, RenderData->IndexBufferObject);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * Indices.GetNum(), &Indices[0], GL_STATIC_DRAW);
 
 	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	glEnableVertexAttribArray(1);
+	glEnableVertexAttribArray(2);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(TexturedQuadVertex), (void*) offsetof(TexturedQuadVertex, Position));
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(TexturedQuadVertex), (void*) offsetof(TexturedQuadVertex, Dimension));
+	glVertexAttribIPointer(2, 1, GL_UNSIGNED_SHORT, sizeof(TexturedQuadVertex), (void*) offsetof(TexturedQuadVertex, TextureCoord));
 	
 	glBindVertexArray(0); // Unbind so nothing else modifies it
 }
