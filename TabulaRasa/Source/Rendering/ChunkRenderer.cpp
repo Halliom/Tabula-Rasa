@@ -197,7 +197,7 @@ void ChunkRenderer::RenderAllChunks(Player* CurrentPlayer)
 		if (!ChunksToRender[Index])
 			continue;
 
-		ChunkRenderShader->SetChunkPositionOffset(ChunksToRender[Index]->ChunkPosition);
+		ChunkRenderShader->SetPositionOffset(ChunksToRender[Index]->ChunkPosition);
 #if 0
 
 		// Render the east face

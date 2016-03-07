@@ -41,7 +41,7 @@ struct GlyphVertex
 	glm::vec2 Tex;
 };
 
-TextRenderData2D* TextRenderer::AddTextToRender(const char* Text, float Size, unsigned int RenderFont)
+TextRenderData2D* TextRenderer::AddTextToRender(const char* Text, const float& X, const float& Y, float Size, unsigned int RenderFont)
 {
 	if (TextRenderShader == NULL)
 		TextRenderShader = GLShaderProgram::CreateVertexFragmentShaderFromFile(std::string("vertex_font_render.glsl"), std::string("fragment_font_render.glsl"));
@@ -58,6 +58,8 @@ TextRenderData2D* TextRenderer::AddTextToRender(const char* Text, float Size, un
 	glGenBuffers(1, &NewTextRenderObject->VBO);
 	glGenBuffers(1, &NewTextRenderObject->IBO);
 	glGenTextures(1, &NewTextRenderObject->TextureID);
+
+	NewTextRenderObject->Position = glm::vec3(X, Y, 0.0f);
 
 	unsigned int Width = (unsigned int) FontToUse->SizeX;
 	unsigned int Height = (unsigned int) FontToUse->SizeY;
@@ -151,6 +153,8 @@ void TextRenderer::Render()
 	{
 		if (!It)
 			continue;
+
+		TextRenderShader->SetPositionOffset(It->Position);
 
 		glBindVertexArray(It->VAO);
 		glBindTexture(GL_TEXTURE_2D, It->TextureID);

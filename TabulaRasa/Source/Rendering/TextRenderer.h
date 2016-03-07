@@ -33,6 +33,11 @@ struct TextRenderData2D
 	GLuint TextureID;
 
 	/**
+	 * Screen coordínate to render to
+	 */
+	glm::vec3 Position;
+
+	/**
 	 * Number of vertices to render (amount of indices really)
 	 */
 	GLuint VertexCount;
@@ -46,7 +51,7 @@ public:
 
 	static void Destroy2DTextRendering();
 
-	static TextRenderData2D* AddTextToRender(const char* Text, float Size = 100, unsigned int Font = 0);
+	static TextRenderData2D* AddTextToRender(const char* Text, const float& X = 0.0f, const float& Y = 0.0f, float Size = 24.0f, unsigned int Font = 0);
 
 	static void RemoveText(TextRenderData2D* TextToRemove);
 
