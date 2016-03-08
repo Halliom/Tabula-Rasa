@@ -61,7 +61,7 @@ int main(int argc, char* argv[])
 	g_World->Initialize();
 
 	g_RenderingEngine = new RenderingEngine();
-	g_RenderingEngine->Initialize(WindowParams.UseDepthTest);
+	g_RenderingEngine->Initialize(WindowParams.Width, WindowParams.Height);
 
 	TextRenderData2D* FPSCounter = TextRenderer::AddTextToRender("FPS: 0");
 	

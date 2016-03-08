@@ -8,6 +8,12 @@
 
 #include "Fonts.h"
 
+#define PRINT_DEBUG_STRING(str, x, y) \
+static TextRenderData2D* DebugText; \
+if (DebugText)\
+	TextRenderer::RemoveText(DebugText);\
+DebugText = TextRenderer::AddTextToRender(Buffer, x, y);\
+
 class GLShaderProgram;
 
 struct TextRenderData2D

@@ -11,14 +11,15 @@
 
 Player* g_Player = NULL;
 
-Player::Player()
+Player::Player() :
+	m_Sensitivity(10.0f),
+	m_MovementSpeed(4.0f),
+	m_Yaw(-90.0f),
+	m_Pitch(0.0f),
+	m_LastMouseX(0),
+	m_LastMouseY(0)
 {
-	PlayerCamera = new Camera();
-	Yaw = -90;
-	Pitch = 0.0f;
-
-	LastMouseX = 0;
-	LastMouseY = 0;
+	m_pPlayerCamera = new Camera();
 }
 
 Player::~Player()
@@ -26,7 +27,7 @@ Player::~Player()
 	// Remove from global instance
 	g_Player = NULL;
 
-	delete PlayerCamera;
+	delete m_pPlayerCamera;
 }
 
 #include "../Rendering/TextRenderer.h"
@@ -36,44 +37,44 @@ void Player::Update(float DeltaTime)
 	bool UpdatedMovement = false;
 	if (Input::Keys[SDL_SCANCODE_W])
 	{
-		PlayerCamera->Position += 2.0f * PlayerCamera->Front * DeltaTime;
+		m_pPlayerCamera->Position += m_MovementSpeed * m_pPlayerCamera->Front * DeltaTime;
 		UpdatedMovement = true;
 	}
 	if (Input::Keys[SDL_SCANCODE_S])
 	{
-		PlayerCamera->Position -= 2.0f * PlayerCamera->Front * DeltaTime;
+		m_pPlayerCamera->Position -= m_MovementSpeed * m_pPlayerCamera->Front * DeltaTime;
 		UpdatedMovement = true;
 	}
 	if (Input::Keys[SDL_SCANCODE_D])
 	{
-		PlayerCamera->Position += 2.0f * PlayerCamera->Right * DeltaTime;
+		m_pPlayerCamera->Position += m_MovementSpeed * m_pPlayerCamera->Right * DeltaTime;
 		UpdatedMovement = true;
 	}
 	if (Input::Keys[SDL_SCANCODE_A])
 	{
-		PlayerCamera->Position -= 2.0f * PlayerCamera->Right * DeltaTime;
+		m_pPlayerCamera->Position -= m_MovementSpeed * m_pPlayerCamera->Right * DeltaTime;
 		UpdatedMovement = true;
 	}
 
-	PlayerCamera->IsViewMatrixDirty = UpdatedMovement;
+	m_pPlayerCamera->IsViewMatrixDirty = UpdatedMovement;
 
-	int DeltaMouseX = Input::MouseX - LastMouseX;
-	int DeltaMouseY = Input::MouseY - LastMouseY;
+	int DeltaMouseX = Input::MouseX - m_LastMouseX;
+	int DeltaMouseY = Input::MouseY - m_LastMouseY;
 
-	Yaw += (float) DeltaMouseX * 100.0f * DeltaTime;
-	Pitch += (float) DeltaMouseY * -100.0f * DeltaTime;
+	m_Yaw += (float) DeltaMouseX * m_Sensitivity * DeltaTime;
+	m_Pitch += (float) DeltaMouseY * -m_Sensitivity * DeltaTime;
 
-	LastMouseX = Input::MouseX;
-	LastMouseY = Input::MouseY;
+	m_LastMouseX = Input::MouseX;
+	m_LastMouseY = Input::MouseY;
 
-	//if (DeltaMouseX || DeltaMouseY)
-	PlayerCamera->UpdateCameraRotation(Yaw, Pitch);
+	if (DeltaMouseX != 0.0f || DeltaMouseY != 0.0f)
+		m_pPlayerCamera->UpdateCameraRotation(m_Yaw, m_Pitch);
 }
 
 void Player::BeginPlay()
 {
 	// Init the projection
-	PlayerCamera->InitProjection();
+	m_pPlayerCamera->InitProjection(30.0f);
 
 	// Set the global instance
 	g_Player = this;

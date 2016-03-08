@@ -7,7 +7,11 @@
 
 #include "../Rendering/Fonts.h"
 
+#include "../Rendering/RenderingEngine.h"
+
 PlatformWindow* PlatformWindow::GlobalWindow = NULL;
+
+extern RenderingEngine* g_RenderingEngine;
 
 PlatformWindow::PlatformWindow(const WindowParameters& WindowParams) : 
 	WindowParams(WindowParams)
@@ -120,6 +124,8 @@ bool PlatformWindow::PrepareForRender()
 							Camera::ActiveCamera->WindowHeight = Event.window.data2;
 							Camera::ActiveCamera->IsScreenMatrixDirty = true;
 							Camera::ActiveCamera->IsProjectionMatrixDirty = true;
+
+							g_RenderingEngine->ScreenDimensionsChanged(Event.window.data1, Event.window.data2);
 						}
 
 						WindowParams.Width = Event.window.data1;
@@ -167,7 +173,7 @@ bool PlatformWindow::PrepareForRender()
 	}
 
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-	glClear(GL_COLOR_BUFFER_BIT);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	return true;
 }

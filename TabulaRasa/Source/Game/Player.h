@@ -15,16 +15,17 @@ public:
 
 	void BeginPlay();
 
-	Camera* PlayerCamera;
+	Camera* m_pPlayerCamera;
 
 private:
 
-	float Yaw;
+	float m_Sensitivity;
+	float m_MovementSpeed;
 
-	float Pitch;
+	float m_Yaw;
+	float m_Pitch;
 
-	int32_t LastMouseX;
-
-	int32_t LastMouseY;
+	int m_LastMouseX;
+	int m_LastMouseY;
 
 };

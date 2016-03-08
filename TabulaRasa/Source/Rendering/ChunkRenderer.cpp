@@ -443,11 +443,6 @@ static void GreedyMesh(Chunk* Voxels, ChunkRenderData* RenderData)
 								}
 							}
 
-							TexturedQuadVertex Vert0 = Vertices[StartIndex];
-							TexturedQuadVertex Vert1 = Vertices[StartIndex + 1];
-							TexturedQuadVertex Vert2 = Vertices[StartIndex + 2];
-							TexturedQuadVertex Vert3 = Vertices[StartIndex + 3];
-
 							Indices.Reserve(Indices.GetNum() + 6);
 							if (BackFace)
 							{

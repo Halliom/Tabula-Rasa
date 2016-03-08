@@ -5,6 +5,8 @@
 #include "../Rendering/ChunkRenderer.h"
 #include "../Engine/Block.h"
 
+#include "../Engine/PerlinNoise.h"
+
 #define CHUNK_LOADING_RADIUS 4
 
 World::World()
@@ -55,19 +57,25 @@ void World::Initialize()
 	}
 	NumLoadedChunks = CHUNK_LOADING_RADIUS * CHUNK_LOADING_RADIUS * CHUNK_LOADING_RADIUS;
 
-	for (int i = -16; i < 16; ++i)
+	PerlinNoise NoiseFunction;
+
+#if 0
+	for (int i = -64; i < 64; ++i)
 	{
-		for (int j = -16; j < 16; ++j)
+		for (int k = -64; k < 64; ++k)
 		{
-			for (int k = -16; k < 16; ++k)
+			int Height = NoiseFunction.GetHeight(i, k);
+			for (int j = 0; j < Height; ++j)
 			{
-				AddBlock(i, j, k, 1);
+				AddBlock(i, j, k, BLOCK_ID_GRASS);
 			}
 		}
 	}
-	//AddBlock(0, 0, 1, 1);
-	//AddBlock(0, 0, 2, 1);
-	//AddBlock(0, 0, 3, 1);
+#else
+	AddBlock(0, 0, 1, BLOCK_ID_GRASS);
+	AddBlock(0, 0, 2, BLOCK_ID_GRASS);
+	AddBlock(0, 0, 3, BLOCK_ID_GRASS);
+#endif
 }
 
 void World::Update(float DeltaTime)
