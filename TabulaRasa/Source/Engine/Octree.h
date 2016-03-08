@@ -118,7 +118,6 @@ public:
 
 	void RemoveNode(const glm::uvec3& Position, OctreeNode* Node, bool IsUpwardsRecursive = false);
 
-
 	void InsertNode(const glm::uvec3& Position, Voxel* NewVoxel, OctreeNode* Node, bool IsNew = true);
 
 	inline Voxel* GetNodeData(const glm::uvec3& Position)

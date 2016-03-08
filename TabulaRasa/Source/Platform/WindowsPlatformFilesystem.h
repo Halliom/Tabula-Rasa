@@ -6,7 +6,9 @@
 enum AssetDirectoryType
 {
 	DT_SHADERS,
-	DT_FONTS
+	DT_FONTS,
+	DT_TEXTURES,
+	DT_MODELS
 };
 
 class PlatformFileSystem

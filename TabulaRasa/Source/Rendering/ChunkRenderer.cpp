@@ -3,14 +3,16 @@
 #include "../Engine/Octree.h"
 #include "../Engine/Camera.h"
 #include "../Engine/Block.h"
+#include "../Platform/Platform.h"
 
 #include "glm\gtc\matrix_transform.hpp"
 
 // Init the chunk list
 DynamicArray<ChunkRenderData*> ChunkRenderer::ChunksToRender;
 
-// 
 GLShaderProgram* ChunkRenderer::ChunkRenderShader = NULL;
+
+GLuint ChunkRenderer::TextureAtlas;
 
 // Init the Vertex Array Object to be 0 (uninitialized)
 GLuint ChunkRenderer::EastVAO;
@@ -46,6 +48,17 @@ void ChunkRenderer::SetupChunkRenderer()
 	ChunksToRender.Reserve(16);
 
 	ChunkRenderShader = GLShaderProgram::CreateVertexFragmentShaderFromFile(std::string("VertexShader.glsl"), std::string("FragmentShader.glsl"));
+
+	glGenTextures(1, &TextureAtlas);
+	glBindTexture(GL_TEXTURE_2D, TextureAtlas);
+
+	unsigned int Width, Height;
+	std::string FileName = PlatformFileSystem::GetAssetDirectory(DT_TEXTURES)->append(std::string("textures.png"));
+	std::vector<unsigned char>*	FontImage = PlatformFileSystem::LoadImageFromFile(FileName, Width, Height);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1024, 1024, 0, GL_RGBA, GL_UNSIGNED_BYTE, &(FontImage->at(0)));
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 
 #if 0
 	glGenVertexArrays(6, &EastVAO);
@@ -190,6 +203,7 @@ void ChunkRenderer::RenderAllChunks(Player* CurrentPlayer)
 	glm::mat4 Projection = *Camera::ActiveCamera->GetProjectionMatrix();
 	glm::mat4 View = *Camera::ActiveCamera->GetViewMatrix();
 
+	glBindTexture(GL_TEXTURE_2D, TextureAtlas);
 	ChunkRenderShader->SetProjectionViewMatrix(Projection * View);
 
 	for (int Index = 0; Index < ChunksToRender.GetNum(); ++Index)
@@ -383,10 +397,56 @@ static void GreedyMesh(Chunk* Voxels, ChunkRenderData* RenderData)
 							unsigned int StartIndex = Vertices.GetNum();
 							Vertices.Reserve(StartIndex + 4); // +4 again is the amount we're adding
 
-							Vertices.Push({ glm::vec3(x[0],					x[1],					x[2]), glm::vec2((float) w, (float) h), (unsigned short) CurrentBlock});
-							Vertices.Push({ glm::vec3(x[0] + du[0],			x[1] + du[1],			x[2] + du[2]), glm::vec2((float) w, (float) h), (unsigned short) CurrentBlock });
-							Vertices.Push({ glm::vec3(x[0] + du[0] + dv[0],	x[1] + du[1] + dv[1],	x[2] + du[2] + dv[2]), glm::vec2((float) w, (float) h), (unsigned short) CurrentBlock });
-							Vertices.Push({ glm::vec3(x[0] +         dv[0],	x[1] +         dv[1],	x[2] +		   dv[2]), glm::vec2((float) w, (float) h), (unsigned short) CurrentBlock });
+							/*Vertices.Push({ glm::vec3(x[0],					x[1],					x[2]), 
+											glm::vec2(0.0f, 0.0f),				(unsigned short) CurrentBlock});
+							
+							Vertices.Push({ glm::vec3(x[0] + du[0],			x[1] + du[1],			x[2] + du[2]), 
+											glm::vec2(0.0f, (float) w),			(unsigned short) CurrentBlock });
+							
+							Vertices.Push({ glm::vec3(x[0] + du[0] + dv[0],	x[1] + du[1] + dv[1],	x[2] + du[2] + dv[2]), 
+											glm::vec2((float) h, (float) w),	(unsigned short) CurrentBlock });
+							
+							Vertices.Push({ glm::vec3(x[0] +         dv[0],	x[1] +         dv[1],	x[2] +		   dv[2]),
+											glm::vec2((float) h, 0.0f),			(unsigned short) CurrentBlock });*/
+
+							switch (d)
+							{
+								case 2:
+								{
+									Vertices.Push({ glm::vec3(x[0],					x[1],					x[2]),
+										glm::vec2(0.0f, (float) w),		(unsigned char)CurrentBlock });
+
+									Vertices.Push({ glm::vec3(x[0] + du[0],			x[1] + du[1],			x[2] + du[2]),
+										glm::vec2((float)h, (float)w),	(unsigned char)CurrentBlock });
+
+									Vertices.Push({ glm::vec3(x[0] + du[0] + dv[0],	x[1] + du[1] + dv[1],	x[2] + du[2] + dv[2]),
+										glm::vec2((float)h, 0.0f),		(unsigned char)CurrentBlock });
+
+									Vertices.Push({ glm::vec3(x[0] + dv[0],	x[1] + dv[1],	x[2] + dv[2]),
+										glm::vec2(0.0f, 0.0f),			(unsigned char)CurrentBlock });
+									break;
+								}
+								default:
+								{
+									Vertices.Push({ glm::vec3(x[0],					x[1],					x[2]),
+										glm::vec2((float)h, (float)w),	(unsigned char)CurrentBlock });
+
+									Vertices.Push({ glm::vec3(x[0] + du[0],			x[1] + du[1],			x[2] + du[2]),
+										glm::vec2((float)h, 0.0f),			(unsigned char)CurrentBlock });
+
+									Vertices.Push({ glm::vec3(x[0] + du[0] + dv[0],	x[1] + du[1] + dv[1],	x[2] + du[2] + dv[2]),
+										glm::vec2(0.0f, 0.0f),				(unsigned char)CurrentBlock });
+
+									Vertices.Push({ glm::vec3(x[0] + dv[0],	x[1] + dv[1],	x[2] + dv[2]),
+										glm::vec2(0.0f, (float)w),			(unsigned char)CurrentBlock });
+									break;
+								}
+							}
+
+							TexturedQuadVertex Vert0 = Vertices[StartIndex];
+							TexturedQuadVertex Vert1 = Vertices[StartIndex + 1];
+							TexturedQuadVertex Vert2 = Vertices[StartIndex + 2];
+							TexturedQuadVertex Vert3 = Vertices[StartIndex + 3];
 
 							Indices.Reserve(Indices.GetNum() + 6);
 							if (BackFace)
@@ -447,7 +507,7 @@ static void GreedyMesh(Chunk* Voxels, ChunkRenderData* RenderData)
 	glEnableVertexAttribArray(2);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(TexturedQuadVertex), (void*) offsetof(TexturedQuadVertex, Position));
 	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(TexturedQuadVertex), (void*) offsetof(TexturedQuadVertex, Dimension));
-	glVertexAttribIPointer(2, 1, GL_UNSIGNED_SHORT, sizeof(TexturedQuadVertex), (void*) offsetof(TexturedQuadVertex, TextureCoord));
+	glVertexAttribIPointer(2, 1, GL_UNSIGNED_BYTE, sizeof(TexturedQuadVertex), (void*) offsetof(TexturedQuadVertex, TextureCoord));
 	
 	glBindVertexArray(0); // Unbind so nothing else modifies it
 }

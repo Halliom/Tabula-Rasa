@@ -55,9 +55,19 @@ void World::Initialize()
 	}
 	NumLoadedChunks = CHUNK_LOADING_RADIUS * CHUNK_LOADING_RADIUS * CHUNK_LOADING_RADIUS;
 
-	AddBlock(0, 0, 1, 1);
-	AddBlock(0, 0, 2, 1);
-	AddBlock(0, 0, 3, 1);
+	for (int i = -16; i < 16; ++i)
+	{
+		for (int j = -16; j < 16; ++j)
+		{
+			for (int k = -16; k < 16; ++k)
+			{
+				AddBlock(i, j, k, 1);
+			}
+		}
+	}
+	//AddBlock(0, 0, 1, 1);
+	//AddBlock(0, 0, 2, 1);
+	//AddBlock(0, 0, 3, 1);
 }
 
 void World::Update(float DeltaTime)
@@ -74,9 +84,9 @@ void World::Update(float DeltaTime)
 
 void World::AddBlock(const int& X, const int& Y, const int& Z, const unsigned int& BlockID)
 {
-	int ChunkX = X / Chunk::SIZE;
-	int ChunkY = Y / Chunk::SIZE;
-	int ChunkZ = Z / Chunk::SIZE;
+	int ChunkX = X / (int) Chunk::SIZE;
+	int ChunkY = Y / (int) Chunk::SIZE;
+	int ChunkZ = Z / (int) Chunk::SIZE;
 
 	int HalfChunkRadius = CHUNK_LOADING_RADIUS / 2;
 	if ((ChunkX >= ChunkLoadingCenterX - HalfChunkRadius && ChunkX < ChunkLoadingCenterX + HalfChunkRadius) &&

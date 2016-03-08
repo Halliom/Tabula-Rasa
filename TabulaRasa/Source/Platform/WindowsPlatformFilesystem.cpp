@@ -68,6 +68,16 @@ std::string* PlatformFileSystem::GetAssetDirectory(const AssetDirectoryType& Dir
 			OutDirectory->append("\\Assets\\Fonts");
 			break;
 		}
+		case DT_TEXTURES:
+		{
+			OutDirectory->append("\\Assets\\Textures\\");
+			break;
+		}
+		case DT_MODELS:
+		{
+			OutDirectory->append("\\Assets\\Models\\");
+			break;
+		}
 		default: { break; }
 	}
 	return OutDirectory;

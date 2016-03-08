@@ -48,7 +48,7 @@ struct TexturedQuadVertex
 {
 	glm::vec3 Position;
 	glm::vec2 Dimension;
-	unsigned short TextureCoord;
+	unsigned char TextureCoord;
 };
 
 class ChunkRenderer
@@ -105,5 +105,7 @@ private:
 	static GLuint SouthIBO;
 
 	static GLShaderProgram* ChunkRenderShader;
+
+	static GLuint TextureAtlas;
 
 };

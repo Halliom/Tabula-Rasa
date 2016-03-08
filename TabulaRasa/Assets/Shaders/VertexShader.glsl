@@ -4,14 +4,26 @@ layout(location = 1) in vec2 dimension;
 layout(location = 2) in uint textureCoord;
 
 uniform mat4 g_ProjectionViewMatrix;
-
 uniform vec3 g_ChunkOffset;
 
-out vec4 frag_color;
+out vec2 frag_texCoord;
+out vec2 frag_atlasOffset;
+
+const float TILE_OFFSET = 1.0 / 16.0;
+const vec2 TILE_OFFSETV = vec2(TILE_OFFSET, TILE_OFFSET);
+
+vec2 getAtlasOffset()
+{
+	vec2 atlasOffset = vec2(float(textureCoord % 16), floor(float(textureCoord) * TILE_OFFSET));
+	atlasOffset = atlasOffset * TILE_OFFSETV;
+	return atlasOffset;
+}
 
 void main()
 {
 	vec3 transformedPosition = position + g_ChunkOffset;
-	gl_Position = g_ProjectionViewMatrix * vec4(transformedPosition, 1.0f);
-	frag_color = vec4(textureCoord, 0.0, 0.0, 1.0);
+	gl_Position = g_ProjectionViewMatrix * vec4(transformedPosition, 1.0);
+	
+	frag_atlasOffset = getAtlasOffset();
+	frag_texCoord = dimension;
 }
