@@ -27,7 +27,7 @@ int CALLBACK WinMain(
 	WindowParams.Title = "Tabula Rasa";
 	WindowParams.Width = 1280;
 	WindowParams.Height = 720;
-	WindowParams.UseVSync = false;
+	WindowParams.UseVSync = true;
 	WindowParams.UseDepthTest = false;
 	WindowParams.Fullscreen = false;
 	WindowParams.StartMaximized = false;
@@ -39,7 +39,7 @@ int main(int argc, char* argv[])
 	WindowParams.Title = "Tabula Rasa";
 	WindowParams.Width = 1280;
 	WindowParams.Height = 720;
-	WindowParams.UseVSync = false;
+	WindowParams.UseVSync = true;
 	WindowParams.UseDepthTest = false;
 	WindowParams.Fullscreen = false;
 	WindowParams.StartMaximized = false;
@@ -91,7 +91,7 @@ int main(int argc, char* argv[])
 			TextRenderer::RemoveText(FPSCounter);
 			char Buffer[48];
 			sprintf(Buffer, "FPS: %d", FramesPerSecond);
-			TextRenderer::AddTextToRender(Buffer, 32.0f, 64.0f);
+			TextRenderer::AddTextToRender(Buffer);
 			CumulativeFrameTime = 0;
 			FramesPerSecond = 0;
 		}
