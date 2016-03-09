@@ -7,6 +7,7 @@
 enum GBUFFER_TEXTURE_LAYER
 {
 	GBUFFER_LAYER_POSITION,
+	GBUFFER_LAYER_NORMAL,
 	GBUFFER_LAYER_TEXCOORD,
 	GBUFFER_LAYER_NUM
 };
@@ -21,9 +22,11 @@ public:
 
 	void RenderFrame(World* RenderWorld, const float& DeltaTime);
 
-	void StartRenderingIntoFrameBuffer();
+	void StartGeometryPass();
 
-	void StopRenderingIntoFrameBuffer();
+	void EndGeometryPass();
+
+	void LightPass();
 
 	void ScreenDimensionsChanged(const unsigned int& NewWidth, const unsigned int& NewHeight);
 
@@ -33,5 +36,11 @@ public:
 	GLuint m_FBO;
 	GLuint m_GBufferTextures[GBUFFER_LAYER_NUM];
 	GLuint m_DepthTexture;
+
+	GLuint m_ScreenQuadVBO;
+	GLuint m_ScreenQuadIBO;
+	GLuint m_ScreenQuadVAO;
+
+	GLShaderProgram* m_pLightPassShader;
 
 };

@@ -14,6 +14,9 @@ struct Glyph
 	float PositionX;
 	float PositionY;
 
+	float NormalizedWidth;
+	float NormalizedHeight;
+
 	float Width;
 	float Height;
 };

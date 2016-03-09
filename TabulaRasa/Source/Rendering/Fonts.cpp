@@ -141,8 +141,10 @@ Font* LoadFontFromFile(const char* FontFileName, const char* Directory)
 				NewGlyph->GlyphID = GetSequentialLineValue();
 				NewGlyph->PositionX = (float) GetSequentialLineValue() / NewFont->SizeX;
 				NewGlyph->PositionY = (float) GetSequentialLineValue() / NewFont->SizeY;
-				NewGlyph->Width = (float) GetSequentialLineValue() / NewFont->SizeX;
-				NewGlyph->Height = (float) GetSequentialLineValue() / NewFont->SizeY;
+				NewGlyph->Width = (float) GetSequentialLineValue();
+				NewGlyph->Height = (float) GetSequentialLineValue();
+				NewGlyph->NormalizedWidth = (float) NewGlyph->Width / NewFont->SizeX;
+				NewGlyph->NormalizedHeight = (float) NewGlyph->Height / NewFont->SizeY;
 
 				NewFont->FontGlyphs.insert({ NewGlyph->GlyphID, NewGlyph });
 			}

@@ -48,6 +48,7 @@ struct TexturedQuadVertex
 {
 	glm::vec3 Position;
 	glm::vec2 Dimension;
+	glm::vec3 Normal;
 	unsigned char TextureCoord;
 };
 

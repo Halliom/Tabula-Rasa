@@ -75,14 +75,18 @@ TextRenderData2D* TextRenderer::AddTextToRender(const char* Text, const float& X
 		Glyph* CharacterGlyph = GetGlyphFromChar(Text[i], FontToUse);
 		unsigned int VertexOffset = i * 4; // the number of vertices offset from the previous set
 		unsigned int IndexOffset = i * 6;
-		Vertices[VertexOffset + 0] = { glm::vec3(CharacterOffset,			0.0f, 1.0f),
-			glm::vec2(CharacterGlyph->PositionX, CharacterGlyph->PositionY) };
-		Vertices[VertexOffset + 1] = { glm::vec3(CharacterOffset,			Size, 1.0f),
-			glm::vec2(CharacterGlyph->PositionX, CharacterGlyph->PositionY + CharacterGlyph->Height) };
-		Vertices[VertexOffset + 2] = { glm::vec3(CharacterOffset + Size,	Size, 1.0f),
-			glm::vec2(CharacterGlyph->PositionX + CharacterGlyph->Width, CharacterGlyph->PositionY + CharacterGlyph->Height) };
-		Vertices[VertexOffset + 3] = { glm::vec3(CharacterOffset + Size,	0.0f, 1.0f),
-			glm::vec2(CharacterGlyph->PositionX + CharacterGlyph->Width, CharacterGlyph->PositionY) };
+		Vertices[VertexOffset + 0] = { 
+			glm::vec3(CharacterOffset,										0.0f,												1.0f),
+			glm::vec2(CharacterGlyph->PositionX,							CharacterGlyph->PositionY) };
+		Vertices[VertexOffset + 1] = { 
+			glm::vec3(CharacterOffset,										(Size * CharacterGlyph->Height),					1.0f),
+			glm::vec2(CharacterGlyph->PositionX,							CharacterGlyph->PositionY + CharacterGlyph->NormalizedHeight) };
+		Vertices[VertexOffset + 2] = { 
+			glm::vec3(CharacterOffset + (Size * CharacterGlyph->Width),		(Size * CharacterGlyph->Height),					1.0f),
+			glm::vec2(CharacterGlyph->PositionX + CharacterGlyph->NormalizedWidth,	CharacterGlyph->PositionY + CharacterGlyph->NormalizedHeight) };
+		Vertices[VertexOffset + 3] = { 
+			glm::vec3(CharacterOffset + (Size * CharacterGlyph->Width),		0.0f,												1.0f),
+			glm::vec2(CharacterGlyph->PositionX + CharacterGlyph->NormalizedWidth,	CharacterGlyph->PositionY) };
 
 		// Draw them in reverse order since the image is flipped (y=0 is not in the
 		// lower part of the screen - like OpenGL has it - it is in the top of the
@@ -94,7 +98,7 @@ TextRenderData2D* TextRenderer::AddTextToRender(const char* Text, const float& X
 		Indices[IndexOffset + 4] = VertexOffset + 1;
 		Indices[IndexOffset + 5] = VertexOffset + 0;
 
-		CharacterOffset += Size;
+		CharacterOffset += (Size * CharacterGlyph->Width);
 	}
 
 	glBindBuffer(GL_ARRAY_BUFFER, NewTextRenderObject->VBO);
@@ -157,6 +161,7 @@ void TextRenderer::Render()
 		TextRenderShader->SetPositionOffset(It->Position);
 
 		glBindVertexArray(It->VAO);
+		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, It->TextureID);
 
 		glDrawElements(GL_TRIANGLES, It->VertexCount, GL_UNSIGNED_SHORT, (void*)0);

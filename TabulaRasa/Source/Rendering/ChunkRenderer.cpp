@@ -293,6 +293,13 @@ int GetVoxelSide(Chunk* Chunk, const int& X, const int& Y, const int& Z, const V
 	return -1;
 }
 
+glm::vec3 EAST_FACE_NORMAL =	glm::vec3(+1.0f, 0.0f, 0.0f);
+glm::vec3 WEST_FACE_NORMAL =	glm::vec3(-1.0f, 0.0f, 0.0f);
+glm::vec3 TOP_FACE_NORMAL =		glm::vec3(0.0f, +1.0f, 0.0f);
+glm::vec3 BOTTOM_FACE_NORMAL =	glm::vec3(0.0f, -1.0f, 0.0f);
+glm::vec3 NORTH_FACE_NORMAL =	glm::vec3(0.0f, 0.0f, +1.0f);
+glm::vec3 SOUTH_FACE_NORMAL =	glm::vec3(0.0f, 0.0f, -1.0f);
+	
 static void GreedyMesh(Chunk* Voxels, ChunkRenderData* RenderData)
 {
 	DynamicArray<TexturedQuadVertex> Vertices;
@@ -411,34 +418,73 @@ static void GreedyMesh(Chunk* Voxels, ChunkRenderData* RenderData)
 
 							switch (d)
 							{
+								case 0:
+								{
+									Vertices.Push({ glm::vec3(x[0],					x[1],					x[2]),
+										glm::vec2((float)h, (float)w),
+										glm::vec3(BackFace ? WEST_FACE_NORMAL : EAST_FACE_NORMAL),
+										(unsigned char)CurrentBlock });
+
+									Vertices.Push({ glm::vec3(x[0] + du[0],			x[1] + du[1],			x[2] + du[2]),
+										glm::vec2((float)h, 0.0f),
+										glm::vec3(BackFace ? WEST_FACE_NORMAL : EAST_FACE_NORMAL),
+										(unsigned char)CurrentBlock });
+
+									Vertices.Push({ glm::vec3(x[0] + du[0] + dv[0],	x[1] + du[1] + dv[1],	x[2] + du[2] + dv[2]),
+										glm::vec2(0.0f, 0.0f),
+										glm::vec3(BackFace ? WEST_FACE_NORMAL : EAST_FACE_NORMAL),
+										(unsigned char)CurrentBlock });
+
+									Vertices.Push({ glm::vec3(x[0] + dv[0],	x[1] + dv[1],	x[2] + dv[2]),
+										glm::vec2(0.0f, (float)w),
+										glm::vec3(BackFace ? WEST_FACE_NORMAL : EAST_FACE_NORMAL),
+										(unsigned char)CurrentBlock });
+									break;
+								}
+								case 1:
+								{
+									Vertices.Push({ glm::vec3(x[0],					x[1],					x[2]),
+										glm::vec2((float)h, (float)w),
+										glm::vec3(BackFace ? BOTTOM_FACE_NORMAL : TOP_FACE_NORMAL),
+										(unsigned char)CurrentBlock });
+
+									Vertices.Push({ glm::vec3(x[0] + du[0],			x[1] + du[1],			x[2] + du[2]),
+										glm::vec2((float)h, 0.0f),
+										glm::vec3(BackFace ? BOTTOM_FACE_NORMAL : TOP_FACE_NORMAL),
+										(unsigned char)CurrentBlock });
+
+									Vertices.Push({ glm::vec3(x[0] + du[0] + dv[0],	x[1] + du[1] + dv[1],	x[2] + du[2] + dv[2]),
+										glm::vec2(0.0f, 0.0f),
+										glm::vec3(BackFace ? BOTTOM_FACE_NORMAL : TOP_FACE_NORMAL),
+										(unsigned char)CurrentBlock });
+
+									Vertices.Push({ glm::vec3(x[0] + dv[0],	x[1] + dv[1],	x[2] + dv[2]),
+										glm::vec2(0.0f, (float)w),
+										glm::vec3(BackFace ? BOTTOM_FACE_NORMAL : TOP_FACE_NORMAL),
+										(unsigned char)CurrentBlock });
+									break;
+								}
 								case 2:
 								{
 									Vertices.Push({ glm::vec3(x[0],					x[1],					x[2]),
-										glm::vec2(0.0f, (float) w),		(unsigned char)CurrentBlock });
+										glm::vec2(0.0f, (float) w),		
+										glm::vec3(BackFace ? SOUTH_FACE_NORMAL : NORTH_FACE_NORMAL),
+										(unsigned char)CurrentBlock });
 
 									Vertices.Push({ glm::vec3(x[0] + du[0],			x[1] + du[1],			x[2] + du[2]),
-										glm::vec2((float)h, (float)w),	(unsigned char)CurrentBlock });
+										glm::vec2((float)h, (float)w),	
+										glm::vec3(BackFace ? SOUTH_FACE_NORMAL : NORTH_FACE_NORMAL),
+										(unsigned char)CurrentBlock });
 
 									Vertices.Push({ glm::vec3(x[0] + du[0] + dv[0],	x[1] + du[1] + dv[1],	x[2] + du[2] + dv[2]),
-										glm::vec2((float)h, 0.0f),		(unsigned char)CurrentBlock });
+										glm::vec2((float)h, 0.0f),
+										glm::vec3(BackFace ? SOUTH_FACE_NORMAL : NORTH_FACE_NORMAL),
+										(unsigned char)CurrentBlock });
 
 									Vertices.Push({ glm::vec3(x[0] + dv[0],	x[1] + dv[1],	x[2] + dv[2]),
-										glm::vec2(0.0f, 0.0f),			(unsigned char)CurrentBlock });
-									break;
-								}
-								default:
-								{
-									Vertices.Push({ glm::vec3(x[0],					x[1],					x[2]),
-										glm::vec2((float)h, (float)w),	(unsigned char)CurrentBlock });
-
-									Vertices.Push({ glm::vec3(x[0] + du[0],			x[1] + du[1],			x[2] + du[2]),
-										glm::vec2((float)h, 0.0f),			(unsigned char)CurrentBlock });
-
-									Vertices.Push({ glm::vec3(x[0] + du[0] + dv[0],	x[1] + du[1] + dv[1],	x[2] + du[2] + dv[2]),
-										glm::vec2(0.0f, 0.0f),				(unsigned char)CurrentBlock });
-
-									Vertices.Push({ glm::vec3(x[0] + dv[0],	x[1] + dv[1],	x[2] + dv[2]),
-										glm::vec2(0.0f, (float)w),			(unsigned char)CurrentBlock });
+										glm::vec2(0.0f, 0.0f),			
+										glm::vec3(BackFace ? SOUTH_FACE_NORMAL : NORTH_FACE_NORMAL),
+										(unsigned char)CurrentBlock });
 									break;
 								}
 							}
@@ -500,9 +546,11 @@ static void GreedyMesh(Chunk* Voxels, ChunkRenderData* RenderData)
 	glEnableVertexAttribArray(0);
 	glEnableVertexAttribArray(1);
 	glEnableVertexAttribArray(2);
+	glEnableVertexAttribArray(3);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(TexturedQuadVertex), (void*) offsetof(TexturedQuadVertex, Position));
 	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(TexturedQuadVertex), (void*) offsetof(TexturedQuadVertex, Dimension));
-	glVertexAttribIPointer(2, 1, GL_UNSIGNED_BYTE, sizeof(TexturedQuadVertex), (void*) offsetof(TexturedQuadVertex, TextureCoord));
+	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(TexturedQuadVertex), (void*) offsetof(TexturedQuadVertex, Normal));
+	glVertexAttribIPointer(3, 1, GL_UNSIGNED_BYTE, sizeof(TexturedQuadVertex), (void*) offsetof(TexturedQuadVertex, TextureCoord));
 	
 	glBindVertexArray(0); // Unbind so nothing else modifies it
 }
