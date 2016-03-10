@@ -10,5 +10,5 @@ out vec4 frag_color;
 
 void main(void)
 {
-	frag_color = texture2D(gTexCoord, frag_texCoord);
+	frag_color = vec4(texture2D(gTexCoord, frag_texCoord).rgb, 1.0);
 }

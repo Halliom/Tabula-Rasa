@@ -91,9 +91,9 @@ Font* LoadFontFromFile(const char* FontFileName, const char* Directory)
 			}
 			case 1: // second line is common
 			{
-				char* Argument = strtok(Line, " "); // Skip "common"
-				Argument = strtok(NULL, " "); // Skip "lineheight"
-				Argument = strtok(NULL, " "); // Skip "base"
+				char* Argument = strtok(Line, " "); // Skip the word "common"
+				NewFont->LineHeight = GetSequentialLineValue();
+				NewFont->Base = GetSequentialLineValue();
 				NewFont->SizeX = (float) GetSequentialLineValue();
 				NewFont->SizeY = (float) GetSequentialLineValue();
 				break;
@@ -145,6 +145,9 @@ Font* LoadFontFromFile(const char* FontFileName, const char* Directory)
 				NewGlyph->Height = (float) GetSequentialLineValue();
 				NewGlyph->NormalizedWidth = (float) NewGlyph->Width / NewFont->SizeX;
 				NewGlyph->NormalizedHeight = (float) NewGlyph->Height / NewFont->SizeY;
+				NewGlyph->XOffset = (float) GetSequentialLineValue();
+				NewGlyph->YOffset = (float) GetSequentialLineValue();
+				NewGlyph->XAdvance = (float) GetSequentialLineValue();
 
 				NewFont->FontGlyphs.insert({ NewGlyph->GlyphID, NewGlyph });
 			}

@@ -17,6 +17,10 @@ struct Glyph
 	float NormalizedWidth;
 	float NormalizedHeight;
 
+	float XOffset;
+	float YOffset;
+	float XAdvance;
+
 	float Width;
 	float Height;
 };
@@ -28,6 +32,9 @@ struct Font
 
 	float SizeX;
 	float SizeY;
+
+	unsigned int LineHeight;
+	unsigned int Base;
 
 	char* TextureAtlasFileName;
 	std::vector<unsigned char>* FontImage;
