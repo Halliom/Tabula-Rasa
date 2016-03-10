@@ -55,6 +55,8 @@ public:
 
 	__forceinline void Unbind() { glUseProgram(0); }
 
+	void SetDefaultSamplers();
+
 	__forceinline void SetProjectionMatrix(const glm::mat4& ProjectionMatrix)
 	{
 		glUniformMatrix4fv(ProjectionMatrixLocation, 1, GL_FALSE, glm::value_ptr(ProjectionMatrix));

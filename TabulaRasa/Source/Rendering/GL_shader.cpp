@@ -182,3 +182,15 @@ bool GLShaderProgram::CompileShaderProgram()
 		return false;
 	}
 }
+
+void GLShaderProgram::SetDefaultSamplers()
+{
+	if (TextureSamplers[0] != -1)
+		glUniform1i(TextureSamplers[0], 0);
+	if (TextureSamplers[1] != -1)
+		glUniform1i(TextureSamplers[1], 1);
+	if (TextureSamplers[2] != -1)
+		glUniform1i(TextureSamplers[2], 2);
+	if (TextureSamplers[3] != -1)
+		glUniform1i(TextureSamplers[3], 3);
+}

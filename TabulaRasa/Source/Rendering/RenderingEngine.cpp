@@ -50,21 +50,33 @@ void RenderingEngine::Initialize(const unsigned int& ScreenWidth, const unsigned
 	glGenTextures(GBUFFER_LAYER_NUM, m_GBufferTextures);
 	glGenTextures(1, &m_DepthTexture);
 
-	for (int i = 0; i < GBUFFER_LAYER_NUM; ++i)
-	{
-		// Bind the texures one by one
-		glBindTexture(GL_TEXTURE_2D, m_GBufferTextures[i]);
+	// Bind the texures one by one
+	glBindTexture(GL_TEXTURE_2D, m_GBufferTextures[GBUFFER_LAYER_POSITION]);
+	// We only need RGB in the frame buffer
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, ScreenWidth, ScreenHeight, 0, GL_RGB, GL_FLOAT, NULL);
+	// Nearest filtering since we want raw pixels not interpolations
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	// This binds the texture of m_GBufferTextures[i] to a color attachment in the framebuffer
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_GBufferTextures[GBUFFER_LAYER_POSITION], 0);
 
-		// We only need RGB in the frame buffer
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, ScreenWidth, ScreenHeight, 0, GL_RGB, GL_FLOAT, NULL);
+	glBindTexture(GL_TEXTURE_2D, m_GBufferTextures[GBUFFER_LAYER_NORMAL]);
+	// We only need RGB in the frame buffer
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, ScreenWidth, ScreenHeight, 0, GL_RGB, GL_FLOAT, NULL);
+	// Nearest filtering since we want raw pixels not interpolations
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	// This binds the texture of m_GBufferTextures[i] to a color attachment in the framebuffer
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, m_GBufferTextures[GBUFFER_LAYER_NORMAL], 0);
 
-		// Nearest filtering since we want raw pixels not interpolations
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
-		// This binds the texture of m_GBufferTextures[i] to a color attachment in the framebuffer
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, m_GBufferTextures[i], 0);
-	}
+	glBindTexture(GL_TEXTURE_2D, m_GBufferTextures[GBUFFER_LAYER_TEXCOORD]);
+	// We only need RGB in the frame buffer
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, ScreenWidth, ScreenHeight, 0, GL_RGB, GL_FLOAT, NULL);
+	// Nearest filtering since we want raw pixels not interpolations
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	// This binds the texture of m_GBufferTextures[i] to a color attachment in the framebuffer
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, m_GBufferTextures[GBUFFER_LAYER_TEXCOORD], 0);
 
 	// Do the same as above for the depth texture
 	glBindTexture(GL_TEXTURE_2D, m_DepthTexture);
@@ -72,11 +84,7 @@ void RenderingEngine::Initialize(const unsigned int& ScreenWidth, const unsigned
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, m_DepthTexture, 0);
 
 	// Specify which buffers we want to draw to
-	GLenum DrawBuffers[GBUFFER_LAYER_NUM];
-	for (int i = 0; i < GBUFFER_LAYER_NUM; ++i)
-	{
-		DrawBuffers[i] = GL_COLOR_ATTACHMENT0 + i;
-	}
+	GLenum DrawBuffers[3] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
 
 	glDrawBuffers(GBUFFER_LAYER_NUM, DrawBuffers);
 
@@ -144,6 +152,7 @@ void RenderingEngine::LightPass()
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	m_pLightPassShader->Bind();
+	m_pLightPassShader->SetDefaultSamplers();
 	
 	// Bind the Position texture
 	glActiveTexture(GL_TEXTURE0);
