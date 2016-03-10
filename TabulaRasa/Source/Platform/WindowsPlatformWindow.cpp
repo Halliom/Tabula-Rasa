@@ -43,6 +43,17 @@ bool PlatformWindow::SetupWindowAndRenderContext()
 		Flags |= SDL_WINDOW_MAXIMIZED;
 	}
 
+	// Set the OpenGL version to 330 core
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+
+	SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
+	SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
+	SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
+	SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8);
+	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+
 	MainWindow = SDL_CreateWindow(WindowParams.Title, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WindowParams.Width, WindowParams.Height, Flags);
 	if (MainWindow == NULL)
 	{
@@ -58,19 +69,12 @@ bool PlatformWindow::SetupWindowAndRenderContext()
 	Input::MouseX = MouseX;
 	Input::MouseY = MouseY;
 
-	SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
-	SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
-	SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
-	SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8);
-	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-
 	// Create the OpenGL context to draw to
 	MainContext = SDL_GL_CreateContext(MainWindow);
 
 	SDL_GL_SetSwapInterval(1);
 
-	//TODO: Move into rendering engine
-
+	glewExperimental = true;
 	glewInit();
 
 	if (GlobalWindow->WindowParams.UseVSync)
@@ -173,7 +177,7 @@ bool PlatformWindow::PrepareForRender()
 	}
 
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	//(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	return true;
 }

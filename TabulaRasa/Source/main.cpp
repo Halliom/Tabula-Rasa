@@ -63,7 +63,7 @@ int main(int argc, char* argv[])
 	g_RenderingEngine = new RenderingEngine();
 	g_RenderingEngine->Initialize(WindowParams.Width, WindowParams.Height);
 
-	TextRenderData2D* FPSCounter = TextRenderer::AddTextToRender("FPS: 0", 0.0f, 0.0f, 24.0f);
+	TextRenderData2D* FPSCounter = TextRenderer::AddTextToRender("FPS: 0", 16.0f, 16.0f, 24.0f);
 	
 	double LastFrameTime = SDL_GetTicks() / 1000.0;
 	double DeltaTime = 0.0;
@@ -91,7 +91,7 @@ int main(int argc, char* argv[])
 			TextRenderer::RemoveText(FPSCounter);
 			char Buffer[48];
 			sprintf(Buffer, "FPS: %d", FramesPerSecond);
-			FPSCounter = TextRenderer::AddTextToRender(Buffer, 0.0f, 0.0f, 24.0f);
+			FPSCounter = TextRenderer::AddTextToRender(Buffer, 16.0f, 16.0f, 24.0f);
 			CumulativeFrameTime = 0;
 			FramesPerSecond = 0;
 		}

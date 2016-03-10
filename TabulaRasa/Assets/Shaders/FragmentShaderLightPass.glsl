@@ -1,4 +1,4 @@
-#version 400
+#version 330
 
 uniform sampler2D gPosition;
 uniform sampler2D gNormal;
@@ -10,5 +10,5 @@ out vec4 frag_color;
 
 void main(void)
 {
-	frag_color = vec4(texture2D(gTexCoord, frag_texCoord).rgb, 1.0);
+	frag_color = texture2D(gNormal, frag_texCoord);
 }

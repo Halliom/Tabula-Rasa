@@ -20,11 +20,11 @@ public:
 
 	void Initialize(const unsigned int& ScreenWidth, const unsigned int& ScreenHeight);
 
+	void SetupQuad();
+
 	void RenderFrame(World* RenderWorld, const float& DeltaTime);
 
 	void StartGeometryPass();
-
-	void EndGeometryPass();
 
 	void LightPass();
 
