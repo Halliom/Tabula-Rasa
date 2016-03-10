@@ -47,8 +47,8 @@ struct SideCoordinate
 struct TexturedQuadVertex
 {
 	glm::vec3 Position;
-	glm::vec2 Dimension;
 	glm::vec3 Normal;
+	glm::vec2 Dimension;
 	unsigned char TextureCoord;
 };
 
@@ -107,6 +107,6 @@ private:
 	static GLuint SouthVBO;
 	static GLuint SouthIBO;
 
-	static GLShaderProgram* m_pChunkRenderShader;
+	static GLShaderProgram* g_ChunkRenderShader;
 
 };

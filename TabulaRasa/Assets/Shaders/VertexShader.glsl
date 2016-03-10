@@ -1,7 +1,7 @@
 #version 330
 layout (location = 0) in vec3 position;
-layout (location = 1) in vec2 dimension;
-layout (location = 2) in vec3 normal;
+layout (location = 1) in vec3 normal;
+layout (location = 2) in vec2 dimension;
 layout (location = 3) in uint textureCoord;
 
 uniform mat4 g_ProjectionViewMatrix;

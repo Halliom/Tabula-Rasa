@@ -14,4 +14,5 @@ void main(void)
 	vec2 texCoord = texture2D(textureSampler2, frag_texCoord).xy;
 	if (texCoord != vec2(0.0, 0.0))
 		frag_color = texture2D(textureSampler3, texCoord);
+	//frag_color = texture2D(textureSampler1, frag_texCoord);
 }
