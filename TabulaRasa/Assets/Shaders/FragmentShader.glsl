@@ -21,5 +21,5 @@ void main()
 	
 	OutPosition = frag_position;
 	OutNormal = frag_normal;
-	OutTexCoord = vec3(1.0, 0.0, 0.0);//vec3(texCoord, 0.0);
+	OutTexCoord = vec3(texCoord, 0.0);
 }

@@ -76,7 +76,9 @@ public:
 
 	static void SpliceFromBuffer(GLuint* FacePBO, uint32_t* NumFaces, uint32_t* BufferLength, ChunkRenderCoordinate& Coordinate);
 
-	static DynamicArray<ChunkRenderData*> ChunksToRender;
+	static DynamicArray<ChunkRenderData*> g_ChunksToRender;
+
+	static GLuint g_TextureAtlas;
 
 private:
 
@@ -105,8 +107,6 @@ private:
 	static GLuint SouthVBO;
 	static GLuint SouthIBO;
 
-	static GLShaderProgram* ChunkRenderShader;
-
-	static GLuint TextureAtlas;
+	static GLShaderProgram* m_pChunkRenderShader;
 
 };

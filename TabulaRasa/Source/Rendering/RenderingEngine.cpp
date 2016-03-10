@@ -166,6 +166,10 @@ void RenderingEngine::LightPass()
 	glActiveTexture(GL_TEXTURE2);
 	glBindTexture(GL_TEXTURE_2D, m_GBufferTextures[GBUFFER_LAYER_TEXCOORD]);
 
+	// Bind the texture atlas for the block textures
+	glActiveTexture(GL_TEXTURE3);
+	glBindTexture(GL_TEXTURE_2D, ChunkRenderer::g_TextureAtlas);
+
 	glBindVertexArray(m_ScreenQuadVAO);
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, 0);
 }
