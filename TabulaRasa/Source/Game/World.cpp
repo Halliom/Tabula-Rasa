@@ -72,9 +72,17 @@ void World::Initialize()
 		}
 	}
 #else
+	AddBlock(0, 0, 0, BLOCK_ID_GRASS);
 	AddBlock(0, 0, 1, BLOCK_ID_GRASS);
 	AddBlock(0, 0, 2, BLOCK_ID_GRASS);
-	AddBlock(0, 0, 3, BLOCK_ID_GRASS);
+	AddBlock(1, 0, 0, BLOCK_ID_GRASS);
+	AddBlock(1, 0, 1, BLOCK_ID_GRASS);
+	AddBlock(1, 0, 2, BLOCK_ID_GRASS);
+	AddBlock(2, 0, 0, BLOCK_ID_GRASS);
+	AddBlock(2, 0, 1, BLOCK_ID_GRASS);
+	AddBlock(2, 0, 2, BLOCK_ID_GRASS);
+
+	AddBlock(1, 1, 1, BLOCK_ID_GRASS);
 #endif
 }
 

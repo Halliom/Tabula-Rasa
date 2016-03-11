@@ -4,8 +4,9 @@ layout (location = 1) in vec3 normal;
 layout (location = 2) in vec2 dimension;
 layout (location = 3) in uint textureCoord;
 
-uniform mat4 g_ProjectionViewMatrix;
-uniform vec3 g_ChunkOffset;
+uniform mat4 g_ProjectionMatrix;
+uniform mat4 g_ViewMatrix;
+uniform mat4 g_ModelMatrix;
 
 out vec3 frag_position;
 out vec3 frag_normal;
@@ -24,13 +25,12 @@ vec2 getAtlasOffset()
 
 void main()
 {
-	vec3 offsetPosition = position + g_ChunkOffset;
-	vec4 transformedPosition = g_ProjectionViewMatrix * vec4(offsetPosition, 1.0);
+	vec4 transformedPosition = g_ProjectionMatrix * g_ViewMatrix * g_ModelMatrix * vec4(position, 1.0);
 	
 	frag_position = transformedPosition.xyz;
 	
-	//vec4 v4_normal = g_projectionViewMatrix * vec4(normal, 1.0);
-	frag_normal = normal;
+	mat3 normalMatrix = transpose(inverse(mat3(g_ViewMatrix * g_ModelMatrix)));
+	frag_normal = normalize(normalMatrix * normal);
 	
 	frag_atlasOffset = getAtlasOffset();
 	

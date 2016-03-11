@@ -206,14 +206,18 @@ void ChunkRenderer::RenderAllChunks(Player* CurrentPlayer)
 	glm::mat4 View = *Camera::ActiveCamera->GetViewMatrix();
 
 	glBindTexture(GL_TEXTURE_2D, g_TextureAtlas);
-	g_ChunkRenderShader->SetProjectionViewMatrix(Projection * View);
+	g_ChunkRenderShader->SetProjectionMatrix(Projection);
+	g_ChunkRenderShader->SetViewMatrix(View);
+
+	const glm::mat4 Identity = glm::mat4(1.0f);
 
 	for (int Index = 0; Index < g_ChunksToRender.GetNum(); ++Index)
 	{
 		if (!g_ChunksToRender[Index])
 			continue;
 
-		g_ChunkRenderShader->SetPositionOffset(g_ChunksToRender[Index]->ChunkPosition);
+		g_ChunkRenderShader->SetModelMatrix(glm::translate(Identity, g_ChunksToRender[Index]->ChunkPosition));
+		//g_ChunkRenderShader->SetPositionOffset();
 #if 0
 
 		// Render the east face
