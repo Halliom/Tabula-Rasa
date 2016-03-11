@@ -10,6 +10,7 @@
 #include "DynamicArray.cpp"
 
 #include "../Rendering/ChunkRenderer.h"
+#include "Hash.h"
 
 class Chunk;
 
@@ -52,7 +53,7 @@ public:
 	void OnNodeUpdatedOnSide(const uint8_t& X, const uint8_t& Y, const uint8_t& Z, const VoxelSide& Side, const bool& Placed);
 
 	uint8_t SidesToRender;
-	
+
 	unsigned int BlockID;
 
 	Chunk* Chunk;
@@ -151,6 +152,8 @@ private:
 	glm::uvec3 Extent;
 
 	std::unordered_map<uint32_t, OctreeNode*> Nodes;
+
+	VoxelDictionary VoxelDict;
 
 	DynamicArray<VoxelAddData> ElementsToAdd;
 

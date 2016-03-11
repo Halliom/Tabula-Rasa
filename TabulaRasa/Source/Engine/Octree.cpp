@@ -135,6 +135,8 @@ Chunk::Chunk() :
 	ContainsElementsToAdd(false),
 	ContainsElementsToRemove(false)
 {
+	VoxelDict.Init(512);
+
 	// Insert the root node
 	RootNode = new OctreeNode();
 	RootNode->Location = 1;
@@ -146,6 +148,8 @@ Chunk::Chunk() :
 	Extent = glm::uvec3(RootNode->Size, RootNode->Size, RootNode->Size);
 
 	Nodes.insert({ 0b1, RootNode });
+
+	VoxelDict.Add(0b1, RootNode);
 }
 
 Chunk::~Chunk()
@@ -224,6 +228,8 @@ void Chunk::InsertNode(const glm::uvec3& Position, Voxel* NewVoxel, OctreeNode* 
 				OldNode->Center.y += ((int32_t) QuarterSize) * ((OldNodeOctant & 2) ? 1 : -1);
 				OldNode->Center.z += ((int32_t) QuarterSize) * ((OldNodeOctant & 1) ? 1 : -1);
 
+				VoxelDict.Add(OldNode->Location, OldNode);
+
 				Nodes.insert({ OldNode->Location, OldNode });
 
 				Node->Children |= (1 << OldNodeOctant);
@@ -239,6 +245,7 @@ void Chunk::InsertNode(const glm::uvec3& Position, Voxel* NewVoxel, OctreeNode* 
 				OldNode->Center.x += ((int32_t) QuarterSize) * ((OldNodeOctant & 4) ? 1 : -1);
 				OldNode->Center.y += ((int32_t) QuarterSize) * ((OldNodeOctant & 2) ? 1 : -1);
 				OldNode->Center.z += ((int32_t) QuarterSize) * ((OldNodeOctant & 1) ? 1 : -1);
+				VoxelDict.Add(OldNode->Location, OldNode);
 				Nodes.insert({ OldNode->Location, OldNode });
 
 				OctreeNode* NewNode = new OctreeNode();
@@ -248,6 +255,7 @@ void Chunk::InsertNode(const glm::uvec3& Position, Voxel* NewVoxel, OctreeNode* 
 				NewNode->Center.x += ((int32_t) QuarterSize) * ((NewNodeOctant & 4) ? 1 : -1);
 				NewNode->Center.y += ((int32_t) QuarterSize) * ((NewNodeOctant & 2) ? 1 : -1);
 				NewNode->Center.z += ((int32_t) QuarterSize) * ((NewNodeOctant & 1) ? 1 : -1);
+				VoxelDict.Add(NewNode->Location, NewNode);
 				Nodes.insert({ NewNode->Location, NewNode });
 
 				Node->Children |= (1 << OldNodeOctant);
@@ -276,6 +284,7 @@ void Chunk::InsertNode(const glm::uvec3& Position, Voxel* NewVoxel, OctreeNode* 
 			NewNode->Center.y += ((int32_t) QuarterSize) * ((NodeOctant & 2) ? 1 : -1);
 			NewNode->Center.z += ((int32_t) QuarterSize) * ((NodeOctant & 1) ? 1 : -1);
 			Node->Children |= (1 << NodeOctant);
+			VoxelDict.Add(NewNode->Location, NewNode);
 			Nodes.insert({ NewNode->Location, NewNode });
 
 			InsertNode(Position, NewVoxel, NewNode, true);
@@ -327,7 +336,7 @@ void Chunk::RemoveNode(const glm::uvec3& Position, OctreeNode* Node, bool IsUpwa
 	{
 		if (NodeToBeDeleted->Children != 0 && !IsUpwardsRecursive)
 		{
-			// We are not a leaf node and we must therefore continue the search 
+			// We are not a leaf node and we must therefore continue the search
 			// in this nodes children
 			uint32_t Octant = NodeToBeDeleted->GetOctantForPosition(Position);
 
@@ -387,9 +396,9 @@ void Chunk::Update()
 	{
 		if (RenderData)
 			delete RenderData;
-		
+
 		RenderData = ChunkRenderer::CreateRenderData(glm::vec3(ChunkX * Chunk::SIZE, ChunkY * Chunk::SIZE, ChunkZ * Chunk::SIZE), this);
-		
+
 		IsRenderStateDirty = false;
 	}
 }
