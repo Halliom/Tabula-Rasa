@@ -12,7 +12,6 @@ find_package(PythonLibs REQUIRED)
 
 message(${PYTHON_INCLUDE_DIRS})
 message(${PYTHON_LIBRARIES})
-message(${PYTHON_DEBUG_LIBRARIES})
 
 if(CMAKE_BUILD_TOOL MATCHES "(msdev|devenv|nmake)")
     add_definitions(/W2)
