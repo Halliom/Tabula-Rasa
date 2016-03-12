@@ -23,7 +23,7 @@ PlatformWindow::PlatformWindow(const WindowParameters& WindowParams) :
 
 PlatformWindow::~PlatformWindow()
 {
-	
+	GlobalWindow = NULL;
 }
 
 bool PlatformWindow::SetupWindowAndRenderContext()

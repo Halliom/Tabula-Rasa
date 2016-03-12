@@ -5,6 +5,7 @@
 #include "SDL2\SDL.h"
 
 #define MAX_INPUT_LENGTH 128
+#define MAX_COMMAND_BUFFER_SIZE 8
 
 class Console
 {
@@ -26,6 +27,11 @@ private:
 
 	std::string m_CurrentlyTyping;
 
+	TextRenderData2D* m_pCommandBuffer[MAX_COMMAND_BUFFER_SIZE];
+	unsigned int m_BufferLength;
+
 	TextRenderData2D* m_pActiveLineText;
+
+	RectRenderData2D* m_pBackgroundRect;
 
 };

@@ -66,6 +66,7 @@ int main(int argc, char* argv[])
 	g_RenderingEngine->Initialize(WindowParams.Width, WindowParams.Height);
 
 	g_Console = new Console();
+	g_Console->OnUpdateInputMode();
 
 	TextRenderData2D* FPSCounter = TextRenderer::AddTextToRender("Frames per second: 0", 16.0f, 16.0f, 24.0f);
 
