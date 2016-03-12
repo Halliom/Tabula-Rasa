@@ -34,7 +34,7 @@ void RenderingEngine::Initialize(const unsigned int& ScreenWidth, const unsigned
 	m_ScreenHeight = ScreenHeight;
 
 	m_pLightPassShader = GLShaderProgram::CreateVertexFragmentShaderFromFile(
-		std::string("VertexShaderLightPass.glsl"),
+		std::string("VertexPassthrough.glsl"),
 		std::string("FragmentShaderLightPass.glsl"));
 
 	glViewport(0, 0, ScreenWidth, ScreenHeight);
@@ -112,7 +112,7 @@ void RenderingEngine::SetupGeometryPass()
 void RenderingEngine::SetupSSAOPass()
 {
 	m_pSSAOShader = GLShaderProgram::CreateVertexFragmentShaderFromFile(
-		std::string("VertexShaderSSAO.glsl"),
+		std::string("VertexPassthrough.glsl"),
 		std::string("FragmentShaderSSAO.glsl"),
 		true);
 
@@ -177,7 +177,7 @@ void RenderingEngine::SetupSSAOPass()
 	 */
 
 	m_pSSAOBlurShader = GLShaderProgram::CreateVertexFragmentShaderFromFile(
-		std::string("VertexShaderSSAO.glsl"),
+		std::string("VertexPassthrough.glsl"),
 		std::string("FragmentShaderSSAOBlur.glsl"));
 
 	glGenFramebuffers(1, &m_SSAOBlurFBO);

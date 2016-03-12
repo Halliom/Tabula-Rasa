@@ -1,6 +1,6 @@
 #include "Input.h"
 
-bool Input::Keys[256];
+bool Input::Keys[512];
 
 bool Input::MouseButtons[65];
 

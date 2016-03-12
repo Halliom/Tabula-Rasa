@@ -7,7 +7,7 @@
 class Input
 {
 public:
-	static bool Keys[256];
+	static bool Keys[512];
 
 	static bool MouseButtons[65];
 

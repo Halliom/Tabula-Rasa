@@ -3,6 +3,7 @@
 
 #include "Platform/Platform.h"
 #include "Game/World.h"
+#include "Engine\Console.h"
 #include "Rendering\TextRenderer.h"
 #include "Rendering\RenderingEngine.h"
 
@@ -10,6 +11,7 @@
 
 World* g_World = NULL;
 RenderingEngine* g_RenderingEngine = NULL;
+Console* g_Console = NULL;
 
 #ifdef _WIN32
 
@@ -63,8 +65,10 @@ int main(int argc, char* argv[])
 	g_RenderingEngine = new RenderingEngine();
 	g_RenderingEngine->Initialize(WindowParams.Width, WindowParams.Height);
 
-	TextRenderData2D* FPSCounter = TextRenderer::AddTextToRender("FPS: 0", 16.0f, 16.0f, 24.0f);
-	
+	g_Console = new Console();
+
+	TextRenderData2D* FPSCounter = TextRenderer::AddTextToRender("Frames per second: 0", 16.0f, 16.0f, 24.0f);
+
 	double LastFrameTime = SDL_GetTicks() / 1000.0;
 	double DeltaTime = 0.0;
 	double CumulativeFrameTime = 0.0;
@@ -90,13 +94,14 @@ int main(int argc, char* argv[])
 		{
 			TextRenderer::RemoveText(FPSCounter);
 			char Buffer[48];
-			sprintf(Buffer, "FPS: %d", FramesPerSecond);
+			sprintf(Buffer, "Frames per second: %d", FramesPerSecond);
 			FPSCounter = TextRenderer::AddTextToRender(Buffer, 16.0f, 16.0f, 24.0f);
 			CumulativeFrameTime = 0;
 			FramesPerSecond = 0;
 		}
 	}
 
+	SAFE_DELETE(g_Console);
 	SAFE_DELETE(g_RenderingEngine);
 	SAFE_DELETE(g_World);
 

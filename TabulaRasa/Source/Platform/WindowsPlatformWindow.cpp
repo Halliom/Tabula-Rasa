@@ -8,10 +8,12 @@
 #include "../Rendering/Fonts.h"
 
 #include "../Rendering/RenderingEngine.h"
+#include "../Engine/Console.h"
 
 PlatformWindow* PlatformWindow::GlobalWindow = NULL;
 
 extern RenderingEngine* g_RenderingEngine;
+extern Console* g_Console;
 
 PlatformWindow::PlatformWindow(const WindowParameters& WindowParams) : 
 	WindowParams(WindowParams)
@@ -60,6 +62,8 @@ bool PlatformWindow::SetupWindowAndRenderContext()
 		//TODO: Print to log since rendering isn't initialized yet
 		return false;
 	}
+
+	SDL_StopTextInput();
 
 	SDL_SetRelativeMouseMode(SDL_TRUE);
 
@@ -141,20 +145,39 @@ bool PlatformWindow::PrepareForRender()
 			}
 			case SDL_KEYDOWN:
 			{
+				if (Event.key.keysym.scancode >= 512)
+					continue;
 #ifdef _DEBUG
 				if (Event.key.keysym.scancode == SDL_SCANCODE_ESCAPE)
 				{
 					return false;
 				}
 #endif
-				SDL_SetRelativeMouseMode(SDL_TRUE);
+				// TODO: Remove in build perhaps?
+				if (Event.key.keysym.scancode == SDL_SCANCODE_PERIOD)
+				{
+					g_Console->m_bIsActive = !g_Console->m_bIsActive;
+					g_Console->OnUpdateInputMode();
+					continue;
+				}
 
-				Input::Keys[Event.key.keysym.scancode] = true;
+				if (g_Console->m_bIsActive)
+				{
+					g_Console->ReceiveTextInput(&Event.key.keysym.sym, (Event.key.keysym.mod & KMOD_LSHIFT) == KMOD_LSHIFT);
+				}
+				else
+				{
+					Input::Keys[Event.key.keysym.scancode] = true;
+				}
 				break;
 			}
 			case SDL_KEYUP:
 			{
-				Input::Keys[Event.key.keysym.scancode] = false;
+
+				if (!g_Console->m_bIsActive)
+				{
+					Input::Keys[Event.key.keysym.scancode] = false;
+				}
 				break;
 			}
 			case SDL_MOUSEBUTTONDOWN:

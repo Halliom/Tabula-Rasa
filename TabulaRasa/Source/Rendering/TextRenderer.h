@@ -49,6 +49,25 @@ struct TextRenderData2D
 	GLuint VertexCount;
 };
 
+struct RectRenderData2D
+{
+	/**
+	* Stores all the vertex attribute pointers state
+	*/
+	GLuint VAO;
+
+	/**
+	* Vertex buffer object containing the vertex position data
+	* of the rect
+	*/
+	GLuint VBO;
+
+	/**
+	* Screen coordínate to render to
+	*/
+	glm::vec3 Position;
+};
+
 class TextRenderer
 {
 public:
@@ -61,13 +80,21 @@ public:
 
 	static void RemoveText(TextRenderData2D* TextToRemove);
 
+	static RectRenderData2D* AddRectToRender(float MinX, float MinY, float MaxX, float MaxY, glm::vec4 Color);
+
+	static void RemoveRect(RectRenderData2D* RectToRemove);
+
 	static void Render();
 
-	static std::vector<TextRenderData2D*> RenderObjects;
+	static std::vector<TextRenderData2D*> g_TextRenderObjects;
+
+	static std::vector<RectRenderData2D*> g_RectRenderObjects;
 
 private:
 
-	static GLShaderProgram* TextRenderShader;
+	static GLShaderProgram* g_TextRenderShader;
 
-	static glm::mat4 TextRenderProjectionMatrix;
+	static GLShaderProgram* g_RectRenderShader;
+
+	static glm::mat4 g_TextRenderProjectionMatrix;
 };

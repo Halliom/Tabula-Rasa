@@ -3,7 +3,6 @@ in vec3 position;
 in vec2 texCoord;
 
 uniform mat4 g_ProjectionMatrix;
-uniform mat4 g_WorldTransformMatrix;
 uniform vec3 g_PositionOffset;
 
 out vec3 frag_color;
