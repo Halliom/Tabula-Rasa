@@ -59,5 +59,5 @@ PerlinNoise::PerlinNoise()
 
 int PerlinNoise::GetHeight(int x, int y)
 {
-	return 10.0f * sin(x * 0.1) * sin(y * 0.1);
+	return (int) 10.0f * sin(x * 0.1) * sin(y * 0.1);
 }

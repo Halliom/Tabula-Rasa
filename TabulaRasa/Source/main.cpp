@@ -6,11 +6,13 @@
 #include "Engine\Console.h"
 #include "Rendering\TextRenderer.h"
 #include "Rendering\RenderingEngine.h"
+#include "Engine\PythonScript.h"
 
 #define SAFE_DELETE(ptr) if (ptr) { delete ptr; }
 
 World* g_World = NULL;
 RenderingEngine* g_RenderingEngine = NULL;
+PythonScriptEngine* g_ScriptEngine = NULL;
 Console* g_Console = NULL;
 
 #ifdef _WIN32
@@ -65,6 +67,9 @@ int main(int argc, char* argv[])
 	g_RenderingEngine = new RenderingEngine();
 	g_RenderingEngine->Initialize(WindowParams.Width, WindowParams.Height);
 
+	g_ScriptEngine = new PythonScriptEngine();
+	g_ScriptEngine->Initialize();
+
 	g_Console = new Console();
 	g_Console->OnUpdateInputMode();
 
@@ -102,7 +107,10 @@ int main(int argc, char* argv[])
 		}
 	}
 
+	g_ScriptEngine->Destroy();
+
 	SAFE_DELETE(g_Console);
+	SAFE_DELETE(g_ScriptEngine);
 	SAFE_DELETE(g_RenderingEngine);
 	SAFE_DELETE(g_World);
 
