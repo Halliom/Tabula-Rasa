@@ -69,11 +69,11 @@ void ChunkRenderer::SetupChunkRenderer()
 	glGenBuffers(12, &EastVBO);
 
 	//TODO: Change 1.0f to Voxel::CUBE_SIZE
-	glm::vec3 EastFaceVertices[4] = { 
-		glm::vec3(1.0f, 0.0f, 0.0f), 
-		glm::vec3(1.0f, 1.0f, 0.0f), 
-		glm::vec3(1.0f, 1.0f, 1.0f), 
-		glm::vec3(1.0f, 0.0f, 1.0f) 
+	glm::vec3 EastFaceVertices[4] = {
+		glm::vec3(1.0f, 0.0f, 0.0f),
+		glm::vec3(1.0f, 1.0f, 0.0f),
+		glm::vec3(1.0f, 1.0f, 1.0f),
+		glm::vec3(1.0f, 0.0f, 1.0f)
 	};
 	uint8_t EastFaceIndices[6] = { 3, 2, 0, 2, 1, 0 };
 
@@ -87,11 +87,11 @@ void ChunkRenderer::SetupChunkRenderer()
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
-	glm::vec3 WestFaceVertices[4] = { 
-		glm::vec3(0.0f, 0.0f, 1.0f), 
-		glm::vec3(0.0f, 1.0f, 1.0f), 
-		glm::vec3(0.0f, 1.0f, 0.0f), 
-		glm::vec3(0.0f, 0.0f, 0.0f) 
+	glm::vec3 WestFaceVertices[4] = {
+		glm::vec3(0.0f, 0.0f, 1.0f),
+		glm::vec3(0.0f, 1.0f, 1.0f),
+		glm::vec3(0.0f, 1.0f, 0.0f),
+		glm::vec3(0.0f, 0.0f, 0.0f)
 	};
 	uint8_t WestFaceIndices[6] = { 3, 2, 0, 2, 1, 0 };
 
@@ -105,11 +105,11 @@ void ChunkRenderer::SetupChunkRenderer()
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
-	glm::vec3 TopFaceVertices[4] = { 
-		glm::vec3(0.0f, 1.0f, 0.0f), 
-		glm::vec3(0.0f, 1.0f, 1.0f), 
-		glm::vec3(1.0f, 1.0f, 1.0f), 
-		glm::vec3(1.0f, 1.0f, 0.0f) 
+	glm::vec3 TopFaceVertices[4] = {
+		glm::vec3(0.0f, 1.0f, 0.0f),
+		glm::vec3(0.0f, 1.0f, 1.0f),
+		glm::vec3(1.0f, 1.0f, 1.0f),
+		glm::vec3(1.0f, 1.0f, 0.0f)
 	};
 	uint8_t TopFaceIndices[6] = { 3, 2, 0, 2, 1, 0 };
 
@@ -124,7 +124,7 @@ void ChunkRenderer::SetupChunkRenderer()
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
 	glm::vec3 BottomFaceVertices[4] = {
-		glm::vec3(0.0f, 0.0f, 0.0f), 
+		glm::vec3(0.0f, 0.0f, 0.0f),
 		glm::vec3(0.0f, 0.0f, 1.0f),
 		glm::vec3(1.0f, 0.0f, 1.0f),
 		glm::vec3(1.0f, 0.0f, 0.0f)
@@ -141,12 +141,12 @@ void ChunkRenderer::SetupChunkRenderer()
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
-	glm::vec3 NorthFaceVertices[4] = { 
-		glm::vec3(0.0f, 0.0f, 1.0f), 
-		glm::vec3(0.0f, 1.0f, 1.0f), 
-		glm::vec3(1.0f, 1.0f, 1.0f), 
-		glm::vec3(1.0f, 0.0f, 1.0f) 
-	}; 
+	glm::vec3 NorthFaceVertices[4] = {
+		glm::vec3(0.0f, 0.0f, 1.0f),
+		glm::vec3(0.0f, 1.0f, 1.0f),
+		glm::vec3(1.0f, 1.0f, 1.0f),
+		glm::vec3(1.0f, 0.0f, 1.0f)
+	};
 	uint8_t NorthFaceIndices[6] = { 0, 1, 2, 0, 2, 3 };
 
 	glBindBuffer(GL_ARRAY_BUFFER, NorthVBO);
@@ -159,11 +159,11 @@ void ChunkRenderer::SetupChunkRenderer()
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
-	glm::vec3 SouthFaceVertices[4] = { 
-		glm::vec3(0.0f, 0.0f, 0.0f), 
-		glm::vec3(0.0f, 1.0f, 0.0f), 
-		glm::vec3(1.0f, 1.0f, 0.0f), 
-		glm::vec3(1.0f, 0.0f, 0.0f) 
+	glm::vec3 SouthFaceVertices[4] = {
+		glm::vec3(0.0f, 0.0f, 0.0f),
+		glm::vec3(0.0f, 1.0f, 0.0f),
+		glm::vec3(1.0f, 1.0f, 0.0f),
+		glm::vec3(1.0f, 0.0f, 0.0f)
 	};
 	uint8_t SouthFaceIndices[6] = { 3, 2, 0, 2, 1, 0 };
 
@@ -201,7 +201,7 @@ void ChunkRenderer::DestroyChunkRenderer()
 void ChunkRenderer::RenderAllChunks(Player* CurrentPlayer)
 {
 	g_ChunkRenderShader->Bind();
-	
+
 	glm::mat4 Projection = *Camera::ActiveCamera->GetProjectionMatrix();
 	glm::mat4 View = *Camera::ActiveCamera->GetViewMatrix();
 
@@ -217,7 +217,6 @@ void ChunkRenderer::RenderAllChunks(Player* CurrentPlayer)
 			continue;
 
 		g_ChunkRenderShader->SetModelMatrix(glm::translate(Identity, g_ChunksToRender[Index]->ChunkPosition));
-		//g_ChunkRenderShader->SetPositionOffset();
 #if 0
 
 		// Render the east face
@@ -305,7 +304,7 @@ glm::vec3 TOP_FACE_NORMAL =		glm::vec3(0.0f, +1.0f, 0.0f);
 glm::vec3 BOTTOM_FACE_NORMAL =	glm::vec3(0.0f, -1.0f, 0.0f);
 glm::vec3 NORTH_FACE_NORMAL =	glm::vec3(0.0f, 0.0f, +1.0f);
 glm::vec3 SOUTH_FACE_NORMAL =	glm::vec3(0.0f, 0.0f, -1.0f);
-	
+
 static void GreedyMesh(Chunk* Voxels, ChunkRenderData* RenderData)
 {
 	DynamicArray<TexturedQuadVertex> Vertices;
@@ -355,7 +354,7 @@ static void GreedyMesh(Chunk* Voxels, ChunkRenderData* RenderData)
 						int b0 = (x[d] < ChunkSize - 1	? GetVoxelSide(Voxels, x[0] + q[0], x[1] + q[1],	x[2] + q[2],	Side) : -1);
 						mask[n] = (a0 != -1 && b0 != -1 && a0 == b0) ? -1 : (BackFace ? b0 : a0);
 						++x[u];
-						
+
 						int a1 = (0 <= x[d]				? GetVoxelSide(Voxels, x[0],		x[1],			x[2],			Side) : -1);
 						int b1 = (x[d] < ChunkSize - 1	? GetVoxelSide(Voxels, x[0] + q[0], x[1] + q[1],	x[2] + q[2],	Side) : -1);
 						mask[n + 1] = (a1 != -1 && b1 != -1 && a1 == b1) ? -1 : (BackFace ? b1 : a1);
@@ -410,15 +409,15 @@ static void GreedyMesh(Chunk* Voxels, ChunkRenderData* RenderData)
 							unsigned int StartIndex = Vertices.GetNum();
 							Vertices.Reserve(StartIndex + 4); // +4 again is the amount we're adding
 
-							/*Vertices.Push({ glm::vec3(x[0],					x[1],					x[2]), 
+							/*Vertices.Push({ glm::vec3(x[0],					x[1],					x[2]),
 											glm::vec2(0.0f, 0.0f),				(unsigned short) CurrentBlock});
-							
-							Vertices.Push({ glm::vec3(x[0] + du[0],			x[1] + du[1],			x[2] + du[2]), 
+
+							Vertices.Push({ glm::vec3(x[0] + du[0],			x[1] + du[1],			x[2] + du[2]),
 											glm::vec2(0.0f, (float) w),			(unsigned short) CurrentBlock });
-							
-							Vertices.Push({ glm::vec3(x[0] + du[0] + dv[0],	x[1] + du[1] + dv[1],	x[2] + du[2] + dv[2]), 
+
+							Vertices.Push({ glm::vec3(x[0] + du[0] + dv[0],	x[1] + du[1] + dv[1],	x[2] + du[2] + dv[2]),
 											glm::vec2((float) h, (float) w),	(unsigned short) CurrentBlock });
-							
+
 							Vertices.Push({ glm::vec3(x[0] +         dv[0],	x[1] +         dv[1],	x[2] +		   dv[2]),
 											glm::vec2((float) h, 0.0f),			(unsigned short) CurrentBlock });*/
 
@@ -474,12 +473,12 @@ static void GreedyMesh(Chunk* Voxels, ChunkRenderData* RenderData)
 								{
 									Vertices.Push({ glm::vec3(x[0],					x[1],					x[2]),
 										glm::vec3(BackFace ? SOUTH_FACE_NORMAL : NORTH_FACE_NORMAL),
-										glm::vec2(0.0f, (float) w),		
+										glm::vec2(0.0f, (float) w),
 										(unsigned char)CurrentBlock });
 
 									Vertices.Push({ glm::vec3(x[0] + du[0],			x[1] + du[1],			x[2] + du[2]),
 										glm::vec3(BackFace ? SOUTH_FACE_NORMAL : NORTH_FACE_NORMAL),
-										glm::vec2((float)h, (float)w),	
+										glm::vec2((float)h, (float)w),
 										(unsigned char)CurrentBlock });
 
 									Vertices.Push({ glm::vec3(x[0] + du[0] + dv[0],	x[1] + du[1] + dv[1],	x[2] + du[2] + dv[2]),
@@ -489,7 +488,7 @@ static void GreedyMesh(Chunk* Voxels, ChunkRenderData* RenderData)
 
 									Vertices.Push({ glm::vec3(x[0] + dv[0],	x[1] + dv[1],	x[2] + dv[2]),
 										glm::vec3(BackFace ? SOUTH_FACE_NORMAL : NORTH_FACE_NORMAL),
-										glm::vec2(0.0f, 0.0f),			
+										glm::vec2(0.0f, 0.0f),
 										(unsigned char)CurrentBlock });
 									break;
 								}
@@ -557,7 +556,7 @@ static void GreedyMesh(Chunk* Voxels, ChunkRenderData* RenderData)
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(TexturedQuadVertex), (void*) offsetof(TexturedQuadVertex, Normal));
 	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(TexturedQuadVertex), (void*) offsetof(TexturedQuadVertex, Dimension));
 	glVertexAttribIPointer(3, 1, GL_UNSIGNED_BYTE, sizeof(TexturedQuadVertex),  (void*) offsetof(TexturedQuadVertex, TextureCoord));
-	
+
 	// Unbind so nothing else modifies it
 	glBindVertexArray(0);
 }

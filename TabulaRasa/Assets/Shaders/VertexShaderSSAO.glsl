@@ -7,6 +7,6 @@ out vec2 frag_texCoord;
 
 void main()
 {
-	frag_texCoord = textureCoord;	
 	gl_Position = position;
+	frag_texCoord = textureCoord;
 }

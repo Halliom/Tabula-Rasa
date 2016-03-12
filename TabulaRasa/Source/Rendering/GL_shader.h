@@ -34,9 +34,9 @@ public:
 	GLShaderProgram() : Program(0) {}
 	~GLShaderProgram();
 
-	static GLShaderProgram* CreateVertexFragmentShader(std::string& VertexShaderSource, std::string& FragmentShaderSource);
+	static GLShaderProgram* CreateVertexFragmentShader(std::string& VertexShaderSource, std::string& FragmentShaderSource, bool IsSSAOShader = false);
 
-	static GLShaderProgram* CreateVertexFragmentShaderFromFile(std::string& VertexShaderFilename, std::string& FragmentShaderFilename);
+	static GLShaderProgram* CreateVertexFragmentShaderFromFile(std::string& VertexShaderFilename, std::string& FragmentShaderFilename, bool IsSSAOShader = false);
 
 	void GenerateUniformBindings();
 
@@ -61,7 +61,7 @@ public:
 	{
 		glUniformMatrix4fv(ProjectionMatrixLocation, 1, GL_FALSE, glm::value_ptr(ProjectionMatrix));
 	}
-	
+
 	__forceinline void SetModelMatrix(const glm::mat4& ModelMatrix)
 	{
 		glUniformMatrix4fv(ModelMatrixLocation, 1, GL_FALSE, glm::value_ptr(ModelMatrix));
@@ -82,6 +82,13 @@ public:
 		glUniformMatrix4fv(ProjectionViewMatrixLocation, 1, GL_FALSE, glm::value_ptr(ViewProjectionMatrix));
 	}
 
+	__forceinline void SetSSAOSamples(float Samples[192]) // 64 * 3 = 192
+	{
+		glUniform3fv(SSAOSamplesLocation, 64, Samples);
+	}
+
+	bool m_bIsSSAOShader;
+
 private:
 
 	GLint Program;
@@ -97,6 +104,8 @@ private:
 	GLint PositionOffsetLocation;
 
 	GLint TextureSamplers[4];
+
+	GLint SSAOSamplesLocation;
 };
 
 #endif

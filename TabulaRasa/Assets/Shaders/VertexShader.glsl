@@ -25,16 +25,14 @@ vec2 getAtlasOffset()
 
 void main()
 {
-	vec4 transformedPosition = g_ProjectionMatrix * g_ViewMatrix * g_ModelMatrix * vec4(position, 1.0);
-	
-	frag_position = transformedPosition.xyz;
+	vec4 viewPos = g_ViewMatrix * g_ModelMatrix * vec4(position, 1.0);
+	frag_position = viewPos.xyz;
 	
 	mat3 normalMatrix = transpose(inverse(mat3(g_ViewMatrix * g_ModelMatrix)));
 	frag_normal = normalize(normalMatrix * normal);
 	
 	frag_atlasOffset = getAtlasOffset();
-	
 	frag_texCoord = dimension;
 	
-	gl_Position = transformedPosition;
+	gl_Position = g_ProjectionMatrix * transformedPosition;
 }

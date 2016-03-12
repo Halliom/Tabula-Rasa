@@ -4,12 +4,12 @@
 
 #include "../Game/World.h"
 
-enum GBUFFER_TEXTURE_LAYER
+enum GBufferTextureLayerGeometryPass
 {
-	GBUFFER_LAYER_POSITION,
-	GBUFFER_LAYER_NORMAL,
-	GBUFFER_LAYER_TEXCOORD,
-	GBUFFER_LAYER_NUM
+	GBUFFER_LAYER_GEOMETRY_POSITION,
+	GBUFFER_LAYER_GEOMETRY_NORMAL,
+	GBUFFER_LAYER_GEOMETRY_TEXCOORD,
+	GBUFFER_LAYER_GEOMETRY_NUM
 };
 
 class RenderingEngine
@@ -20,11 +20,17 @@ public:
 
 	void Initialize(const unsigned int& ScreenWidth, const unsigned int& ScreenHeight);
 
+	void SetupGeometryPass();
+
+	void SetupSSAOPass();
+
 	void SetupQuad();
 
 	void RenderFrame(World* RenderWorld, const float& DeltaTime);
 
 	void StartGeometryPass();
+
+	void SSAOPass();
 
 	void LightPass();
 
@@ -33,14 +39,22 @@ public:
 	unsigned int m_ScreenWidth;
 	unsigned int m_ScreenHeight;
 
-	GLuint m_FBO;
-	GLuint m_GBufferTextures[GBUFFER_LAYER_NUM];
-	GLuint m_DepthTexture;
+	GLuint m_GeometryFBO;
+	GLuint m_GeometryGBufferTextures[GBUFFER_LAYER_GEOMETRY_NUM];
+	GLuint m_GeometryDepthTexture;
+
+	GLuint m_SSAOFBO;
+	GLuint m_SSAONoiseTexture;
+	GLuint m_SSAOColorBuffer;
+
+	float m_pSSAOKernel[192];
 
 	GLuint m_ScreenQuadVBO;
 	GLuint m_ScreenQuadIBO;
 	GLuint m_ScreenQuadVAO;
 
 	GLShaderProgram* m_pLightPassShader;
+
+	GLShaderProgram* m_pSSAOShader;
 
 };

@@ -10,7 +10,7 @@ GLShaderProgram::~GLShaderProgram()
 	}
 }
 
-GLShaderProgram* GLShaderProgram::CreateVertexFragmentShader(std::string& VertexShaderSource, std::string& FragmentShaderSource)
+GLShaderProgram* GLShaderProgram::CreateVertexFragmentShader(std::string& VertexShaderSource, std::string& FragmentShaderSource, bool IsSSAOShader)
 {
 	GLShaderProgram* Program = new GLShaderProgram();
 
@@ -32,16 +32,18 @@ GLShaderProgram* GLShaderProgram::CreateVertexFragmentShader(std::string& Vertex
 		return NULL;
 	}
 
+	Program->m_bIsSSAOShader = IsSSAOShader;
+
 	Program->GenerateUniformBindings();
 
 	return Program;
 }
 
-GLShaderProgram* GLShaderProgram::CreateVertexFragmentShaderFromFile(std::string& VertexShaderFilename, std::string& FragmentShaderFilename)
+GLShaderProgram* GLShaderProgram::CreateVertexFragmentShaderFromFile(std::string& VertexShaderFilename, std::string& FragmentShaderFilename, bool IsSSAOShader)
 {
 	return CreateVertexFragmentShader(
-		PlatformFileSystem::LoadFile(DT_SHADERS, VertexShaderFilename), 
-		PlatformFileSystem::LoadFile(DT_SHADERS, FragmentShaderFilename));
+		PlatformFileSystem::LoadFile(DT_SHADERS, VertexShaderFilename),
+		PlatformFileSystem::LoadFile(DT_SHADERS, FragmentShaderFilename), IsSSAOShader);
 }
 
 void GLShaderProgram::GenerateUniformBindings()
@@ -56,6 +58,11 @@ void GLShaderProgram::GenerateUniformBindings()
 	TextureSamplers[1] = GetUniform("textureSampler1");
 	TextureSamplers[2] = GetUniform("textureSampler2");
 	TextureSamplers[3] = GetUniform("textureSampler3");
+
+	if (m_bIsSSAOShader)
+	{
+		SSAOSamplesLocation = GetUniform("g_Samples");
+	}
 }
 
 bool GLShaderProgram::AttachShaderSource(const GLShaderSource& Source)
@@ -163,7 +170,7 @@ bool GLShaderProgram::CompileShaderProgram()
 			// We have succesfully "compiled" (linked) the program
 			return true;
 		}
-		else 
+		else
 		{
 			GLint LogBufferLength;
 			glGetProgramiv(Program, GL_INFO_LOG_LENGTH, &LogBufferLength);
