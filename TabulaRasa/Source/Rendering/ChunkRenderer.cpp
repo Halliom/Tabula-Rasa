@@ -409,18 +409,6 @@ static void GreedyMesh(Chunk* Voxels, ChunkRenderData* RenderData)
 							unsigned int StartIndex = Vertices.GetNum();
 							Vertices.Reserve(StartIndex + 4); // +4 again is the amount we're adding
 
-							/*Vertices.Push({ glm::vec3(x[0],					x[1],					x[2]),
-											glm::vec2(0.0f, 0.0f),				(unsigned short) CurrentBlock});
-
-							Vertices.Push({ glm::vec3(x[0] + du[0],			x[1] + du[1],			x[2] + du[2]),
-											glm::vec2(0.0f, (float) w),			(unsigned short) CurrentBlock });
-
-							Vertices.Push({ glm::vec3(x[0] + du[0] + dv[0],	x[1] + du[1] + dv[1],	x[2] + du[2] + dv[2]),
-											glm::vec2((float) h, (float) w),	(unsigned short) CurrentBlock });
-
-							Vertices.Push({ glm::vec3(x[0] +         dv[0],	x[1] +         dv[1],	x[2] +		   dv[2]),
-											glm::vec2((float) h, 0.0f),			(unsigned short) CurrentBlock });*/
-
 							switch (d)
 							{
 								case 0:
@@ -473,17 +461,17 @@ static void GreedyMesh(Chunk* Voxels, ChunkRenderData* RenderData)
 								{
 									Vertices.Push({ glm::vec3(x[0],					x[1],					x[2]),
 										glm::vec3(BackFace ? SOUTH_FACE_NORMAL : NORTH_FACE_NORMAL),
-										glm::vec2(0.0f, (float) w),
+										glm::vec2(0.0f, (float) h),
 										(unsigned char)CurrentBlock });
 
 									Vertices.Push({ glm::vec3(x[0] + du[0],			x[1] + du[1],			x[2] + du[2]),
 										glm::vec3(BackFace ? SOUTH_FACE_NORMAL : NORTH_FACE_NORMAL),
-										glm::vec2((float)h, (float)w),
+										glm::vec2((float)w, (float)h),
 										(unsigned char)CurrentBlock });
 
 									Vertices.Push({ glm::vec3(x[0] + du[0] + dv[0],	x[1] + du[1] + dv[1],	x[2] + du[2] + dv[2]),
 										glm::vec3(BackFace ? SOUTH_FACE_NORMAL : NORTH_FACE_NORMAL),
-										glm::vec2((float)h, 0.0f),
+										glm::vec2((float)w, 0.0f),
 										(unsigned char)CurrentBlock });
 
 									Vertices.Push({ glm::vec3(x[0] + dv[0],	x[1] + dv[1],	x[2] + dv[2]),

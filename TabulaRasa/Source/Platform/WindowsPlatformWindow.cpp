@@ -150,7 +150,15 @@ bool PlatformWindow::PrepareForRender()
 #ifdef _DEBUG
 				if (Event.key.keysym.scancode == SDL_SCANCODE_ESCAPE)
 				{
-					return false;
+					if (g_Console->m_bIsActive)
+					{
+						g_Console->m_bIsActive = false;
+						g_Console->OnUpdateInputMode();
+					}
+					else
+					{
+						return false;
+					}
 				}
 #endif
 				// TODO: Remove in build perhaps?

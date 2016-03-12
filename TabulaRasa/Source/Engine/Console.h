@@ -5,7 +5,7 @@
 #include "SDL2\SDL.h"
 
 #define MAX_INPUT_LENGTH 128
-#define MAX_COMMAND_BUFFER_SIZE 8
+#define MAX_COMMAND_BUFFER_SIZE 32
 
 class Console
 {
@@ -20,8 +20,6 @@ public:
 	void OnUpdateInputMode();
 
 	bool m_bIsActive;
-
-	void Update();
 
 private:
 

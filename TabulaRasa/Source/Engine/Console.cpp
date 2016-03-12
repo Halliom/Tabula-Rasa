@@ -157,10 +157,11 @@ void Console::OnUpdateInputMode()
 	else
 	{
 		m_pActiveLineText = TextRenderer::AddTextToRender(m_CurrentlyTyping.c_str(), 0.0f, g_RenderingEngine->m_ScreenHeight / 2.0f - 24.0f, 16.0f);
-		m_pBackgroundRect = TextRenderer::AddRectToRender(0.0f, 0.0f, g_RenderingEngine->m_ScreenWidth, g_RenderingEngine->m_ScreenHeight / 2.0f, glm::vec4(0.0f, 0.0f, 0.0f, 0.65f));
+		m_pBackgroundRect = TextRenderer::AddRectToRender(
+			0.0f, 
+			0.0f, 
+			g_RenderingEngine->m_ScreenWidth, 
+			g_RenderingEngine->m_ScreenHeight / 2.0f, 
+			glm::vec4(1.0f / 255.0f, 25.0f / 255.0f, 0.0f, 0.65f));
 	}
-}
-
-void Console::Update()
-{
 }
