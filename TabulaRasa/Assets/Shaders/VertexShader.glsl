@@ -27,12 +27,11 @@ void main()
 {
 	vec4 viewPos = g_ViewMatrix * g_ModelMatrix * vec4(position, 1.0);
 	frag_position = viewPos.xyz;
-	
-	mat3 normalMatrix = transpose(inverse(mat3(g_ViewMatrix * g_ModelMatrix)));
-	frag_normal = normalize(normalMatrix * normal);
+	gl_Position = g_ProjectionMatrix * viewPos;
 	
 	frag_atlasOffset = getAtlasOffset();
 	frag_texCoord = dimension;
 	
-	gl_Position = g_ProjectionMatrix * transformedPosition;
+	mat3 normalMatrix = transpose(inverse(mat3(g_ViewMatrix * g_ModelMatrix)));
+	frag_normal = normalize(normalMatrix * normal);
 }
