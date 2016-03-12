@@ -58,6 +58,8 @@ void GLShaderProgram::GenerateUniformBindings()
 	TextureSamplers[1] = GetUniform("textureSampler1");
 	TextureSamplers[2] = GetUniform("textureSampler2");
 	TextureSamplers[3] = GetUniform("textureSampler3");
+	TextureSamplers[4] = GetUniform("textureSampler4");
+	TextureSamplers[5] = GetUniform("textureSampler5");
 
 	if (m_bIsSSAOShader)
 	{
@@ -200,4 +202,8 @@ void GLShaderProgram::SetDefaultSamplers()
 		glUniform1i(TextureSamplers[2], 2);
 	if (TextureSamplers[3] != -1)
 		glUniform1i(TextureSamplers[3], 3);
+	if (TextureSamplers[4] != -1)
+		glUniform1i(TextureSamplers[4], 4);
+	if (TextureSamplers[5] != -1)
+		glUniform1i(TextureSamplers[5], 5);
 }

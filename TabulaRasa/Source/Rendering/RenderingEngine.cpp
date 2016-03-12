@@ -171,6 +171,31 @@ void RenderingEngine::SetupSSAOPass()
 		m_pSSAOKernel[(i * 3) + 1] = Sample.y;
 		m_pSSAOKernel[(i * 3) + 2] = Sample.z;
 	}
+
+	/** 
+	 * Setup the blur pass
+	 */
+
+	m_pSSAOBlurShader = GLShaderProgram::CreateVertexFragmentShaderFromFile(
+		std::string("VertexShaderSSAO.glsl"),
+		std::string("FragmentShaderSSAOBlur.glsl"));
+
+	glGenFramebuffers(1, &m_SSAOBlurFBO);
+	glBindFramebuffer(GL_FRAMEBUFFER, m_SSAOBlurFBO);
+
+	glGenTextures(1, &m_SSAOBlurColorBuffer);
+	glBindTexture(GL_TEXTURE_2D, m_SSAOBlurColorBuffer);
+	// We only need one value (since SSAO is in grayscale) so we tell it to store it in the red component
+	// since red is the first component in a color vector
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, m_ScreenWidth, m_ScreenHeight, 0, GL_RGB, GL_FLOAT, NULL);
+	// Nearest filtering since we want raw pixels not interpolations
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_SSAOBlurColorBuffer, 0);
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	GLuint m_SSAOBlurColorBuffer;
 }
 
 void RenderingEngine::SetupQuad()
@@ -244,6 +269,24 @@ void RenderingEngine::SSAOPass()
 	glBindVertexArray(m_ScreenQuadVAO);
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, 0);
 
+	/**
+	 * Do blur pass
+	 */
+
+	glBindFramebuffer(GL_FRAMEBUFFER, m_SSAOBlurFBO);
+	glClear(GL_COLOR_BUFFER_BIT);
+
+	m_pSSAOBlurShader->Bind();
+	m_pSSAOBlurShader->SetDefaultSamplers();
+
+	// Send the texture fromt he previous SSAO pass to the shader to get blurred
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, m_SSAOColorBuffer);
+
+	// Render a screen quad
+	glBindVertexArray(m_ScreenQuadVAO);
+	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, 0);
+
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
@@ -276,8 +319,10 @@ void RenderingEngine::LightPass()
 
 	// Bind the texture atlas for the block textures
 	glActiveTexture(GL_TEXTURE3);
-	//glBindTexture(GL_TEXTURE_2D, ChunkRenderer::g_TextureAtlas);
-	glBindTexture(GL_TEXTURE_2D, m_SSAOColorBuffer);
+	glBindTexture(GL_TEXTURE_2D, m_SSAOBlurColorBuffer);
+
+	glActiveTexture(GL_TEXTURE4);
+	glBindTexture(GL_TEXTURE_2D, ChunkRenderer::g_TextureAtlas);
 
 	// Render a screen quad
 	glBindVertexArray(m_ScreenQuadVAO);

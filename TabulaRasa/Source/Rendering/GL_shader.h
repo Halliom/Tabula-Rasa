@@ -103,7 +103,7 @@ private:
 
 	GLint PositionOffsetLocation;
 
-	GLint TextureSamplers[4];
+	GLint TextureSamplers[6];
 
 	GLint SSAOSamplesLocation;
 };

@@ -42,19 +42,24 @@ public:
 	GLuint m_GeometryFBO;
 	GLuint m_GeometryGBufferTextures[GBUFFER_LAYER_GEOMETRY_NUM];
 	GLuint m_GeometryDepthTexture;
+	
+	GLShaderProgram* m_pLightPassShader;
 
 	GLuint m_SSAOFBO;
 	GLuint m_SSAONoiseTexture;
 	GLuint m_SSAOColorBuffer;
 
+	GLShaderProgram* m_pSSAOShader;
+
 	float m_pSSAOKernel[192];
+
+	GLuint m_SSAOBlurFBO;
+	GLuint m_SSAOBlurColorBuffer;
 
 	GLuint m_ScreenQuadVBO;
 	GLuint m_ScreenQuadIBO;
 	GLuint m_ScreenQuadVAO;
 
-	GLShaderProgram* m_pLightPassShader;
-
-	GLShaderProgram* m_pSSAOShader;
+	GLShaderProgram* m_pSSAOBlurShader;
 
 };
