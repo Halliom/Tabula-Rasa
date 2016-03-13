@@ -1,7 +1,6 @@
 #include "Hash.h"
 
-#include "Octree.h"
-
+/**
 void VoxelDictionary::Init(unsigned int Size)
 {
     m_Size = Size;
@@ -29,4 +28,4 @@ void VoxelDictionary::Add(unsigned int Key, OctreeNode* Data)
 		// TODO: Collision
 		return;
     }
-}
+}*/

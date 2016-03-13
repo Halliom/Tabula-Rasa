@@ -52,6 +52,11 @@ struct TexturedQuadVertex
 	unsigned char TextureCoord;
 };
 
+template<typename T> class Octree;
+
+class Voxel;
+class Chunk;
+
 class ChunkRenderer
 {
 public:
@@ -62,7 +67,7 @@ public:
 
 	static void RenderAllChunks(Player* CurrentPlayer);
 
-	static ChunkRenderData* CreateRenderData(const glm::vec3& Position, class Chunk* Voxels);
+	static ChunkRenderData* CreateRenderData(const glm::vec3& Position, Chunk* Voxels);
 
 	static void InsertIntoBufferSide(ChunkRenderData* RenderData, const VoxelSide& Side, ChunkRenderCoordinate& NewCoordinate);
 

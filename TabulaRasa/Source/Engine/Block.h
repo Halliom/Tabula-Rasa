@@ -5,10 +5,11 @@
 #define BLOCK_ID_GRASS 1
 #define BLOCK_ID_DIRT 2
 
-enum BlockRenderType
+enum BlockType
 {
-	RENDER_TYPE_SOLID,
-	RENDER_TYPE_CUSTOM
+	TYPE_SOLID,
+	TYPE_MULTIBLOCK,
+	TYPE_STRUCTURE
 };
 
 struct BlockInfo
@@ -30,7 +31,7 @@ struct BlockInfo
 	 * be rendered normally or if some kind of custom 
 	 * rendering should be done
 	 */
-	BlockRenderType RenderType;
+	BlockType RenderType;
 };
 
 class BlockManager

@@ -14,7 +14,7 @@ message(${PYTHON_INCLUDE_DIRS})
 message(${PYTHON_LIBRARIES})
 
 if(CMAKE_BUILD_TOOL MATCHES "(msdev|devenv|nmake)")
-    add_definitions(/W2)
+    add_definitions("/W2")
 endif()
 
 include_directories(${PROJECT_SOURCE_DIR}/Include/ ${PYTHON_INCLUDE_DIRS})

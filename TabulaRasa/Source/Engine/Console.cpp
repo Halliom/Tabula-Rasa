@@ -18,7 +18,7 @@ Console::~Console()
 		TextRenderer::RemoveText(m_pActiveLineText);
 		TextRenderer::RemoveRect(m_pBackgroundRect);
 
-		for (int i = 0; i < m_BufferLength; ++i)
+		for (unsigned int i = 0; i < m_BufferLength; ++i)
 		{
 			TextRenderer::RemoveText(m_pCommandBuffer[i]);
 		}
@@ -76,7 +76,7 @@ void Console::ReceiveTextInput(SDL_Keycode* KeyCode, bool IsShiftDown)
 					m_CurrentlyTyping.erase(++m_CurrentlyTyping.begin(), m_CurrentlyTyping.end());
 
 					// Move everything else in the list up one
-					for (int i = 0; i < m_BufferLength - 1; ++i)
+					for (unsigned int i = 0; i < m_BufferLength - 1; ++i)
 					{
 						m_pCommandBuffer[i]->Position -= glm::vec3(0.0f, 20.0f, 0.0f);
 					}
@@ -149,7 +149,7 @@ void Console::OnUpdateInputMode()
 		TextRenderer::RemoveText(m_pActiveLineText);
 		TextRenderer::RemoveRect(m_pBackgroundRect);
 
-		for (int i = 0; i < m_BufferLength; ++i)
+		for (unsigned int i = 0; i < m_BufferLength; ++i)
 		{
 			TextRenderer::RemoveText(m_pCommandBuffer[i]);
 		}
@@ -160,8 +160,8 @@ void Console::OnUpdateInputMode()
 		m_pBackgroundRect = TextRenderer::AddRectToRender(
 			0.0f, 
 			0.0f, 
-			g_RenderingEngine->m_ScreenWidth, 
-			g_RenderingEngine->m_ScreenHeight / 2.0f, 
+			(float) g_RenderingEngine->m_ScreenWidth, 
+			(float) g_RenderingEngine->m_ScreenHeight / 2.0f, 
 			glm::vec4(1.0f / 255.0f, 25.0f / 255.0f, 0.0f, 0.65f));
 	}
 }

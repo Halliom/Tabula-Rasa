@@ -3,6 +3,7 @@
 #include "../Engine/Octree.h"
 #include "../Engine/Camera.h"
 #include "../Engine/Block.h"
+#include "../Engine/Chunk.h"
 #include "../Platform/Platform.h"
 
 #include "glm\gtc\matrix_transform.hpp"
@@ -287,13 +288,13 @@ void ChunkRenderer::RenderAllChunks(Player* CurrentPlayer)
 	glBindVertexArray(0);
 }
 
-int GetVoxelSide(Chunk* Chunk, const int& X, const int& Y, const int& Z, const VoxelSide& Side)
+int GetVoxelSide(Chunk* Voxels, const int& X, const int& Y, const int& Z, const VoxelSide& Side)
 {
-	Voxel* Node = Chunk->GetNodeData(glm::uvec3(X, Y, Z));
+	Voxel* Node = Voxels->GetVoxel(X, Y, Z);
 	if (Node && ((Node->SidesToRender & Side) == Side))
 	{
 		BlockInfo Block = BlockManager::LoadedBlocks[Node->BlockID];
-		return Block.RenderType == RENDER_TYPE_SOLID ? Block.Textures[SideToInt(Side)] : -1;
+		return Block.RenderType == TYPE_SOLID ? Block.Textures[SideToInt(Side)] : -1;
 	}
 	return -1;
 }
@@ -311,7 +312,7 @@ static void GreedyMesh(Chunk* Voxels, ChunkRenderData* RenderData)
 	DynamicArray<unsigned int> Indices;
 	bool Counter = false;
 
-	int ChunkSize = Chunk::SIZE;
+	int ChunkSize = Octree<Voxel>::SIZE;
 	for (bool BackFace = true; Counter != BackFace; BackFace = BackFace && Counter, Counter = !Counter)
 	{
 		for (int d = 0; d < 3; ++d)
@@ -329,7 +330,7 @@ static void GreedyMesh(Chunk* Voxels, ChunkRenderData* RenderData)
 									// A mask of a "slice" of the cube, since we're going through
 									// the chunk depth first, this contains the groups of matching
 									// voxel faces in 6 directinos
-			int mask[Chunk::SIZE * Chunk::SIZE];
+			int mask[Octree<Voxel>::SIZE * Octree<Voxel>::SIZE];
 
 			q[d] = 1;
 

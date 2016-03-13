@@ -1,10 +1,10 @@
 #pragma once
 
-class VoxelDictionary
+/**class VoxelDictionary
 {
 public:
 
-    void Add(unsigned int Key, class OctreeNode* Data);
+    void Add(unsigned int Key, struct OctreeNode<Voxel>* Data);
 
     void Init(unsigned int Size);
 
@@ -14,6 +14,6 @@ public:
 
     unsigned int m_Size;
 
-    class OctreeNode** m_Data;
+	struct OctreeNode<Voxel>** m_Data;
 
-};
+};*/

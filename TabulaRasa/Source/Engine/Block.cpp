@@ -3,7 +3,7 @@
 BlockInfo BlockManager::LoadedBlocks[MAX_NUM_BLOCKS];
 
 #define ADD_SOLID(Id, TextureEast, TextureWest, TextureTop, TextureBottom, TextureNorth, TextureSouth) \
-		{Id, {TextureEast, TextureWest, TextureTop, TextureBottom, TextureNorth, TextureSouth}, RENDER_TYPE_SOLID}
+		{Id, {TextureEast, TextureWest, TextureTop, TextureBottom, TextureNorth, TextureSouth}, TYPE_SOLID}
 
 void BlockManager::SetupBlocks()
 {
