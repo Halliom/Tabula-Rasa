@@ -6,6 +6,8 @@
 #include "../Engine/Block.h"
 #include "../Engine/PerlinNoise.h"
 
+#include "../Rendering/ChunkRenderer.h"
+
 #define CHUNK_LOADING_RADIUS 4
 
 World::World()
@@ -84,13 +86,26 @@ void World::Update(float DeltaTime)
 	CurrentPlayer->Update(DeltaTime);
 	
 	// TODO: Update all the chunks
+	for (auto& It : m_LoadedChunks.Nodes)
+	{
+		if (It.second->m_pNodeData == NULL)
+			continue;
+
+		// If the NodeData's render state is dirty
+		if (It.second->m_pNodeData->m_bIsRenderStateDirty)
+		{
+			ChunkRenderData* RenderData = It.second->m_pNodeData->m_pChunkRenderData;
+			ChunkRenderer::UpdateRenderData(RenderData, It.second->m_pNodeData);
+			It.second->m_pNodeData->m_bIsRenderStateDirty = false;
+		}
+	}
 }
 
 Voxel* World::GetBlock(const int& X, const int& Y, const int& Z)
 {
-	int ChunkX = X / (int)Octree<Voxel>::SIZE;
-	int ChunkY = Y / (int)Octree<Voxel>::SIZE;
-	int ChunkZ = Z / (int)Octree<Voxel>::SIZE;
+	int ChunkX = X / (int) Octree<Voxel>::SIZE;
+	int ChunkY = Y / (int) Octree<Voxel>::SIZE;
+	int ChunkZ = Z / (int) Octree<Voxel>::SIZE;
 
 	int HalfChunkRadius = CHUNK_LOADING_RADIUS / 2;
 	if ((ChunkX >= ChunkLoadingCenterX - HalfChunkRadius && ChunkX < ChunkLoadingCenterX + HalfChunkRadius) &&
@@ -150,9 +165,9 @@ void World::AddBlock(const int& X, const int& Y, const int& Z, const unsigned in
 
 void World::RemoveBlock(const int & X, const int & Y, const int & Z)
 {
-	int ChunkX = X / (int)Octree<Voxel>::SIZE;
-	int ChunkY = Y / (int)Octree<Voxel>::SIZE;
-	int ChunkZ = Z / (int)Octree<Voxel>::SIZE;
+	int ChunkX = X / (int) Octree<Voxel>::SIZE;
+	int ChunkY = Y / (int) Octree<Voxel>::SIZE;
+	int ChunkZ = Z / (int) Octree<Voxel>::SIZE;
 
 	int HalfChunkRadius = CHUNK_LOADING_RADIUS / 2;
 	if ((ChunkX >= ChunkLoadingCenterX - HalfChunkRadius && ChunkX < ChunkLoadingCenterX + HalfChunkRadius) &&
@@ -177,11 +192,20 @@ void World::RemoveBlock(const int & X, const int & Y, const int & Z)
 	}
 }
 
-Chunk * World::LoadChunk(const int& ChunkX, const int& ChunkY, const int& ChunkZ)
+Chunk* World::LoadChunk(const int& ChunkX, const int& ChunkY, const int& ChunkZ)
 {
 	Chunk* Result = new Chunk();
 	Result->m_ChunkX = ChunkX;
 	Result->m_ChunkY = ChunkY;
 	Result->m_ChunkZ = ChunkZ;
+
+	// Make sure that everything is initialized to zero
+	memset(Result->m_pVoxels, NULL, 32 * 32 * 32 * sizeof(Voxel));
+
+	// Create render data for the chunk
+	Result->m_pChunkRenderData = ChunkRenderer::CreateRenderData(
+		glm::vec3(ChunkX * Octree<Voxel>::SIZE, ChunkX * Octree<Voxel>::SIZE, ChunkX * Octree<Voxel>::SIZE), 
+		Result);
+
 	return Result;
 }

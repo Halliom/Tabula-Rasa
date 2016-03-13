@@ -66,6 +66,8 @@ class Octree
 {
 public:
 
+	friend class World;
+
 	Octree() 
 	{ 
 		// Insert the root node
@@ -136,26 +138,6 @@ void Octree<T>::InsertNode(const glm::uvec3& Position, T* NewData, OctreeNode<T>
 			Node->m_pNodeData = NewData;
 			Node->m_LocalPosition = Position;
 
-#if 0
-			if (IsNew && !Node->m_pNodeData->Octree)
-			{
-				Node->m_pNodeData->Octree = this;
-
-				Node->m_pNodeData->OnNodeUpdatedAdjacent(
-					(uint8_t)Position.x,
-					(uint8_t)Position.y,
-					(uint8_t)Position.z,
-					GetNodeData(Position + VS_EAST_OFFSET),
-					GetNodeData(Position + VS_WEST_OFFSET),
-					GetNodeData(Position + VS_TOP_OFFSET),
-					GetNodeData(Position + VS_BOTTOM_OFFSET),
-					GetNodeData(Position + VS_NORTH_OFFSET),
-					GetNodeData(Position + VS_SOUTH_OFFSET),
-					true
-					);
-			}
-#endif
-
 			if (Node->m_Location != 1)
 			{
 				OctreeNode<T>* ParentNode = Nodes[(Node->m_Location >> 3)];
@@ -212,6 +194,7 @@ void Octree<T>::InsertNode(const glm::uvec3& Position, T* NewData, OctreeNode<T>
 				NewNode->m_Center.x += ((int32_t)QuarterSize) * ((NewNodeOctant & 4) ? 1 : -1);
 				NewNode->m_Center.y += ((int32_t)QuarterSize) * ((NewNodeOctant & 2) ? 1 : -1);
 				NewNode->m_Center.z += ((int32_t)QuarterSize) * ((NewNodeOctant & 1) ? 1 : -1);
+				Nodes.insert({ NewNode->m_Location, NewNode });
 
 				Node->m_Children |= (1 << OldNodeOctant);
 				Node->m_Children |= (1 << NewNodeOctant);
@@ -299,20 +282,7 @@ void Octree<T>::RemoveNode(const glm::uvec3& Position, OctreeNode<T>* Node, bool
 			uint32_t NodeOctant = NodeToBeDeleted->m_Location & 7;
 			OctreeNode<T>* ParentNode = Nodes[(NodeToBeDeleted->m_Location >> 3)];
 			ParentNode->m_Children ^= (1 << NodeOctant); // Remove from parents m_Children
-#if 0
-			NodeToBeDeleted->m_pNodeData->OnNodeUpdatedAdjacent(
-				(uint8_t)Position.x,
-				(uint8_t)Position.y,
-				(uint8_t)Position.z,
-				GetNodeData(Position + VS_EAST_OFFSET),
-				GetNodeData(Position + VS_WEST_OFFSET),
-				GetNodeData(Position + VS_TOP_OFFSET),
-				GetNodeData(Position + VS_BOTTOM_OFFSET),
-				GetNodeData(Position + VS_NORTH_OFFSET),
-				GetNodeData(Position + VS_SOUTH_OFFSET),
-				false
-				);
-#endif
+
 			//RemoveNode(AddData, RemoveData, ParentNode->m_LocalPosition, ParentNode, true);
 
 			Nodes.erase(NodeToBeDeleted->m_Location);

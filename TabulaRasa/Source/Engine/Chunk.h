@@ -18,4 +18,7 @@ public:
 	unsigned int m_ChunkX;
 	unsigned int m_ChunkY;
 	unsigned int m_ChunkZ;
+
+	bool m_bIsRenderStateDirty;
+	class ChunkRenderData* m_pChunkRenderData;
 };

@@ -18,4 +18,6 @@ void Chunk::SetVoxel(unsigned int X, unsigned int Y, unsigned int Z, Voxel* NewV
 		WorldObject->GetBlock(X, Y, Z - 1),
 		NewVoxel == NULL ? false : true // If we are adding/placing a block, set Placed to true, else set it to false
 		);
+
+	m_bIsRenderStateDirty = true;
 }
