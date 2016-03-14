@@ -20,5 +20,5 @@ public:
 	unsigned int m_ChunkZ;
 
 	bool m_bIsRenderStateDirty;
-	class ChunkRenderData* m_pChunkRenderData;
+	struct ChunkRenderData* m_pChunkRenderData;
 };

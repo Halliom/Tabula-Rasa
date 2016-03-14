@@ -16,8 +16,8 @@ void main(void)
 	vec4 textureColor = vec4(0.0, 0.0, 0.0, 1.0);
 	if (texCoord != vec2(0.0, 0.0))
 	{
-		float ssao = texture2D(textureSampler3, frag_texCoord).r;
-		vec4 ambientLighting = vec4(ssao, ssao, ssao, 1.0);
+		vec3 ssao = vec3(texture2D(textureSampler3, frag_texCoord).r);
+		vec4 ambientLighting = vec4(ssao, 1.0);
 		frag_color = texture2D(textureSampler4, texCoord) * ambientLighting;
-	}
+	}	
 }

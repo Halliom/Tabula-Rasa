@@ -127,49 +127,51 @@ void RenderingEngine::SetupSSAOPass()
 	// Nearest filtering since we want raw pixels not interpolations
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_SSAOColorBuffer, 0);
 
 	// Make sure no one else modifies it
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 	// Generate noise for the SSAO pass
+	std::uniform_real_distribution<GLfloat> FloatRange(0.0, 1.0); // random floats between 0.0 - 1.0
+	std::default_random_engine RandomGenerator;
 	float SSAONoise[48]; // 16 vector3s
     for (unsigned int i = 0; i < 48; i += 3)
     {
-		SSAONoise[i] = ((rand() % 1000) / 1000.0f) * 2.0f - 1.0f;
-		SSAONoise[i + 1] = ((rand() % 1000) / 1000.0f) * 2.0f - 1.0f;
-		SSAONoise[i + 2] = 0.0f;
+		SSAONoise[i]		= FloatRange(RandomGenerator) * 2.0 - 1.0;
+		SSAONoise[i + 1]	= FloatRange(RandomGenerator) * 2.0 - 1.0;
+		SSAONoise[i + 2]	= 0.0f;
     }
 
 	glGenTextures(1, &m_SSAONoiseTexture);
     glBindTexture(GL_TEXTURE_2D, m_SSAONoiseTexture);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, 4, 4, 0, GL_RGB, GL_FLOAT, SSAONoise);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, 4, 4, 0, GL_RGB, GL_FLOAT, SSAONoise);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	// Needs to be repeat so that the noise will tile across the screen
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
+	// Generate kernels
 	for (unsigned int i = 0; i < 64; ++i)
 	{
 		glm::vec3 Sample = glm::vec3(
-			((rand() % 1000) / 1000.0f) * 2.0f - 1.0f,
-			((rand() % 1000) / 1000.0f) * 2.0f - 1.0f,
-		 	((rand() % 1000) / 1000.0f));
+			FloatRange(RandomGenerator) * 2.0 - 1.0,
+			FloatRange(RandomGenerator) * 2.0 - 1.0,
+			FloatRange(RandomGenerator));
 		Sample = glm::normalize(Sample);
-		Sample *= ((rand() % 1000) / 1000.0f);
+		Sample *= FloatRange(RandomGenerator);
 
 		// Scale samples s.t. they're more aligned to center of kernel
-		float Scale = (float) i / 64.0f;
+		float Scale = (float)i / 64.0f;
 
 		// lerp(a, b, f) (lerp(0.1f, 1.0f, Scale * Scale))
 		// a + f * (b - a)
         Scale = 0.1f + (Scale * Scale) * (1.0f - 0.1f);
         Sample *= Scale;
-		m_pSSAOKernel[(i * 3)] = Sample.x;
-		m_pSSAOKernel[(i * 3) + 1] = Sample.y;
-		m_pSSAOKernel[(i * 3) + 2] = Sample.z;
+		m_pSSAOKernel[(i * 3)]		= Sample.x;
+		m_pSSAOKernel[(i * 3) + 1]	= Sample.y;
+		m_pSSAOKernel[(i * 3) + 2]	= Sample.z;
 	}
 
 	/** 
@@ -261,11 +263,16 @@ void RenderingEngine::SSAOPass()
 	glBindTexture(GL_TEXTURE_2D, m_GeometryGBufferTextures[GBUFFER_LAYER_GEOMETRY_NORMAL]);
 	glActiveTexture(GL_TEXTURE2);
 	glBindTexture(GL_TEXTURE_2D, m_SSAONoiseTexture);
-	m_pSSAOShader->SetSSAOSamples(m_pSSAOKernel);
+	//m_pSSAOShader->SetSSAOSamples(m_pSSAOKernel);
 
+	// TODO: Fix this because this is too inefficient
+	for (GLuint i = 0; i < 64; ++i)
+		glUniform3fv(glGetUniformLocation(m_pSSAOShader->Program, ("g_Samples[" + std::to_string(i) + "]").c_str()), 1, &m_pSSAOKernel[i * 3]);
+	
 	// Render a screen quad
 	glBindVertexArray(m_ScreenQuadVAO);
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, 0);
+	glBindVertexArray(0);
 
 	/**
 	 * Do blur pass
@@ -284,6 +291,7 @@ void RenderingEngine::SSAOPass()
 	// Render a screen quad
 	glBindVertexArray(m_ScreenQuadVAO);
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, 0);
+	glBindVertexArray(0);
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
@@ -325,6 +333,7 @@ void RenderingEngine::LightPass()
 	// Render a screen quad
 	glBindVertexArray(m_ScreenQuadVAO);
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, 0);
+	glBindVertexArray(0);
 }
 
 void RenderingEngine::ScreenDimensionsChanged(const unsigned int& NewWidth, const unsigned int& NewHeight)

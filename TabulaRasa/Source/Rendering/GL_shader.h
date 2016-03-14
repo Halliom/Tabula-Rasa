@@ -89,9 +89,9 @@ public:
 
 	bool m_bIsSSAOShader;
 
-private:
-
 	GLint Program;
+
+private:
 
 	GLint ProjectionMatrixLocation;
 
