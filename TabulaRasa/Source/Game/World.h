@@ -25,6 +25,12 @@ public:
 
 	void RemoveBlock(const int& X, const int& Y, const int& Z);
 
+	Voxel* GetMultiblock(const int& X, const int& Y, const int& Z);
+
+	void AddMultiblock(const int& X, const int& Y, const int& Z, const unsigned int& BlockID);
+
+	void RemoveMultiblock(const int& X, const int& Y, const int& Z);
+
 	Chunk* LoadChunk(const int& ChunkX, const int& ChunkY, const int& ChunkZ);
 
 	Player* CurrentPlayer;

@@ -296,7 +296,7 @@ class Voxel
 {
 public:
 
-	Voxel() : Octree(NULL), SidesToRender(63)
+	Voxel() : SidesToRender(63), Parent(NULL)
 	{
 	}
 
@@ -310,11 +310,5 @@ public:
 
 	unsigned int BlockID;
 
-	Octree<Voxel>* Octree;
-};
-
-struct VoxelAddData
-{
-	glm::uvec3 Position;
-	Voxel* Value;
+	Voxel* Parent;
 };

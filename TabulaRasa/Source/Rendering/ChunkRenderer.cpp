@@ -82,7 +82,7 @@ int GetVoxelSide(Chunk* Voxels, const int& X, const int& Y, const int& Z, const 
 	if (Node && ((Node->SidesToRender & Side) == Side))
 	{
 		BlockInfo Block = BlockManager::LoadedBlocks[Node->BlockID];
-		return Block.RenderType == TYPE_SOLID ? Block.Textures[SideToInt(Side)] : -1;
+		return Block.RenderType == TYPE_SOLID ? Block.RenderData.Textures[SideToInt(Side)] : -1;
 	}
 	return -1;
 }

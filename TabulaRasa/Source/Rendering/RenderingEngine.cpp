@@ -98,12 +98,16 @@ void RenderingEngine::SetupGeometryPass()
 	// Do the same as above for the depth texture
 	glBindTexture(GL_TEXTURE_2D, m_GeometryDepthTexture);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32F, m_ScreenWidth, m_ScreenHeight, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, m_GeometryDepthTexture, 0);
 
 	// Specify which buffers we want to draw to
 	GLenum DrawBuffers[3] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
 
-	glDrawBuffers(GBUFFER_LAYER_GEOMETRY_NUM, DrawBuffers);
+	glDrawBuffers(3, DrawBuffers);
 
 	// Make sure no one else modifies this frame buffer (kinda like VAOs)
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);

@@ -12,12 +12,13 @@ out vec4 frag_color;
 
 void main(void)
 {
-	vec2 texCoord = texture2D(textureSampler2, frag_texCoord).xy;
+	/*vec2 texCoord = texture2D(textureSampler2, frag_texCoord).xy;
 	vec4 textureColor = vec4(0.0, 0.0, 0.0, 1.0);
 	if (texCoord != vec2(0.0, 0.0))
 	{
 		vec3 ssao = vec3(texture2D(textureSampler3, frag_texCoord).r);
 		vec4 ambientLighting = vec4(ssao, 1.0);
 		frag_color = texture2D(textureSampler4, texCoord) * ambientLighting;
-	}	
+	}*/
+	frag_color = vec4(vec3(texture2D(textureSampler3, frag_texCoord).r), 1.0);
 }

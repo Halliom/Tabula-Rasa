@@ -192,6 +192,52 @@ void World::RemoveBlock(const int & X, const int & Y, const int & Z)
 	}
 }
 
+Voxel* World::GetMultiblock(const int& X, const int& Y, const int& Z)
+{
+	int ChunkX = X / (int)Octree<Voxel>::SIZE;
+	int ChunkY = Y / (int)Octree<Voxel>::SIZE;
+	int ChunkZ = Z / (int)Octree<Voxel>::SIZE;
+
+	int HalfChunkRadius = CHUNK_LOADING_RADIUS / 2;
+	if ((ChunkX >= ChunkLoadingCenterX - HalfChunkRadius && ChunkX < ChunkLoadingCenterX + HalfChunkRadius) &&
+		(ChunkY >= ChunkLoadingCenterY - HalfChunkRadius && ChunkY < ChunkLoadingCenterY + HalfChunkRadius) &&
+		(ChunkZ >= ChunkLoadingCenterZ - HalfChunkRadius && ChunkZ < ChunkLoadingCenterZ + HalfChunkRadius))
+	{
+		// Do the inverse of what we do when adding/creating chunks
+		int RelativeX = ChunkX - ChunkLoadingCenterX + HalfChunkRadius;
+		int RelativeY = ChunkY - ChunkLoadingCenterY + HalfChunkRadius;
+		int RelativeZ = ChunkZ - ChunkLoadingCenterZ + HalfChunkRadius;
+
+		// This gets the local coordinate in the chunks local coordinate 
+		// system, which ranges from 0 to 31
+		int LocalX = (X % Octree<Voxel>::SIZE + Octree<Voxel>::SIZE) % Octree<Voxel>::SIZE;
+		int LocalY = (Y % Octree<Voxel>::SIZE + Octree<Voxel>::SIZE) % Octree<Voxel>::SIZE;
+		int LocalZ = (Z % Octree<Voxel>::SIZE + Octree<Voxel>::SIZE) % Octree<Voxel>::SIZE;
+
+		int Index = RelativeX + CHUNK_LOADING_RADIUS * (RelativeY + CHUNK_LOADING_RADIUS * RelativeZ);
+		Chunk* QueriedChunk = m_LoadedChunks.GetNodeData(glm::uvec3(RelativeX, RelativeY, RelativeZ));
+
+		Voxel* QueriedVoxel = QueriedChunk->GetVoxel(LocalX, LocalY, LocalZ);
+		// If we got the child node, set the block operated upon to be the parent (master)
+		if (QueriedVoxel->Parent != NULL)
+		{
+			QueriedVoxel = QueriedVoxel->Parent;
+		}
+		// TODO: Shuold we check whether this actually is a multiblock or not
+		// and if it's not return NULL?
+		return QueriedVoxel;
+	}
+	return NULL;
+}
+
+void World::AddMultiblock(const int& X, const int& Y, const int& Z, const unsigned int& BlockID)
+{
+}
+
+void World::RemoveMultiblock(const int& X, const int& Y, const int& Z)
+{
+}
+
 Chunk* World::LoadChunk(const int& ChunkX, const int& ChunkY, const int& ChunkZ)
 {
 	Chunk* Result = new Chunk();
