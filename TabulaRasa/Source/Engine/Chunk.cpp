@@ -2,14 +2,17 @@
 
 #include "../Game/World.h"
 
-void Chunk::SetVoxel(unsigned int X, unsigned int Y, unsigned int Z, Voxel* NewVoxel, World* WorldObject)
+void Chunk::SetVoxel(unsigned int X, unsigned int Y, unsigned int Z, Voxel *NewVoxel, World *WorldObject)
 {
 	m_pVoxels[X][Y][Z] = *NewVoxel;
+	NewVoxel->LocalPosX = X;
+	NewVoxel->LocalPosY = Y;
+	NewVoxel->LocalPosZ = Z;
 
 	NewVoxel->OnNodeUpdatedAdjacent(
-		(uint8_t)X,
-		(uint8_t)Y,
-		(uint8_t)Z,
+		(uint8_t) X,
+		(uint8_t) Y,
+		(uint8_t) Z,
 		WorldObject->GetBlock(X + 1, Y, Z),
 		WorldObject->GetBlock(X - 1, Y, Z),
 		WorldObject->GetBlock(X, Y + 1, Z),

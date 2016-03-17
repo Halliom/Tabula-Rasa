@@ -28,11 +28,14 @@ message(STATUS ${SOURCE_FILES})
 
 set(GLEW32 "${CMAKE_SOURCE_DIR}/Lib/glew32.lib")
 set(GLEW32S "${CMAKE_SOURCE_DIR}/Lib/glew32s.lib")
+
 set(SDL2 "${CMAKE_SOURCE_DIR}/Lib/SDL2.lib")
 set(SDL2MAIN "${CMAKE_SOURCE_DIR}/Lib/SDL2main.lib")
 set(SDL2TEST "${CMAKE_SOURCE_DIR}/Lib/SDL2test.lib")
 
+set(ASSIMP "${CMAKE_SOURCE_DIR}/Lib/assimp.lib")
+
 add_executable(TabulaRasa WIN32 ${SOURCE_FILES})
-target_link_libraries(TabulaRasa ${OPENGL_LIBRARIES} ${GLEW32} ${GLEW32S} ${SDL2} ${SDL2MAIN} ${SDL2TEST} ${PYTHON_LIBRARIES})
+target_link_libraries(TabulaRasa ${OPENGL_LIBRARIES} ${GLEW32} ${GLEW32S} ${SDL2} ${SDL2MAIN} ${SDL2TEST} ${PYTHON_LIBRARIES} ${ASSIMP})
 
 install(TARGETS TabulaRasa DESTINATION ${PROJECT_SOURCE_DIR}/Game/)

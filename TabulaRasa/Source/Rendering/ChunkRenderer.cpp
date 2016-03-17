@@ -25,7 +25,7 @@ void ChunkRenderer::SetupChunkRenderer()
 	glBindTexture(GL_TEXTURE_2D, g_TextureAtlas);
 
 	unsigned int Width, Height;
-	std::string FileName = PlatformFileSystem::GetAssetDirectory(DT_TEXTURES)->append(std::string("textures.png"));
+	std::string FileName = PlatformFileSystem::GetAssetDirectory(DT_TEXTURES).append(std::string("textures.png"));
 	std::vector<unsigned char>*	FontImage = PlatformFileSystem::LoadImageFromFile(FileName, Width, Height);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, Width, Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, &(FontImage->at(0)));
 

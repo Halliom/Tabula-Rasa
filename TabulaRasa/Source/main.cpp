@@ -57,8 +57,10 @@ int main(int argc, char* argv[])
 	}
 
 	// Loads the font library
-	std::string* Directory = PlatformFileSystem::GetAssetDirectory(DT_FONTS);
-	LoadFontLibrary(Directory);
+	std::string Directory = PlatformFileSystem::GetAssetDirectory(DT_FONTS);
+	LoadFontLibrary(&Directory);
+
+	LoadedModel *ChestModel = PlatformFileSystem::LoadModel("Chest_Model.obj");
 
 	// Loads the world and initializes subobjects
 	g_World = new World();

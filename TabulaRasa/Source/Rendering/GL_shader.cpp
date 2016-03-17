@@ -53,6 +53,7 @@ void GLShaderProgram::GenerateUniformBindings()
 	ProjectionViewMatrixLocation =		GetUniform("g_ProjectionViewMatrix");
 	ModelMatrixLocation =				GetUniform("g_ModelMatrix");
 	PositionOffsetLocation =			GetUniform("g_PositionOffset");
+	ScreenDimensionLocation =			GetUniform("ScreenDimension");
 
 	TextureSamplers[0] = GetUniform("textureSampler0");
 	TextureSamplers[1] = GetUniform("textureSampler1");

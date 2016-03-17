@@ -10,6 +10,8 @@
 
 #define CHUNK_LOADING_RADIUS 4
 
+#define TOCHUNK_COORD(X, Y, Z) X / (int) Octree<Voxel>::SIZE, Y / (int) Octree<Voxel>::SIZE, Z / (int) Octree<Voxel>::SIZE
+
 World::World()
 {
 	CurrentPlayer = NULL;
@@ -78,13 +80,15 @@ void World::Initialize()
 	AddBlock(2, 0, 2, BLOCK_ID_GRASS);
 
 	AddBlock(1, 1, 1, BLOCK_ID_GRASS);
+
+	AddMultiblock(2, 2, 2, BLOCK_ID_CHEST);
 #endif
 }
 
 void World::Update(float DeltaTime)
 {
 	CurrentPlayer->Update(DeltaTime);
-	
+
 	// TODO: Update all the chunks
 	for (auto& It : m_LoadedChunks.Nodes)
 	{
@@ -101,12 +105,8 @@ void World::Update(float DeltaTime)
 	}
 }
 
-Voxel* World::GetBlock(const int& X, const int& Y, const int& Z)
+Chunk * World::GetLoadedChunk(const int & ChunkX, const int & ChunkY, const int & ChunkZ)
 {
-	int ChunkX = X / (int) Octree<Voxel>::SIZE;
-	int ChunkY = Y / (int) Octree<Voxel>::SIZE;
-	int ChunkZ = Z / (int) Octree<Voxel>::SIZE;
-
 	int HalfChunkRadius = CHUNK_LOADING_RADIUS / 2;
 	if ((ChunkX >= ChunkLoadingCenterX - HalfChunkRadius && ChunkX < ChunkLoadingCenterX + HalfChunkRadius) &&
 		(ChunkY >= ChunkLoadingCenterY - HalfChunkRadius && ChunkY < ChunkLoadingCenterY + HalfChunkRadius) &&
@@ -117,105 +117,64 @@ Voxel* World::GetBlock(const int& X, const int& Y, const int& Z)
 		int RelativeY = ChunkY - ChunkLoadingCenterY + HalfChunkRadius;
 		int RelativeZ = ChunkZ - ChunkLoadingCenterZ + HalfChunkRadius;
 
-		// This gets the local coordinate in the chunks local coordinate 
-		// system, which ranges from 0 to 31
-		int LocalX = (X % Octree<Voxel>::SIZE + Octree<Voxel>::SIZE) % Octree<Voxel>::SIZE;
-		int LocalY = (Y % Octree<Voxel>::SIZE + Octree<Voxel>::SIZE) % Octree<Voxel>::SIZE;
-		int LocalZ = (Z % Octree<Voxel>::SIZE + Octree<Voxel>::SIZE) % Octree<Voxel>::SIZE;
-
-		int Index = RelativeX + CHUNK_LOADING_RADIUS * (RelativeY + CHUNK_LOADING_RADIUS * RelativeZ);
-		Chunk* QueriedChunk = m_LoadedChunks.GetNodeData(glm::uvec3(RelativeX, RelativeY, RelativeZ));
-		
-		return QueriedChunk->GetVoxel(LocalX, LocalY, LocalZ);
+		return  m_LoadedChunks.GetNodeData(glm::uvec3(RelativeX, RelativeY, RelativeZ));
 	}
 	return NULL;
 }
 
+Voxel* World::GetBlock(const int& X, const int& Y, const int& Z)
+{
+	Chunk* QueriedChunk = GetLoadedChunk(X / (int) Octree<Voxel>::SIZE, Y / (int) Octree<Voxel>::SIZE, Z / (int) Octree<Voxel>::SIZE);
+	return QueriedChunk != NULL ? QueriedChunk->GetVoxel(X % Octree<Voxel>::SIZE, Y % Octree<Voxel>::SIZE, Z % Octree<Voxel>::SIZE) : NULL;;
+}
+
 void World::AddBlock(const int& X, const int& Y, const int& Z, const unsigned int& BlockID)
 {
-	int ChunkX = X / (int) Octree<Voxel>::SIZE;
-	int ChunkY = Y / (int) Octree<Voxel>::SIZE;
-	int ChunkZ = Z / (int) Octree<Voxel>::SIZE;
-
-	int HalfChunkRadius = CHUNK_LOADING_RADIUS / 2;
-	if ((ChunkX >= ChunkLoadingCenterX - HalfChunkRadius && ChunkX < ChunkLoadingCenterX + HalfChunkRadius) &&
-		(ChunkY >= ChunkLoadingCenterY - HalfChunkRadius && ChunkY < ChunkLoadingCenterY + HalfChunkRadius) &&
-		(ChunkZ >= ChunkLoadingCenterZ - HalfChunkRadius && ChunkZ < ChunkLoadingCenterZ + HalfChunkRadius))
+	Chunk* ChunkToAddTo = GetLoadedChunk(TOCHUNK_COORD(X, Y, Z));
+	if (ChunkToAddTo)
 	{
-		// Do the inverse of what we do when adding/creating chunks
-		int RelativeX = ChunkX - ChunkLoadingCenterX + HalfChunkRadius;
-		int RelativeY = ChunkY - ChunkLoadingCenterY + HalfChunkRadius;
-		int RelativeZ = ChunkZ - ChunkLoadingCenterZ + HalfChunkRadius;
-
-		// This gets the local coordinate in the chunks local coordinate 
+		// This gets the local coordinate in the chunks local coordinate
 		// system, which ranges from 0 to 31
-		int LocalX = (X % Octree<Voxel>::SIZE + Octree<Voxel>::SIZE) % Octree<Voxel>::SIZE;
-		int LocalY = (Y % Octree<Voxel>::SIZE + Octree<Voxel>::SIZE) % Octree<Voxel>::SIZE;
-		int LocalZ = (Z % Octree<Voxel>::SIZE + Octree<Voxel>::SIZE) % Octree<Voxel>::SIZE;
+		int LocalY = Y % Octree<Voxel>::SIZE;
+		int LocalX = X % Octree<Voxel>::SIZE;
+		int LocalZ = Z % Octree<Voxel>::SIZE;
 
-		int Index = RelativeX + CHUNK_LOADING_RADIUS * (RelativeY + CHUNK_LOADING_RADIUS * RelativeZ);
-		Chunk* ChunkToAddTo = m_LoadedChunks.GetNodeData(glm::uvec3(RelativeX, RelativeY, RelativeZ));
+		Voxel NewVoxel;
+		NewVoxel.BlockID = BlockID;
 
-		Voxel* NewVoxel = new Voxel();
-		NewVoxel->BlockID = BlockID;
-
-		ChunkToAddTo->SetVoxel(LocalX, LocalY, LocalZ, NewVoxel, this);
+		ChunkToAddTo->SetVoxel(LocalX, LocalY, LocalZ, &NewVoxel, this);
 	}
 }
 
 void World::RemoveBlock(const int & X, const int & Y, const int & Z)
 {
-	int ChunkX = X / (int) Octree<Voxel>::SIZE;
-	int ChunkY = Y / (int) Octree<Voxel>::SIZE;
-	int ChunkZ = Z / (int) Octree<Voxel>::SIZE;
-
-	int HalfChunkRadius = CHUNK_LOADING_RADIUS / 2;
-	if ((ChunkX >= ChunkLoadingCenterX - HalfChunkRadius && ChunkX < ChunkLoadingCenterX + HalfChunkRadius) &&
-		(ChunkY >= ChunkLoadingCenterY - HalfChunkRadius && ChunkY < ChunkLoadingCenterY + HalfChunkRadius) &&
-		(ChunkZ >= ChunkLoadingCenterZ - HalfChunkRadius && ChunkZ < ChunkLoadingCenterZ + HalfChunkRadius))
+	Chunk* QueriedChunk = GetLoadedChunk(TOCHUNK_COORD(X, Y, Z));
+	if (QueriedChunk)
 	{
-		// Do the inverse of what we do when adding/creating chunks
-		int RelativeX = ChunkX - ChunkLoadingCenterX + HalfChunkRadius;
-		int RelativeY = ChunkY - ChunkLoadingCenterY + HalfChunkRadius;
-		int RelativeZ = ChunkZ - ChunkLoadingCenterZ + HalfChunkRadius;
-
-		// This gets the local coordinate in the chunks local coordinate 
+		// This gets the local coordinate in the chunks local coordinate
 		// system, which ranges from 0 to 31
-		int LocalX = (X % Octree<Voxel>::SIZE + Octree<Voxel>::SIZE) % Octree<Voxel>::SIZE;
-		int LocalY = (Y % Octree<Voxel>::SIZE + Octree<Voxel>::SIZE) % Octree<Voxel>::SIZE;
-		int LocalZ = (Z % Octree<Voxel>::SIZE + Octree<Voxel>::SIZE) % Octree<Voxel>::SIZE;
-
-		int Index = RelativeX + CHUNK_LOADING_RADIUS * (RelativeY + CHUNK_LOADING_RADIUS * RelativeZ);
-		Chunk* QueriedChunk = m_LoadedChunks.GetNodeData(glm::uvec3(RelativeX, RelativeY, RelativeZ));
+		int LocalX = X % Octree<Voxel>::SIZE;
+		int LocalY = Y % Octree<Voxel>::SIZE;
+		int LocalZ = Z % Octree<Voxel>::SIZE;
 
 		QueriedChunk->SetVoxel(LocalX, LocalY, LocalZ, NULL, this);
 	}
 }
 
-Voxel* World::GetMultiblock(const int& X, const int& Y, const int& Z)
+Voxel* World::GetMultiblock(const int &X, const int &Y, const int &Z)
 {
-	int ChunkX = X / (int)Octree<Voxel>::SIZE;
-	int ChunkY = Y / (int)Octree<Voxel>::SIZE;
-	int ChunkZ = Z / (int)Octree<Voxel>::SIZE;
+	int ChunkX = X / (int) Octree<Voxel>::SIZE;
+	int ChunkY = Y / (int) Octree<Voxel>::SIZE;
+	int ChunkZ = Z / (int) Octree<Voxel>::SIZE;
 
-	int HalfChunkRadius = CHUNK_LOADING_RADIUS / 2;
-	if ((ChunkX >= ChunkLoadingCenterX - HalfChunkRadius && ChunkX < ChunkLoadingCenterX + HalfChunkRadius) &&
-		(ChunkY >= ChunkLoadingCenterY - HalfChunkRadius && ChunkY < ChunkLoadingCenterY + HalfChunkRadius) &&
-		(ChunkZ >= ChunkLoadingCenterZ - HalfChunkRadius && ChunkZ < ChunkLoadingCenterZ + HalfChunkRadius))
+	Chunk* QueriedChunk = GetLoadedChunk(ChunkX, ChunkY, ChunkZ);
+	if (QueriedChunk)
 	{
-		// Do the inverse of what we do when adding/creating chunks
-		int RelativeX = ChunkX - ChunkLoadingCenterX + HalfChunkRadius;
-		int RelativeY = ChunkY - ChunkLoadingCenterY + HalfChunkRadius;
-		int RelativeZ = ChunkZ - ChunkLoadingCenterZ + HalfChunkRadius;
-
-		// This gets the local coordinate in the chunks local coordinate 
+		// This gets the local coordinate in the chunks local coordinate
 		// system, which ranges from 0 to 31
-		int LocalX = (X % Octree<Voxel>::SIZE + Octree<Voxel>::SIZE) % Octree<Voxel>::SIZE;
-		int LocalY = (Y % Octree<Voxel>::SIZE + Octree<Voxel>::SIZE) % Octree<Voxel>::SIZE;
-		int LocalZ = (Z % Octree<Voxel>::SIZE + Octree<Voxel>::SIZE) % Octree<Voxel>::SIZE;
-
-		int Index = RelativeX + CHUNK_LOADING_RADIUS * (RelativeY + CHUNK_LOADING_RADIUS * RelativeZ);
-		Chunk* QueriedChunk = m_LoadedChunks.GetNodeData(glm::uvec3(RelativeX, RelativeY, RelativeZ));
+		int LocalX = X % Octree<Voxel>::SIZE;
+		int LocalY = Y % Octree<Voxel>::SIZE;
+		int LocalZ = Z % Octree<Voxel>::SIZE;
 
 		Voxel* QueriedVoxel = QueriedChunk->GetVoxel(LocalX, LocalY, LocalZ);
 		// If we got the child node, set the block operated upon to be the parent (master)
@@ -230,12 +189,145 @@ Voxel* World::GetMultiblock(const int& X, const int& Y, const int& Z)
 	return NULL;
 }
 
-void World::AddMultiblock(const int& X, const int& Y, const int& Z, const unsigned int& BlockID)
+void World::AddMultiblock(const int &X, const int &Y, const int &Z, const unsigned int &BlockID)
 {
+	BlockInfo BlockIDInfo = BlockManager::LoadedBlocks[BlockID];
+	unsigned int MultiblockWidth = BlockIDInfo.RenderData.MultiblockRenderData.Width;
+	unsigned int MultiblockHeight = BlockIDInfo.RenderData.MultiblockRenderData.Height;
+	unsigned int MultiblockDepth = BlockIDInfo.RenderData.MultiblockRenderData.Depth;
+
+	for (unsigned int XCoord = 0; XCoord < MultiblockWidth; ++XCoord)
+	{
+		for (unsigned int YCoord = 0; YCoord < MultiblockHeight; ++YCoord)
+		{
+			for (unsigned int ZCoord = 0; ZCoord < MultiblockDepth; ++ZCoord)
+			{
+				Voxel *CurrentBlock = GetBlock(X + XCoord, Y + YCoord, Z + ZCoord);
+				if (CurrentBlock)
+				{
+					// We can't place a multiblock here since the space is
+					// already occupied
+					return;
+				}
+			}
+		}
+	}
+
+	int ChunkX = X / (int) Octree<Voxel>::SIZE;
+	int ChunkY = Y / (int) Octree<Voxel>::SIZE;
+	int ChunkZ = Z / (int) Octree<Voxel>::SIZE;
+
+	Chunk *QueriedChunk = GetLoadedChunk(ChunkX, ChunkY, ChunkZ);
+	if (QueriedChunk)
+	{
+		// This gets the local coordinate in the chunks local coordinate
+		// system, which ranges from 0 to 31
+		int LocalX = X % Octree<Voxel>::SIZE;
+		int LocalY = Y % Octree<Voxel>::SIZE;
+		int LocalZ = Z % Octree<Voxel>::SIZE;
+
+		Voxel *Parent = NULL;
+		for (unsigned int XCoord = 0; XCoord < MultiblockWidth; ++XCoord)
+		{
+			for (unsigned int YCoord = 0; YCoord < MultiblockHeight; ++YCoord)
+			{
+				for (unsigned int ZCoord = 0; ZCoord < MultiblockDepth; ++ZCoord)
+				{
+					if (LocalX >= 16)
+					{
+						++ChunkX;
+						QueriedChunk =  GetLoadedChunk(ChunkX, ChunkY, ChunkZ);
+						LocalX %= 16;
+					}
+					if (LocalY >= 16)
+					{
+						++ChunkY;
+						QueriedChunk =  GetLoadedChunk(ChunkX, ChunkY, ChunkZ);
+						LocalY %= 16;
+					}
+					if (LocalZ >= 16)
+					{
+						++ChunkZ;
+						QueriedChunk =  GetLoadedChunk(ChunkX, ChunkY, ChunkZ);
+						LocalZ %= 16;
+					}
+
+					Voxel NewVoxel = Voxel();
+					NewVoxel.BlockID = BlockID;
+					NewVoxel.Parent = Parent;
+
+					if (XCoord == 0 && YCoord == 0 && ZCoord == 0)
+					{
+						Parent = &NewVoxel;
+					}
+					QueriedChunk->SetVoxel(LocalX, LocalY, LocalZ, &NewVoxel, this);
+
+					++LocalZ;
+				}
+				++LocalY;
+			}
+			++LocalZ;
+		}
+	}
 }
 
 void World::RemoveMultiblock(const int& X, const int& Y, const int& Z)
 {
+	Voxel *Parent = GetMultiblock(X, Y, Z);
+
+	if (Parent)
+	{
+		int ChunkX = X / (int) Octree<Voxel>::SIZE;
+		int ChunkY = Y / (int) Octree<Voxel>::SIZE;
+		int ChunkZ = Z / (int) Octree<Voxel>::SIZE;
+
+		Chunk *QueriedChunk = GetLoadedChunk(ChunkX, ChunkY, ChunkZ);
+		if (QueriedChunk)
+		{
+			int LocalX = Parent->LocalPosX;
+			int LocalY = Parent->LocalPosY;
+			int LocalZ = Parent->LocalPosZ;
+
+			BlockInfo BlockIDInfo = BlockManager::LoadedBlocks[Parent->BlockID];
+			unsigned int MultiblockWidth = BlockIDInfo.RenderData.MultiblockRenderData.Width;
+			unsigned int MultiblockHeight = BlockIDInfo.RenderData.MultiblockRenderData.Height;
+			unsigned int MultiblockDepth = BlockIDInfo.RenderData.MultiblockRenderData.Depth;
+
+			for (unsigned int XCoord = 0; XCoord < MultiblockWidth; ++XCoord)
+			{
+				for (unsigned int YCoord = 0; YCoord < MultiblockHeight; ++YCoord)
+				{
+					for (unsigned int ZCoord = 0; ZCoord < MultiblockDepth; ++ZCoord)
+					{
+						++LocalZ;
+
+						if (LocalX >= 16)
+						{
+							++ChunkX;
+							QueriedChunk =  GetLoadedChunk(ChunkX, ChunkY, ChunkZ);
+							LocalX %= 16;
+						}
+						if (LocalY >= 16)
+						{
+							++ChunkY;
+							QueriedChunk =  GetLoadedChunk(ChunkX, ChunkY, ChunkZ);
+							LocalY %= 16;
+						}
+						if (LocalZ >= 16)
+						{
+							++ChunkZ;
+							QueriedChunk =  GetLoadedChunk(ChunkX, ChunkY, ChunkZ);
+							LocalZ %= 16;
+						}
+
+						QueriedChunk->SetVoxel(LocalX, LocalY, LocalZ, NULL, this);
+					}
+					++LocalY;
+				}
+				++LocalZ;
+			}
+		}
+	}
 }
 
 Chunk* World::LoadChunk(const int& ChunkX, const int& ChunkY, const int& ChunkZ)
@@ -250,7 +342,7 @@ Chunk* World::LoadChunk(const int& ChunkX, const int& ChunkY, const int& ChunkZ)
 
 	// Create render data for the chunk
 	Result->m_pChunkRenderData = ChunkRenderer::CreateRenderData(
-		glm::vec3(ChunkX * Octree<Voxel>::SIZE, ChunkX * Octree<Voxel>::SIZE, ChunkX * Octree<Voxel>::SIZE), 
+		glm::vec3(ChunkX * Octree<Voxel>::SIZE, ChunkX * Octree<Voxel>::SIZE, ChunkX * Octree<Voxel>::SIZE),
 		Result);
 
 	return Result;

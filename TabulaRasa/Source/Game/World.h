@@ -19,6 +19,8 @@ public:
 
 	void Update(float DeltaTime);
 
+	Chunk* GetLoadedChunk(const int &ChunkX, const int &ChunkY, const int &ChunkZ);
+
 	Voxel* GetBlock(const int& X, const int& Y, const int& Z);
 
 	void AddBlock(const int& X, const int& Y, const int& Z, const unsigned int& BlockID);

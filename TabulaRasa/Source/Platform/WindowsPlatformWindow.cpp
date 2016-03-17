@@ -124,8 +124,6 @@ bool PlatformWindow::PrepareForRender()
 					case SDL_WINDOWEVENT_SIZE_CHANGED:
 					case SDL_WINDOWEVENT_RESIZED:
 					{
-						glViewport(0, 0, Event.window.data1, Event.window.data2);
-
 						if (Camera::ActiveCamera)
 						{
 							Camera::ActiveCamera->WindowWidth = Event.window.data1;
@@ -147,26 +145,44 @@ bool PlatformWindow::PrepareForRender()
 			{
 				if (Event.key.keysym.scancode >= 512)
 					continue;
+				switch (Event.key.keysym.scancode)
+				{
 #ifdef _DEBUG
-				if (Event.key.keysym.scancode == SDL_SCANCODE_ESCAPE)
-				{
-					if (g_Console->m_bIsActive)
+					case SDL_SCANCODE_ESCAPE:
 					{
-						g_Console->m_bIsActive = false;
-						g_Console->OnUpdateInputMode();
+						if (g_Console->m_bIsActive)
+						{
+							g_Console->m_bIsActive = false;
+							g_Console->OnUpdateInputMode();
+						}
+						else
+						{
+							return false;
+						}
+						break;
 					}
-					else
+					case SDL_SCANCODE_F11:
 					{
-						return false;
+						WindowParams.Fullscreen = !WindowParams.Fullscreen;
+						if (WindowParams.Fullscreen)
+							SDL_SetWindowFullscreen(MainWindow, SDL_WINDOW_FULLSCREEN);
+						else
+							SDL_SetWindowFullscreen(MainWindow, 0);
+						break;
 					}
-				}
+					case SDL_SCANCODE_F10:
+					{
+						SDL_MaximizeWindow(MainWindow);
+						break;
+					}
 #endif
-				// TODO: Remove in build perhaps?
-				if (Event.key.keysym.scancode == SDL_SCANCODE_PERIOD)
-				{
-					g_Console->m_bIsActive = !g_Console->m_bIsActive;
-					g_Console->OnUpdateInputMode();
-					continue;
+					// TODO: Remove in build perhaps?
+					case SDL_SCANCODE_PERIOD:
+					{
+						g_Console->m_bIsActive = !g_Console->m_bIsActive;
+						g_Console->OnUpdateInputMode();
+						continue;
+					}
 				}
 
 				if (g_Console->m_bIsActive)

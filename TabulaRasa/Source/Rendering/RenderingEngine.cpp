@@ -178,7 +178,7 @@ void RenderingEngine::SetupSSAOPass()
 		m_pSSAOKernel[(i * 3) + 2]	= Sample.z;
 	}
 
-	/** 
+	/**
 	 * Setup the blur pass
 	 */
 
@@ -259,6 +259,7 @@ void RenderingEngine::SSAOPass()
 	m_pSSAOShader->Bind();
 	m_pSSAOShader->SetDefaultSamplers();
 	m_pSSAOShader->SetProjectionMatrix(*Camera::ActiveCamera->GetProjectionMatrix());
+	m_pSSAOShader->SetScreenDimension(glm::vec2(m_ScreenWidth, m_ScreenHeight));
 
 	// Bind the textures from the gemoetry pass
 	glActiveTexture(GL_TEXTURE0);
@@ -272,7 +273,7 @@ void RenderingEngine::SSAOPass()
 	// TODO: Fix this because this is too inefficient
 	for (GLuint i = 0; i < 64; ++i)
 		glUniform3fv(glGetUniformLocation(m_pSSAOShader->Program, ("g_Samples[" + std::to_string(i) + "]").c_str()), 1, &m_pSSAOKernel[i * 3]);
-	
+
 	// Render a screen quad
 	glBindVertexArray(m_ScreenQuadVAO);
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, 0);
@@ -344,4 +345,5 @@ void RenderingEngine::ScreenDimensionsChanged(const unsigned int& NewWidth, cons
 {
 	m_ScreenWidth = NewWidth;
 	m_ScreenHeight = NewHeight;
+	glViewport(0, 0, NewWidth, NewHeight);
 }

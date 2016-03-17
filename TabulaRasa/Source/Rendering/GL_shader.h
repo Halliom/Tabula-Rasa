@@ -87,6 +87,11 @@ public:
 		glUniform3fv(SSAOSamplesLocation, 64, Samples);
 	}
 
+	__forceinline void SetScreenDimension(const glm::vec2& ScreenDimension)
+	{
+		glUniform2fv(ScreenDimensionLocation, 1, glm::value_ptr(ScreenDimension));
+	}
+
 	bool m_bIsSSAOShader;
 
 	GLint Program;
@@ -106,6 +111,8 @@ private:
 	GLint TextureSamplers[6];
 
 	GLint SSAOSamplesLocation;
+
+	GLint ScreenDimensionLocation;
 };
 
 #endif

@@ -17,7 +17,7 @@ enum BlockType
 
 struct BlockInfo
 {
-	BlockInfo()	: 
+	BlockInfo()	:
 		BlockID(0), RenderType(TYPE_SOLID)
 	{
 	}

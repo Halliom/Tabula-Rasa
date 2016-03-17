@@ -68,8 +68,8 @@ public:
 
 	friend class World;
 
-	Octree() 
-	{ 
+	Octree()
+	{
 		// Insert the root node
 		m_pRootNode = new OctreeNode<T>();
 		m_pRootNode->m_Location = 1;
@@ -302,13 +302,17 @@ public:
 
 	static constexpr float CUBE_SIZE = 1.0f;
 
-	void OnNodeUpdatedAdjacent(const uint8_t& X, const uint8_t& Y, const uint8_t& Z, Voxel* NodeEast, Voxel* NodeWest, Voxel* NodeTop, Voxel* NodeBottom, Voxel* NodeNorth, Voxel* NodeSouth, const bool& Placed);
+	void OnNodeUpdatedAdjacent(const uint8_t &X, const uint8_t &Y, const uint8_t &Z, Voxel *NodeEast, Voxel *NodeWest, Voxel *NodeTop, Voxel *NodeBottom, Voxel *NodeNorth, Voxel *NodeSouth, const bool &Placed);
 
-	void OnNodeUpdatedOnSide(const uint8_t& X, const uint8_t& Y, const uint8_t& Z, const VoxelSide& Side, const bool& Placed);
+	void OnNodeUpdatedOnSide(const uint8_t &X, const uint8_t &Y, const uint8_t &Z, const VoxelSide &Side, const bool &Placed);
 
 	uint8_t SidesToRender;
 
+	uint8_t LocalPosX;
+	uint8_t LocalPosY;
+	uint8_t LocalPosZ;
+
 	unsigned int BlockID;
 
-	Voxel* Parent;
+	Voxel *Parent;
 };

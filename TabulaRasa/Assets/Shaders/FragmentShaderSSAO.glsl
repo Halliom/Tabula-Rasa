@@ -12,7 +12,8 @@ in vec2 frag_texCoord;
 uniform mat4 g_ProjectionMatrix;
 uniform vec3 g_Samples[64];
 
-const vec2 noiseScale = vec2(1280.0 / 4.0, 720.0 / 4.0); // screen = 1280x720
+uniform vec2 ScreenDimension;
+//const vec2 noiseScale = vec2(1280.0 / 4.0, 720.0 / 4.0); // screen = 1280x720
 
 const float radius = 1.0;
 
@@ -21,7 +22,7 @@ void main()
 	// Get input for SSAO algorithm
     vec3 fragPos = texture(textureSampler0, frag_texCoord).xyz;
     vec3 normal = texture(textureSampler1, frag_texCoord).xyz;
-    vec3 randomVec = texture(textureSampler2, frag_texCoord * noiseScale).xyz;
+    vec3 randomVec = texture(textureSampler2, frag_texCoord * (ScreenDimension / 4.0)).xyz;
     // Create TBN change-of-basis matrix: from tangent-space to view-space
     vec3 tangent = normalize(randomVec - normal * dot(randomVec, normal));
     vec3 bitangent = cross(normal, tangent);
