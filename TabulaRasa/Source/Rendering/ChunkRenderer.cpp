@@ -5,6 +5,7 @@
 #include "../Engine/Block.h"
 #include "../Engine/Chunk.h"
 #include "../Platform/Platform.h"
+#include "../Rendering/RenderingEngine.h"
 
 #include "glm\gtc\matrix_transform.hpp"
 
@@ -15,11 +16,15 @@ GLShaderProgram* ChunkRenderer::g_ChunkRenderShader = NULL;
 
 GLuint ChunkRenderer::g_TextureAtlas;
 
+extern RenderingEngine *g_RenderingEngine;
+
 void ChunkRenderer::SetupChunkRenderer()
 {
 	g_ChunksToRender.Reserve(16);
 
 	g_ChunkRenderShader = GLShaderProgram::CreateVertexFragmentShaderFromFile(std::string("VertexShader.glsl"), std::string("FragmentShader.glsl"));
+
+	//g_MultiblockShader = GLShaderProgram::CreateVertexFragmentShaderFromFile(std::string("CustomBlockVertexShader.glsl"), std::string("CustomBlockFragmentShader.glsl"));
 
 	glGenTextures(1, &g_TextureAtlas);
 	glBindTexture(GL_TEXTURE_2D, g_TextureAtlas);
@@ -52,22 +57,35 @@ void ChunkRenderer::DestroyChunkRenderer()
 
 void ChunkRenderer::RenderAllChunks(Player* CurrentPlayer)
 {
-	g_ChunkRenderShader->Bind();
+	const static glm::mat4 Identity = glm::mat4(1.0f);
 
 	glm::mat4 Projection = *Camera::ActiveCamera->GetProjectionMatrix();
 	glm::mat4 View = *Camera::ActiveCamera->GetViewMatrix();
 
-	glBindTexture(GL_TEXTURE_2D, g_TextureAtlas);
+	g_ChunkRenderShader->Bind();
 	g_ChunkRenderShader->SetProjectionMatrix(Projection);
 	g_ChunkRenderShader->SetViewMatrix(View);
-
-	const glm::mat4 Identity = glm::mat4(1.0f);
 
 	for (int Index = 0; Index < g_ChunksToRender.GetNum(); ++Index)
 	{
 		if (!g_ChunksToRender[Index])
 			continue;
 
+		for (unsigned int MultiblockID = 0;
+		MultiblockID < g_ChunksToRender[Index]->NumMultiblocksToRender;
+			++MultiblockID)
+		{
+			MultiblockRenderData *Multiblock = &g_ChunksToRender[Index]->MultiblocksToRender[MultiblockID];
+			LoadedModel Model = g_RenderingEngine->CustomBlockRenderers[Multiblock->BlockID];
+
+			g_ChunkRenderShader->SetModelMatrix(glm::translate(
+				Identity,
+				glm::vec3(g_ChunksToRender[Index]->ChunkPosition)));
+			glBindVertexArray(Model.m_AssetVAO);
+			glDrawElements(GL_TRIANGLES, Model.m_NumVertices, GL_UNSIGNED_SHORT, 0);
+			glBindVertexArray(0);
+		}
+		
 		g_ChunkRenderShader->SetModelMatrix(glm::translate(Identity, g_ChunksToRender[Index]->ChunkPosition));
 
 		glBindVertexArray(g_ChunksToRender[Index]->VertexArrayObject);
@@ -76,13 +94,25 @@ void ChunkRenderer::RenderAllChunks(Player* CurrentPlayer)
 	glBindVertexArray(0);
 }
 
-int GetVoxelSide(Chunk* Voxels, const int& X, const int& Y, const int& Z, const VoxelSide& Side)
+int GetVoxelSide(Chunk *Voxels, DynamicArray<MultiblockRenderData> *AdditionalRenderData,  const int& X, const int& Y, const int& Z, const VoxelSide& Side)
 {
 	Voxel* Node = Voxels->GetVoxel(X, Y, Z);
 	if (Node && ((Node->SidesToRender & Side) == Side))
 	{
 		BlockInfo Block = BlockManager::LoadedBlocks[Node->BlockID];
-		return Block.RenderType == TYPE_SOLID ? Block.RenderData.Textures[SideToInt(Side)] : -1;
+		switch(Block.RenderType)
+		{
+			case TYPE_SOLID:
+			{
+				return Block.RenderData.Textures[SideToInt(Side)];
+			}
+			case TYPE_MULTIBLOCK:
+			{
+				AdditionalRenderData->Push({ X, Y, Z, Block.BlockID });
+				return -1;
+			}
+		}
+		//return Block.RenderType == TYPE_SOLID ? Block.RenderData.Textures[SideToInt(Side)] : -1;
 	}
 	return -1;
 }
@@ -98,6 +128,7 @@ static void GreedyMesh(Chunk* Voxels, ChunkRenderData* RenderData)
 {
 	DynamicArray<TexturedQuadVertex> Vertices;
 	DynamicArray<unsigned int> Indices;
+	DynamicArray<MultiblockRenderData> AdditionalRenderData;
 	bool Counter = false;
 
 	int ChunkSize = Octree<Voxel>::SIZE;
@@ -139,23 +170,23 @@ static void GreedyMesh(Chunk* Voxels, ChunkRenderData* RenderData)
 				{
 					for (x[u] = 0; x[u] < ChunkSize; n += 4)
 					{
-						int a0 = (0 <= x[d]				? GetVoxelSide(Voxels, x[0],		x[1],			x[2],			Side) : -1);
-						int b0 = (x[d] < ChunkSize - 1	? GetVoxelSide(Voxels, x[0] + q[0], x[1] + q[1],	x[2] + q[2],	Side) : -1);
+						int a0 = (0 <= x[d]				? GetVoxelSide(Voxels, &AdditionalRenderData, x[0],		x[1],			x[2],			Side) : -1);
+						int b0 = (x[d] < ChunkSize - 1	? GetVoxelSide(Voxels, &AdditionalRenderData, x[0] + q[0], x[1] + q[1],	x[2] + q[2],	Side) : -1);
 						mask[n] = (a0 != -1 && b0 != -1 && a0 == b0) ? -1 : (BackFace ? b0 : a0);
 						++x[u];
 
-						int a1 = (0 <= x[d]				? GetVoxelSide(Voxels, x[0],		x[1],			x[2],			Side) : -1);
-						int b1 = (x[d] < ChunkSize - 1	? GetVoxelSide(Voxels, x[0] + q[0], x[1] + q[1],	x[2] + q[2],	Side) : -1);
+						int a1 = (0 <= x[d]				? GetVoxelSide(Voxels, &AdditionalRenderData, x[0],		x[1],			x[2],			Side) : -1);
+						int b1 = (x[d] < ChunkSize - 1	? GetVoxelSide(Voxels, &AdditionalRenderData, x[0] + q[0], x[1] + q[1],	x[2] + q[2],	Side) : -1);
 						mask[n + 1] = (a1 != -1 && b1 != -1 && a1 == b1) ? -1 : (BackFace ? b1 : a1);
 						++x[u];
 
-						int a2 = (0 <= x[d]				? GetVoxelSide(Voxels, x[0],		x[1],			x[2],			Side) : -1);
-						int b2 = (x[d] < ChunkSize - 1	? GetVoxelSide(Voxels, x[0] + q[0], x[1] + q[1],	x[2] + q[2],	Side) : -1);
+						int a2 = (0 <= x[d]				? GetVoxelSide(Voxels, &AdditionalRenderData, x[0],		x[1],			x[2],			Side) : -1);
+						int b2 = (x[d] < ChunkSize - 1	? GetVoxelSide(Voxels, &AdditionalRenderData, x[0] + q[0], x[1] + q[1],	x[2] + q[2],	Side) : -1);
 						mask[n + 2] = (a2 != -1 && b2 != -1 && a2 == b2) ? -1 : (BackFace ? b2 : a2);
 						++x[u];
 
-						int a3 = (0 <= x[d]				? GetVoxelSide(Voxels, x[0],		x[1],			x[2],			Side) : -1);
-						int b3 = (x[d] < ChunkSize - 1	? GetVoxelSide(Voxels, x[0] + q[0], x[1] + q[1],	x[2] + q[2],	Side) : -1);
+						int a3 = (0 <= x[d]				? GetVoxelSide(Voxels, &AdditionalRenderData, x[0],		x[1],			x[2],			Side) : -1);
+						int b3 = (x[d] < ChunkSize - 1	? GetVoxelSide(Voxels, &AdditionalRenderData, x[0] + q[0], x[1] + q[1],	x[2] + q[2],	Side) : -1);
 						mask[n + 3] = (a3 != -1 && b3 != -1 && a3 == b3) ? -1 : (BackFace ? b3 : a3);
 						++x[u];
 					}
@@ -333,6 +364,10 @@ static void GreedyMesh(Chunk* Voxels, ChunkRenderData* RenderData)
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(TexturedQuadVertex), (void*) offsetof(TexturedQuadVertex, Normal));
 	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(TexturedQuadVertex), (void*) offsetof(TexturedQuadVertex, Dimension));
 	glVertexAttribIPointer(3, 1, GL_UNSIGNED_BYTE, sizeof(TexturedQuadVertex),  (void*) offsetof(TexturedQuadVertex, TextureCoord));
+
+	RenderData->MultiblocksToRender = new MultiblockRenderData[AdditionalRenderData.GetNum()];
+	memcpy(RenderData->MultiblocksToRender, &AdditionalRenderData[0], sizeof(MultiblockRenderData) * AdditionalRenderData.GetNum());
+	RenderData->NumMultiblocksToRender = AdditionalRenderData.GetNum();
 
 	// Unbind so nothing else modifies it
 	glBindVertexArray(0);

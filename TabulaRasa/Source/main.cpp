@@ -60,14 +60,13 @@ int main(int argc, char* argv[])
 	std::string Directory = PlatformFileSystem::GetAssetDirectory(DT_FONTS);
 	LoadFontLibrary(&Directory);
 
-	LoadedModel *ChestModel = PlatformFileSystem::LoadModel("Chest_Model.obj");
-
 	// Loads the world and initializes subobjects
 	g_World = new World();
 	g_World->Initialize();
 
 	g_RenderingEngine = new RenderingEngine();
 	g_RenderingEngine->Initialize(WindowParams.Width, WindowParams.Height);
+	g_RenderingEngine->AddRendererForBlock(3, "chest.obj");
 
 	g_ScriptEngine = new PythonScriptEngine();
 	g_ScriptEngine->Initialize();
@@ -95,7 +94,7 @@ int main(int argc, char* argv[])
 		double CurrentTime = SDL_GetTicks() / 1000.0;
 		DeltaTime = CurrentTime - LastFrameTime;
 		LastFrameTime = SDL_GetTicks() / 1000.0;
-		
+
 		CumulativeFrameTime = CumulativeFrameTime + DeltaTime;
 		++FramesPerSecond;
 		if (CumulativeFrameTime >= 1.0f)

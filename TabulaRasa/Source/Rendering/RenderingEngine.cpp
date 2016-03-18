@@ -57,6 +57,11 @@ void RenderingEngine::Initialize(const unsigned int& ScreenWidth, const unsigned
 	SetupSSAOPass();
 }
 
+void RenderingEngine::AddRendererForBlock(unsigned int BlockID, const char *BlockModelFileName)
+{
+	PlatformFileSystem::LoadModel(&CustomBlockRenderers[BlockID], BlockModelFileName);
+}
+
 void RenderingEngine::SetupGeometryPass()
 {
 	glGenFramebuffers(1, &m_GeometryFBO);

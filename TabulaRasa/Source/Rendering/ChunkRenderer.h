@@ -6,6 +6,15 @@
 #include "GL_shader.h"
 #include "../Game/Player.h"
 
+struct MultiblockRenderData
+{
+	int PositionX;
+	int PositionY;
+	int PositionZ;
+
+	unsigned int BlockID;
+};
+
 struct ChunkRenderData
 {
 	// The position (in world coordinates) that the chunk is in
@@ -19,6 +28,9 @@ struct ChunkRenderData
 	GLuint IndexBufferObject;
 
 	unsigned int NumVertices;
+
+	MultiblockRenderData *MultiblocksToRender;
+	unsigned int NumMultiblocksToRender;
 };
 
 enum VoxelSide : uint32_t;
@@ -56,6 +68,8 @@ public:
 
 private:
 
-	static GLShaderProgram* g_ChunkRenderShader;
+	static GLShaderProgram *g_ChunkRenderShader;
+
+	//static GLShaderProgram *g_MultiblockShader;
 
 };

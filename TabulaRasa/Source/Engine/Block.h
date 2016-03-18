@@ -2,7 +2,7 @@
 
 #include <string.h>
 
-#define MAX_NUM_BLOCKS 4096
+#define MAX_NUM_BLOCKS 512
 
 #define BLOCK_ID_GRASS 1
 #define BLOCK_ID_DIRT 2

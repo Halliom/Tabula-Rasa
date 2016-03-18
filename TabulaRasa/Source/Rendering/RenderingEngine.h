@@ -3,6 +3,8 @@
 #include "GL\glew.h"
 
 #include "../Game/World.h"
+#include "../Platform/Platform.h"
+#include "../Engine/Block.h"
 
 enum GBufferTextureLayerGeometryPass
 {
@@ -18,7 +20,9 @@ public:
 
 	~RenderingEngine();
 
-	void Initialize(const unsigned int& ScreenWidth, const unsigned int& ScreenHeight);
+	void Initialize(const unsigned int &ScreenWidth, const unsigned int &ScreenHeight);
+
+	void AddRendererForBlock(unsigned int BlockID, const char *BlockModelFileName);
 
 	void SetupGeometryPass();
 
@@ -42,7 +46,7 @@ public:
 	GLuint m_GeometryFBO;
 	GLuint m_GeometryGBufferTextures[GBUFFER_LAYER_GEOMETRY_NUM];
 	GLuint m_GeometryDepthTexture;
-	
+
 	GLShaderProgram* m_pLightPassShader;
 
 	GLuint m_SSAOFBO;
@@ -61,5 +65,7 @@ public:
 	GLuint m_ScreenQuadVAO;
 
 	GLShaderProgram* m_pSSAOBlurShader;
+
+	LoadedModel CustomBlockRenderers[MAX_NUM_BLOCKS];
 
 };

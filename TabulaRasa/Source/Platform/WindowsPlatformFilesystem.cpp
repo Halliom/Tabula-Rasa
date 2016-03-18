@@ -113,15 +113,13 @@ std::vector<unsigned char>* PlatformFileSystem::LoadImageFromFile(const std::str
 	return Pixels;
 }
 
-LoadedModel* PlatformFileSystem::LoadModel(const char *FileName)
+void PlatformFileSystem::LoadModel(LoadedModel *Model, const char *FileName)
 {
-	LoadedModel* Result = new LoadedModel();
+	glGenVertexArrays(1, &Model->m_AssetVAO);
+	glBindVertexArray(Model->m_AssetVAO);
 
-	glGenVertexArrays(1, &Result->m_AssetVAO);
-	glBindVertexArray(Result->m_AssetVAO);
-
-	glGenBuffers(1, &Result->m_AssetVBO);
-	glGenBuffers(1, &Result->m_AssetIBO);
+	glGenBuffers(1, &Model->m_AssetVBO);
+	glGenBuffers(1, &Model->m_AssetIBO);
 
 	// Get the actual location on disk
 	std::string FileLocation = GetAssetDirectory(DT_MODELS);
@@ -138,13 +136,16 @@ LoadedModel* PlatformFileSystem::LoadModel(const char *FileName)
 	{
 		const char *ErrorMessage = Importer.GetErrorString();
 		// TODO: Error loggin
-		return NULL;
+		return;
 	}
 
 	std::vector<float> Vertices;
+	std::vector<unsigned short> Indices;
+	unsigned short Offset = 0;
 	for (unsigned int i = 0; i < ImportedScene->mNumMeshes; ++i)
 	{
-		for (int VertexID = 0; VertexID < ImportedScene->mMeshes[i]->mNumVertices; ++VertexID)
+		Vertices.reserve(Vertices.size() + 6 * ImportedScene->mMeshes[i]->mNumVertices);
+		for (unsigned int VertexID = 0; VertexID < ImportedScene->mMeshes[i]->mNumVertices; ++VertexID)
 		{
 			Vertices.push_back(ImportedScene->mMeshes[i]->mVertices[VertexID].x);
 			Vertices.push_back(ImportedScene->mMeshes[i]->mVertices[VertexID].y);
@@ -153,9 +154,31 @@ LoadedModel* PlatformFileSystem::LoadModel(const char *FileName)
 			Vertices.push_back(ImportedScene->mMeshes[i]->mNormals[VertexID].y);
 			Vertices.push_back(ImportedScene->mMeshes[i]->mNormals[VertexID].z);
 		}
+		Indices.reserve(Indices.size() + 3 * ImportedScene->mMeshes[i]->mNumFaces);
+		for (unsigned int FaceID = 0; FaceID < ImportedScene->mMeshes[i]->mNumFaces; ++FaceID)
+		{
+			// Since all faces are triangles due to aiProcess_Triangulate there will only be
+			// 3 indices per face
+			Indices.push_back(Offset + (unsigned short) ImportedScene->mMeshes[i]->mFaces[FaceID].mIndices[2]);
+			Indices.push_back(Offset + (unsigned short) ImportedScene->mMeshes[i]->mFaces[FaceID].mIndices[1]);
+			Indices.push_back(Offset + (unsigned short) ImportedScene->mMeshes[i]->mFaces[FaceID].mIndices[0]);
+		}
+		Offset = Vertices.size() / 6;
 	}
 
-	ImportedScene->mMeshes[0];
+	glBindBuffer(GL_ARRAY_BUFFER, Model->m_AssetVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * Vertices.size(), Vertices.data(), GL_STATIC_DRAW);
 
-	return Result;
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, Model->m_AssetIBO);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned short) * Indices.size(), Indices.data(), GL_STATIC_DRAW);
+
+	glEnableVertexAttribArray(0); // Position
+	glEnableVertexAttribArray(1); // Normal
+
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 6, 0);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 6, (void *) (sizeof(float) * 3));
+
+	Model->m_NumVertices = Indices.size();
+
+	glBindVertexArray(0);
 }

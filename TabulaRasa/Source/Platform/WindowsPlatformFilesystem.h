@@ -42,5 +42,5 @@ public:
 
 	static std::vector<unsigned char> *LoadImageFromFile(const std::string& FileName, unsigned int& OutWidth, unsigned int& OutHeight);
 
-	static LoadedModel *LoadModel(const char* FileName);
+	static void LoadModel(LoadedModel *Model, const char* FileName);
 };
