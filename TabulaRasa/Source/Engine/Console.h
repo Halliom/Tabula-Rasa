@@ -19,6 +19,8 @@ public:
 
 	void OnUpdateInputMode();
 
+	char *ExecuteCommand(char *Command);
+
 	bool m_bIsActive;
 
 private:

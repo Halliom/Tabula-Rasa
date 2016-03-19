@@ -14,4 +14,7 @@ public:
 
 	void Destroy();
 
+	void ExecuteStringInInterpreter(char *String);
+
+	char *GetVariableValue(char *VariableName);
 };

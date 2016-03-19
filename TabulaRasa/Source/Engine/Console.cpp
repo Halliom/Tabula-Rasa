@@ -1,8 +1,10 @@
 #include "Console.h"
 
 #include "../Rendering/RenderingEngine.h"
+#include "../Engine/PythonScript.h"
 
 extern RenderingEngine* g_RenderingEngine;
+extern PythonScriptEngine* g_ScriptEngine;
 
 Console::Console() : 
 	m_bIsActive(false),
@@ -67,8 +69,12 @@ void Console::ReceiveTextInput(SDL_Keycode* KeyCode, bool IsShiftDown)
 						return;
 					}
 
+					char *Result = ExecuteCommand(Command);
+					if (Result == "")
+						return;
+
 					m_pCommandBuffer[m_BufferLength++] = TextRenderer::AddTextToRender(
-						m_CurrentlyTyping.substr(1, m_CurrentlyTyping.size() - 1).c_str(), // Skip the first character
+						Result, // Skip the first character
 						0.0f, 
 						g_RenderingEngine->m_ScreenHeight / 2.0f - 24.0f - (20.0f * 1),
 						16.0f);
@@ -164,4 +170,36 @@ void Console::OnUpdateInputMode()
 			(float) g_RenderingEngine->m_ScreenHeight / 2.0f, 
 			glm::vec4(1.0f / 255.0f, 25.0f / 255.0f, 0.0f, 0.65f));
 	}
+}
+
+bool IsSingleWord(char *String)
+{
+	bool FoundWord = false;
+	unsigned int i = 0;
+	while (String[0] != '\0')
+	{
+		if (String[0] == ' ')
+		{
+			if (FoundWord)
+				return false;
+			FoundWord = true;
+		}
+		++String;
+		++i;
+	}
+	if (FoundWord)
+		return false;
+
+	String -= i;
+	return true;
+}
+
+char *Console::ExecuteCommand(char *Command)
+{
+	if (IsSingleWord(Command))
+	{
+		return g_ScriptEngine->GetVariableValue(Command);
+	}
+	g_ScriptEngine->ExecuteStringInInterpreter(Command);
+	return Command;
 }

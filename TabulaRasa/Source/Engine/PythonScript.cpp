@@ -1,26 +1,84 @@
 #include "PythonScript.h"
 
+static char string[1024];
+
+PyObject* aview_write(PyObject* self, PyObject* args)
+{
+	const char *what;
+	if (!PyArg_ParseTuple(args, "s", &what))
+		return NULL;
+	printf("==%s==", what);
+	return Py_BuildValue("");
+}
+
+PyObject* aview_flush(PyObject* self, PyObject* args)
+{
+	return Py_BuildValue("");
+}
+
+PyMethodDef aview_methods[] =
+{
+	{ "write", aview_write, METH_VARARGS, "doc for write" },
+	{ "flush", aview_flush, METH_VARARGS, "doc for flush" },
+	{ 0, 0, 0, 0 } // sentinel
+};
+
+PyModuleDef aview_module =
+{
+	PyModuleDef_HEAD_INIT, // PyModuleDef_Base m_base;
+	"aview",               // const char* m_name;
+	"doc for aview",       // const char* m_doc;
+	-1,                    // Py_ssize_t m_size;
+	aview_methods,        // PyMethodDef *m_methods
+						  //  inquiry m_reload;  traverseproc m_traverse;  inquiry m_clear;  freefunc m_free;
+};
+
+PyMODINIT_FUNC PyInit_aview(void)
+{
+	PyObject* m = PyModule_Create(&aview_module);
+	PySys_SetObject("stdout", m);
+	PySys_SetObject("stderr", m);
+	return m;
+}
+
 void PythonScriptEngine::Initialize()
 {
-	char string[1024];
 	freopen("/dev/null", "a", stdout);
 	setbuf(stdout, string);
 
+	PyImport_AppendInittab("aview", PyInit_aview);
 	Py_Initialize();
+	PyImport_ImportModule("aview");
 
-	PyRun_SimpleString("a = 42 * 4");
-	PyRun_SimpleString("a");
-
-	PyObject* MainModule = PyImport_AddModule("__main__");
-
-	PyObject* ModuleDictionary = PyModule_GetDict(MainModule);
-
-	PyObject* result = PyDict_GetItemString(ModuleDictionary, "a");
-
-	long result_value = PyLong_AsLong(result);
+	PyRun_SimpleString("import aview");
 }
 
 void PythonScriptEngine::Destroy()
 {
 	Py_Finalize();
+}
+
+void PythonScriptEngine::ExecuteStringInInterpreter(char *String)
+{
+	PyRun_SimpleString(String);
+}
+
+char *PythonScriptEngine::GetVariableValue(char *VariableName)
+{
+	PyObject *MainModule = PyImport_AddModule("__main__");
+	PyObject *ModuleDictionary = PyModule_GetDict(MainModule);
+
+	PyObject *Result = PyDict_GetItemString(ModuleDictionary, VariableName);
+	if (!Result)
+		return "";
+	
+	PyObject *ObjectRepr = PyObject_Repr(Result);
+	PyObject *Unicode = PyUnicode_AsUTF8String(ObjectRepr);
+	char *String= PyBytes_AsString(Unicode);
+	unsigned int StringLength = strlen(String);
+	char *ResultString = new char[StringLength];
+
+	strcpy(ResultString, String);
+	Py_DECREF(Unicode);
+	return ResultString;
 }
