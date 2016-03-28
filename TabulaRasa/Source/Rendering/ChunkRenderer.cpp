@@ -34,8 +34,8 @@ void ChunkRenderer::SetupChunkRenderer()
 	std::vector<unsigned char>*	FontImage = PlatformFileSystem::LoadImageFromFile(FileName, Width, Height);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, Width, Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, &(FontImage->at(0)));
 
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 }
@@ -127,7 +127,9 @@ static glm::vec3 SOUTH_FACE_NORMAL	= glm::vec3(0.0f, 0.0f, -1.0f);
 static void GreedyMesh(Chunk* Voxels, ChunkRenderData* RenderData)
 {
 	DynamicArray<TexturedQuadVertex> Vertices;
+	Vertices.Reserve(32 * 32 * 32);
 	DynamicArray<unsigned int> Indices;
+	Indices.Reserve(32 * 32 * 32);
 	DynamicArray<MultiblockRenderData> AdditionalRenderData;
 	bool Counter = false;
 
@@ -227,7 +229,6 @@ static void GreedyMesh(Chunk* Voxels, ChunkRenderData* RenderData)
 
 							// Reserve 4 vertices
 							unsigned int StartIndex = Vertices.GetNum();
-							Vertices.Reserve(StartIndex + 4); // +4 again is the amount we're adding
 
 							switch (d)
 							{
@@ -302,7 +303,6 @@ static void GreedyMesh(Chunk* Voxels, ChunkRenderData* RenderData)
 								}
 							}
 
-							Indices.Reserve(Indices.GetNum() + 6);
 							if (BackFace)
 							{
 								Indices.Push(StartIndex);
@@ -365,9 +365,17 @@ static void GreedyMesh(Chunk* Voxels, ChunkRenderData* RenderData)
 	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(TexturedQuadVertex), (void*) offsetof(TexturedQuadVertex, Dimension));
 	glVertexAttribIPointer(3, 1, GL_UNSIGNED_BYTE, sizeof(TexturedQuadVertex),  (void*) offsetof(TexturedQuadVertex, TextureCoord));
 
-	RenderData->MultiblocksToRender = new MultiblockRenderData[AdditionalRenderData.GetNum()];
-	memcpy(RenderData->MultiblocksToRender, &AdditionalRenderData[0], sizeof(MultiblockRenderData) * AdditionalRenderData.GetNum());
-	RenderData->NumMultiblocksToRender = AdditionalRenderData.GetNum();
+	if (AdditionalRenderData.GetNum() > 0)
+	{
+		RenderData->MultiblocksToRender = new MultiblockRenderData[AdditionalRenderData.GetNum()];
+		memcpy(RenderData->MultiblocksToRender, &AdditionalRenderData[0], sizeof(MultiblockRenderData) * AdditionalRenderData.GetNum());
+		RenderData->NumMultiblocksToRender = AdditionalRenderData.GetNum();
+	}
+	else
+	{
+		RenderData->MultiblocksToRender = NULL;
+		RenderData->NumMultiblocksToRender = 0;
+	}
 
 	// Unbind so nothing else modifies it
 	glBindVertexArray(0);
