@@ -57,11 +57,11 @@ void World::Initialize()
 	//PerlinNoise NoiseFunction;
 
 #if 1
-	for (int i = 0; i < 24; ++i)
+	for (int i = 0; i < 16; ++i)
 	{
-		for (int j = 0; j < 24; ++j)
+		for (int j = 0; j < 16; ++j)
 		{
-			for (int k = 0; k < 24; ++k)
+			for (int k = 0; k < 16; ++k)
 			{
 				if (rand() % 10 > 5)
 					AddBlock(i, j, k, BLOCK_ID_GRASS);
@@ -110,7 +110,7 @@ void World::Update(float DeltaTime)
 	}
 }
 
-Chunk * World::GetLoadedChunk(const int & ChunkX, const int & ChunkY, const int & ChunkZ)
+Chunk * World::GetLoadedChunk(const int& ChunkX, const int& ChunkY, const int& ChunkZ)
 {
 	int HalfChunkRadius = CHUNK_LOADING_RADIUS / 2;
 	if ((ChunkX >= ChunkLoadingCenterX - HalfChunkRadius && ChunkX < ChunkLoadingCenterX + HalfChunkRadius) &&
