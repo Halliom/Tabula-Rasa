@@ -187,7 +187,9 @@ bool PlatformWindow::PrepareForRender()
 
 				if (g_Console->m_bIsActive)
 				{
-					g_Console->ReceiveTextInput(&Event.key.keysym.sym, (Event.key.keysym.mod & KMOD_LSHIFT) == KMOD_LSHIFT);
+					g_Console->ReceiveTextInput(&Event.key.keysym.sym, 
+						(Event.key.keysym.mod & KMOD_LSHIFT) == KMOD_LSHIFT || (Event.key.keysym.mod & KMOD_RSHIFT) == KMOD_RSHIFT,
+						(Event.key.keysym.mod & KMOD_LALT) == KMOD_LALT || (Event.key.keysym.mod & KMOD_RALT) == KMOD_RALT);
 				}
 				else
 				{

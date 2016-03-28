@@ -129,6 +129,7 @@ void PlatformFileSystem::LoadModel(LoadedModel *Model, const char *FileName)
 	const aiScene *ImportedScene = Importer.ReadFile(
 		FileLocation.c_str(),
 		aiProcess_Triangulate |
+		aiProcess_FlipWindingOrder |
 		aiProcess_GenNormals |
 		aiProcess_GenUVCoords);
 
@@ -148,11 +149,11 @@ void PlatformFileSystem::LoadModel(LoadedModel *Model, const char *FileName)
 		for (unsigned int VertexID = 0; VertexID < ImportedScene->mMeshes[i]->mNumVertices; ++VertexID)
 		{
 			Vertices.push_back(ImportedScene->mMeshes[i]->mVertices[VertexID].x);
-			Vertices.push_back(ImportedScene->mMeshes[i]->mVertices[VertexID].y);
 			Vertices.push_back(ImportedScene->mMeshes[i]->mVertices[VertexID].z);
+			Vertices.push_back(ImportedScene->mMeshes[i]->mVertices[VertexID].y);
 			Vertices.push_back(ImportedScene->mMeshes[i]->mNormals[VertexID].x);
-			Vertices.push_back(ImportedScene->mMeshes[i]->mNormals[VertexID].y);
 			Vertices.push_back(ImportedScene->mMeshes[i]->mNormals[VertexID].z);
+			Vertices.push_back(ImportedScene->mMeshes[i]->mNormals[VertexID].y);
 		}
 		Indices.reserve(Indices.size() + 3 * ImportedScene->mMeshes[i]->mNumFaces);
 		for (unsigned int FaceID = 0; FaceID < ImportedScene->mMeshes[i]->mNumFaces; ++FaceID)

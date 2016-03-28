@@ -5,7 +5,6 @@
 #include "SDL2\SDL.h"
 
 #define MAX_INPUT_LENGTH 128
-#define MAX_COMMAND_BUFFER_SIZE 32
 
 class Console
 {
@@ -15,9 +14,15 @@ public:
 
 	~Console();
 
-	void ReceiveTextInput(SDL_Keycode* KeyCode, bool IsShiftDown);
+	void PrintMessage(char* Message);
+
+	void PrintMessage(std::string& Message);
+
+	void ReceiveTextInput(SDL_Keycode* KeyCode, bool IsShiftDown, bool IsAltDown);
 
 	void OnUpdateInputMode();
+
+	void RedrawTextBuffer();
 
 	char *ExecuteCommand(char *Command);
 
@@ -27,8 +32,9 @@ private:
 
 	std::string m_CurrentlyTyping;
 
-	TextRenderData2D* m_pCommandBuffer[MAX_COMMAND_BUFFER_SIZE];
-	unsigned int m_BufferLength;
+	std::string m_TextBuffer;
+
+	TextRenderData2D* m_pTextBufferRenderData;
 
 	TextRenderData2D* m_pActiveLineText;
 

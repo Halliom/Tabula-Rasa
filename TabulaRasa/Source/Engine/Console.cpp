@@ -1,33 +1,45 @@
 #include "Console.h"
 
+#include <sstream>
+#include <iostream>
+#include <stdio.h>
+#include <sys/types.h>
+
 #include "../Rendering/RenderingEngine.h"
 #include "../Engine/PythonScript.h"
 
 extern RenderingEngine* g_RenderingEngine;
 extern PythonScriptEngine* g_ScriptEngine;
 
-Console::Console() : 
+Console::Console() :
 	m_bIsActive(false),
-	m_CurrentlyTyping(">"),
-	m_BufferLength(0)
+	m_CurrentlyTyping(">")
 {
+	m_pTextBufferRenderData = TextRenderer::AddTextToRender("");
+	m_pActiveLineText = TextRenderer::AddTextToRender("");
 }
 
 Console::~Console()
 {
-	if (m_pActiveLineText)
-	{
-		TextRenderer::RemoveText(m_pActiveLineText);
-		TextRenderer::RemoveRect(m_pBackgroundRect);
+	TextRenderer::RemoveText(m_pActiveLineText);
+	TextRenderer::RemoveText(m_pTextBufferRenderData);
 
-		for (unsigned int i = 0; i < m_BufferLength; ++i)
-		{
-			TextRenderer::RemoveText(m_pCommandBuffer[i]);
-		}
-	}
+	TextRenderer::RemoveRect(m_pBackgroundRect);
 }
 
-void Console::ReceiveTextInput(SDL_Keycode* KeyCode, bool IsShiftDown)
+void Console::PrintMessage(char* Message)
+{
+	m_TextBuffer.append(Message);
+	RedrawTextBuffer();
+}
+
+void Console::PrintMessage(std::string& Message)
+{
+	m_TextBuffer.append(Message);
+	RedrawTextBuffer();
+}
+
+void Console::ReceiveTextInput(SDL_Keycode* KeyCode, bool IsShiftDown, bool IsAltDown)
 {
 	if (m_bIsActive)
 	{
@@ -49,45 +61,37 @@ void Console::ReceiveTextInput(SDL_Keycode* KeyCode, bool IsShiftDown)
 			}
 			case SDLK_RETURN:
 			{
-				if (m_BufferLength < MAX_COMMAND_BUFFER_SIZE)
+				// Remove the '>' character
+				char* Command = new char[m_CurrentlyTyping.size() - 1]; 
+				strcpy(Command, m_CurrentlyTyping.c_str() + 1);
+
+				bool OnlyWhiteSpace = true;
+				for (int i = 0; *(Command + i); ++i)
 				{
-					char* Command = new char[m_CurrentlyTyping.size() - 1]; // Remove the '>' character
-					strcpy(Command, m_CurrentlyTyping.c_str() + 1); // Ignore the first '>' character
-
-					bool OnlyWhiteSpace = true;
-					for (int i = 0; *(Command + i); ++i)
+					if (!isspace(*(Command + i)))
 					{
-						if (!isspace(*(Command + i)))
-						{
-							OnlyWhiteSpace = false;
-							break;
-						}
-					}
-
-					if (OnlyWhiteSpace)
-					{
-						return;
-					}
-
-					char *Result = ExecuteCommand(Command);
-					if (Result == "")
-						return;
-
-					m_pCommandBuffer[m_BufferLength++] = TextRenderer::AddTextToRender(
-						Result, // Skip the first character
-						0.0f, 
-						g_RenderingEngine->m_ScreenHeight / 2.0f - 24.0f - (20.0f * 1),
-						16.0f);
-
-					m_CurrentlyTyping.erase(++m_CurrentlyTyping.begin(), m_CurrentlyTyping.end());
-
-					// Move everything else in the list up one
-					for (unsigned int i = 0; i < m_BufferLength - 1; ++i)
-					{
-						m_pCommandBuffer[i]->Position -= glm::vec3(0.0f, 20.0f, 0.0f);
+						OnlyWhiteSpace = false;
+						break;
 					}
 				}
-				// TODO: Send command
+
+				if (OnlyWhiteSpace)
+				{
+					return;
+				}
+
+				char* Result = ExecuteCommand(Command);
+				if (Result[0] != '\0')
+				{
+					// Add a new line and append the result string
+					//m_TextBuffer[m_TextBuffer.size()] = '\n';
+					m_TextBuffer.append(Result);
+					m_TextBuffer.append("\n");
+					RedrawTextBuffer();
+				}
+
+				m_CurrentlyTyping.erase(++m_CurrentlyTyping.begin(), m_CurrentlyTyping.end());
+
 				break;
 			}
 			default:
@@ -114,12 +118,35 @@ void Console::ReceiveTextInput(SDL_Keycode* KeyCode, bool IsShiftDown)
 									case SDLK_7: { c[0] = '/'; break; }
 									case SDLK_8: { c[0] = '('; break; }
 									case SDLK_9: { c[0] = ')'; break; }
+									case SDLK_PLUS: { c[0] = '?'; break; }
 								}
 								m_CurrentlyTyping.append(c);
+								break;
+							}
+							else if (IsAltDown)
+							{
+								char c[2] = " ";
+								switch (*KeyCode)
+								{
+								case SDLK_0: { c[0] = '}'; break; }
+								case SDLK_1: { c[0] = '1'; break; }
+								case SDLK_2: { c[0] = '@'; break; }
+								case SDLK_3: { c[0] = '£'; break; }
+								case SDLK_4: { c[0] = '$'; break; }
+								case SDLK_5: { c[0] = '€'; break; }
+								case SDLK_6: { c[0] = '6'; break; }
+								case SDLK_7: { c[0] = '{'; break; }
+								case SDLK_8: { c[0] = '['; break; }
+								case SDLK_9: { c[0] = ']'; break; }
+								case SDLK_PLUS: { c[0] = '\\'; break; }
+								}
+								m_CurrentlyTyping.append(c);
+								break;
 							}
 							else
 							{
 								m_CurrentlyTyping.append(Symbol);
+								break;
 							}
 						}
 					}
@@ -141,8 +168,7 @@ void Console::ReceiveTextInput(SDL_Keycode* KeyCode, bool IsShiftDown)
 			}
 		}
 
-		if (m_pActiveLineText)
-			TextRenderer::RemoveText(m_pActiveLineText);
+		TextRenderer::RemoveText(m_pActiveLineText);
 
 		m_pActiveLineText = TextRenderer::AddTextToRender(m_CurrentlyTyping.c_str(), 0.0f, g_RenderingEngine->m_ScreenHeight / 2.0f - 24.0f, 16.0f);
 	}
@@ -153,12 +179,9 @@ void Console::OnUpdateInputMode()
 	if (!m_bIsActive)
 	{
 		TextRenderer::RemoveText(m_pActiveLineText);
-		TextRenderer::RemoveRect(m_pBackgroundRect);
+		TextRenderer::RemoveText(m_pTextBufferRenderData);
 
-		for (unsigned int i = 0; i < m_BufferLength; ++i)
-		{
-			TextRenderer::RemoveText(m_pCommandBuffer[i]);
-		}
+		TextRenderer::RemoveRect(m_pBackgroundRect);
 	}
 	else
 	{
@@ -169,10 +192,29 @@ void Console::OnUpdateInputMode()
 			(float) g_RenderingEngine->m_ScreenWidth, 
 			(float) g_RenderingEngine->m_ScreenHeight / 2.0f, 
 			glm::vec4(1.0f / 255.0f, 25.0f / 255.0f, 0.0f, 0.65f));
+
+		RedrawTextBuffer();
 	}
 }
 
-bool IsSingleWord(char *String)
+void Console::RedrawTextBuffer()
+{
+	TextRenderer::RemoveText(m_pTextBufferRenderData);
+	unsigned int NumLines = 0; // Always start with one line since we need to skip the input line
+	for (char c : m_TextBuffer)
+	{
+		if (c == '\n')
+			++NumLines;
+	}
+
+	m_pTextBufferRenderData = TextRenderer::AddTextToRender(
+		m_TextBuffer.c_str(),
+		0.0f,
+		(g_RenderingEngine->m_ScreenHeight / 2.0f) - (16.0f * NumLines) - 24.0f,
+		16.0f);
+}
+
+bool IsSingleWord(char* String)
 {
 	bool FoundWord = false;
 	unsigned int i = 0;
@@ -194,12 +236,13 @@ bool IsSingleWord(char *String)
 	return true;
 }
 
-char *Console::ExecuteCommand(char *Command)
+char* Console::ExecuteCommand(char* Command)
 {
-	if (IsSingleWord(Command))
-	{
-		return g_ScriptEngine->GetVariableValue(Command);
-	}
+	//if (IsSingleWord(Command))
+	//{
+	//	return g_ScriptEngine->GetVariableValue(Command);
+	//}
 	g_ScriptEngine->ExecuteStringInInterpreter(Command);
-	return Command;
+
+	return "";
 }

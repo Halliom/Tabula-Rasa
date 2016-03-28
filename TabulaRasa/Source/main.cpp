@@ -66,7 +66,7 @@ int main(int argc, char* argv[])
 
 	g_RenderingEngine = new RenderingEngine();
 	g_RenderingEngine->Initialize(WindowParams.Width, WindowParams.Height);
-	g_RenderingEngine->AddRendererForBlock(3, "chest.obj");
+	g_RenderingEngine->AddRendererForBlock(3, "Chest_Model_2.obj");
 
 	g_ScriptEngine = new PythonScriptEngine();
 	g_ScriptEngine->Initialize();
@@ -74,7 +74,7 @@ int main(int argc, char* argv[])
 	g_Console = new Console();
 	g_Console->OnUpdateInputMode();
 
-	TextRenderData2D* FPSCounter = TextRenderer::AddTextToRender("FPS: 0", 8.0f, 8.0f, 24.0f);
+	TextRenderData2D* FPSCounter = TextRenderer::AddTextToRender("FPS: 0", 8.0f, 8.0f, 16.0f);
 
 	double LastFrameTime = SDL_GetTicks() / 1000.0;
 	double DeltaTime = 0.0;
@@ -102,7 +102,7 @@ int main(int argc, char* argv[])
 			TextRenderer::RemoveText(FPSCounter);
 			char Buffer[48];
 			sprintf(Buffer, "FPS: %d", FramesPerSecond);
-			FPSCounter = TextRenderer::AddTextToRender(Buffer, 8.0f, 8.0f, 24.0f);
+			FPSCounter = TextRenderer::AddTextToRender(Buffer, 8.0f, 8.0f, 16.0f);
 			CumulativeFrameTime = 0;
 			FramesPerSecond = 0;
 		}

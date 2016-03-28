@@ -1,13 +1,18 @@
 #include "PythonScript.h"
 
+#include "Console.h"
+
 static char string[1024];
+
+extern Console* g_Console;
 
 PyObject* aview_write(PyObject* self, PyObject* args)
 {
-	const char *what;
-	if (!PyArg_ParseTuple(args, "s", &what))
+	const char* Output;
+	if (!PyArg_ParseTuple(args, "s", &Output))
 		return NULL;
-	printf("==%s==", what);
+	g_Console->PrintMessage((char*)Output);
+
 	return Py_BuildValue("");
 }
 
@@ -43,7 +48,7 @@ PyMODINIT_FUNC PyInit_aview(void)
 
 void PythonScriptEngine::Initialize()
 {
-	freopen("/dev/null", "a", stdout);
+	freopen(NULL, "a", stdout);
 	setbuf(stdout, string);
 
 	PyImport_AppendInittab("aview", PyInit_aview);
