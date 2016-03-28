@@ -3,6 +3,7 @@
 #include <random>
 #include "glm\common.hpp"
 
+#include "../Engine/Common.h"
 #include "../Platform/Platform.h"
 #include "../Game/Player.h"
 #include "TextRenderer.h"
@@ -55,6 +56,11 @@ void RenderingEngine::Initialize(const unsigned int& ScreenWidth, const unsigned
 	SetupGeometryPass();
 
 	SetupSSAOPass();
+
+	LogLn("Rendering system initialized on system:");
+	LogLn((char*) glGetString(GL_VENDOR));
+	LogLn((char*) glGetString(GL_RENDERER));
+	LogLn((char*) glGetString(GL_VERSION));
 }
 
 void RenderingEngine::AddRendererForBlock(unsigned int BlockID, const char *BlockModelFileName)

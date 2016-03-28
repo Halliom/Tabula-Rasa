@@ -27,15 +27,29 @@ Console::~Console()
 	TextRenderer::RemoveRect(m_pBackgroundRect);
 }
 
-void Console::PrintMessage(char* Message)
+void Console::Print(char* Message)
 {
 	m_TextBuffer.append(Message);
 	RedrawTextBuffer();
 }
 
-void Console::PrintMessage(std::string& Message)
+void Console::Print(std::string& Message)
 {
 	m_TextBuffer.append(Message);
+	RedrawTextBuffer();
+}
+
+void Console::PrintLine(char* Message)
+{
+	m_TextBuffer.append(Message);
+	m_TextBuffer.append("\n");
+	RedrawTextBuffer();
+}
+
+void Console::PrintLine(std::string& Message)
+{
+	m_TextBuffer.append(Message);
+	m_TextBuffer.append("\n");
 	RedrawTextBuffer();
 }
 
@@ -65,6 +79,15 @@ void Console::ReceiveTextInput(SDL_Keycode* KeyCode, bool IsShiftDown, bool IsAl
 				char* Command = new char[m_CurrentlyTyping.size() - 1]; 
 				strcpy(Command, m_CurrentlyTyping.c_str() + 1);
 
+				if (strcmp(Command, "clear") == 0)
+				{
+					m_TextBuffer.clear();
+					RedrawTextBuffer();
+					m_CurrentlyTyping.clear();
+					m_CurrentlyTyping.append(">");
+					break;
+				}
+
 				bool OnlyWhiteSpace = true;
 				for (int i = 0; *(Command + i); ++i)
 				{
@@ -90,7 +113,8 @@ void Console::ReceiveTextInput(SDL_Keycode* KeyCode, bool IsShiftDown, bool IsAl
 					RedrawTextBuffer();
 				}
 
-				m_CurrentlyTyping.erase(++m_CurrentlyTyping.begin(), m_CurrentlyTyping.end());
+				m_CurrentlyTyping.clear();
+				m_CurrentlyTyping.append(">");
 
 				break;
 			}
@@ -199,19 +223,22 @@ void Console::OnUpdateInputMode()
 
 void Console::RedrawTextBuffer()
 {
-	TextRenderer::RemoveText(m_pTextBufferRenderData);
-	unsigned int NumLines = 0; // Always start with one line since we need to skip the input line
-	for (char c : m_TextBuffer)
+	if (m_bIsActive)
 	{
-		if (c == '\n')
-			++NumLines;
-	}
+		TextRenderer::RemoveText(m_pTextBufferRenderData);
+		unsigned int NumLines = 0; // Always start with one line since we need to skip the input line
+		for (char c : m_TextBuffer)
+		{
+			if (c == '\n')
+				++NumLines;
+		}
 
-	m_pTextBufferRenderData = TextRenderer::AddTextToRender(
-		m_TextBuffer.c_str(),
-		0.0f,
-		(g_RenderingEngine->m_ScreenHeight / 2.0f) - (16.0f * NumLines) - 24.0f,
-		16.0f);
+		m_pTextBufferRenderData = TextRenderer::AddTextToRender(
+			m_TextBuffer.c_str(),
+			0.0f,
+			(g_RenderingEngine->m_ScreenHeight / 2.0f) - (16.0f * NumLines) - 24.0f,
+			16.0f);
+	}
 }
 
 bool IsSingleWord(char* String)

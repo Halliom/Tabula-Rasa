@@ -14,9 +14,13 @@ public:
 
 	~Console();
 
-	void PrintMessage(char* Message);
+	void Print(char* Message);
 
-	void PrintMessage(std::string& Message);
+	void Print(std::string& Message);
+
+	void PrintLine(char* Message);
+
+	void PrintLine(std::string& Message);
 
 	void ReceiveTextInput(SDL_Keycode* KeyCode, bool IsShiftDown, bool IsAltDown);
 

@@ -60,9 +60,8 @@ int main(int argc, char* argv[])
 	std::string Directory = PlatformFileSystem::GetAssetDirectory(DT_FONTS);
 	LoadFontLibrary(&Directory);
 
-	// Loads the world and initializes subobjects
-	g_World = new World();
-	g_World->Initialize();
+	g_Console = new Console();
+	g_Console->OnUpdateInputMode();
 
 	g_RenderingEngine = new RenderingEngine();
 	g_RenderingEngine->Initialize(WindowParams.Width, WindowParams.Height);
@@ -71,8 +70,9 @@ int main(int argc, char* argv[])
 	g_ScriptEngine = new PythonScriptEngine();
 	g_ScriptEngine->Initialize();
 
-	g_Console = new Console();
-	g_Console->OnUpdateInputMode();
+	// Loads the world and initializes subobjects
+	g_World = new World();
+	g_World->Initialize();
 
 	TextRenderData2D* FPSCounter = TextRenderer::AddTextToRender("FPS: 0", 8.0f, 8.0f, 16.0f);
 
@@ -110,10 +110,10 @@ int main(int argc, char* argv[])
 
 	g_ScriptEngine->Destroy();
 
-	SAFE_DELETE(g_Console);
+	SAFE_DELETE(g_World);
 	SAFE_DELETE(g_ScriptEngine);
 	SAFE_DELETE(g_RenderingEngine);
-	SAFE_DELETE(g_World);
+	SAFE_DELETE(g_Console);
 
 	Window.DestroyWindow();
 }

@@ -11,7 +11,7 @@ PyObject* aview_write(PyObject* self, PyObject* args)
 	const char* Output;
 	if (!PyArg_ParseTuple(args, "s", &Output))
 		return NULL;
-	g_Console->PrintMessage((char*)Output);
+	g_Console->Print((char*)Output);
 
 	return Py_BuildValue("");
 }

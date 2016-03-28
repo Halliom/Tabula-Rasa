@@ -1,6 +1,12 @@
 #pragma once
 
 #include "glm\common.hpp"
+#include "../Engine/Console.h"
+
+extern Console* g_Console;
+
+#define LogLn(str) g_Console->PrintLine(str);
+#define Log(str) g_Console->Print(str);
 
 __forceinline bool IsWithinBounds(const glm::uvec3& Position, const glm::uvec3& Bounds) //TODO: SIMD optimize from custom vector class
 {
