@@ -37,5 +37,3 @@ set(ASSIMP "${CMAKE_SOURCE_DIR}/Lib/assimp.lib")
 
 add_executable(TabulaRasa WIN32 ${SOURCE_FILES})
 target_link_libraries(TabulaRasa ${OPENGL_LIBRARIES} ${GLEW32} ${GLEW32S} ${SDL2} ${SDL2MAIN} ${SDL2TEST} ${PYTHON_LIBRARIES} ${ASSIMP})
-
-install(TARGETS TabulaRasa DESTINATION ${PROJECT_SOURCE_DIR}/Game/)
