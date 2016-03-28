@@ -279,11 +279,7 @@ void RenderingEngine::SSAOPass()
 	glBindTexture(GL_TEXTURE_2D, m_GeometryGBufferTextures[GBUFFER_LAYER_GEOMETRY_NORMAL]);
 	glActiveTexture(GL_TEXTURE2);
 	glBindTexture(GL_TEXTURE_2D, m_SSAONoiseTexture);
-	//m_pSSAOShader->SetSSAOSamples(m_pSSAOKernel);
-
-	// TODO: Fix this because this is too inefficient
-	for (GLuint i = 0; i < 64; ++i)
-		glUniform3fv(glGetUniformLocation(m_pSSAOShader->Program, ("g_Samples[" + std::to_string(i) + "]").c_str()), 1, &m_pSSAOKernel[i * 3]);
+	m_pSSAOShader->SetSSAOSamples(m_pSSAOKernel);
 
 	// Render a screen quad
 	glBindVertexArray(m_ScreenQuadVAO);
