@@ -79,20 +79,28 @@ TextRenderData2D* TextRenderer::AddTextToRender(const char* Text, const float& X
 	GlyphVertex* Vertices = new GlyphVertex[TextLength * 4];
 	unsigned short* Indices = new unsigned short[TextLength * 6];
 	unsigned int i = 0;
-	float CharacterOffset = 0;
+	float CharacterOffsetX = 0.0f;
+	float CharacterOffsetY = 0.0f;
 	for (i = 0; i < TextLength; ++i)
 	{
 		if (Text[i] == ' ')
 		{
 			// Advance with half the size
-			CharacterOffset += Size / 2.0f;
+			CharacterOffsetX += Size / 2.0f;
 			continue;
 		}
+
+		if (Text[i] == '\n')
+		{
+			CharacterOffsetX = 0.0f; // Reset the line width
+			CharacterOffsetY += Size;
+		}
+
 		Glyph* CharacterGlyph = GetGlyphFromChar(Text[i], FontToUse);
 
 		if (CharacterGlyph == NULL)
 		{
-			CharacterOffset += Size / 2.0f;
+			CharacterOffsetX += Size / 2.0f;
 			continue;
 		}
 
@@ -100,10 +108,10 @@ TextRenderData2D* TextRenderer::AddTextToRender(const char* Text, const float& X
 		unsigned int IndexOffset = i * 6;
 
 		// Calculate the scale of the character with this scale and font
-		float ScaledWidth = Size * CharacterGlyph->Width / FontToUse->Base;
-		float ScaledHeight = Size * CharacterGlyph->Height / FontToUse->Base;
-		float BaseWidth = CharacterOffset + Size * CharacterGlyph->XOffset / FontToUse->Base;
-		float BaseHeight = Size * CharacterGlyph->YOffset / FontToUse->Base;
+		float ScaledWidth = Size * CharacterGlyph->Width / (float) FontToUse->Base;
+		float ScaledHeight = Size * CharacterGlyph->Height / (float) FontToUse->Base;
+		float BaseWidth = CharacterOffsetX + Size * CharacterGlyph->XOffset / FontToUse->LineHeight;
+		float BaseHeight = CharacterOffsetY + Size * CharacterGlyph->YOffset / FontToUse->LineHeight;
 
 		Vertices[VertexOffset + 0] = { 
 			glm::vec3(BaseWidth,													BaseHeight,														1.0f),
@@ -128,7 +136,7 @@ TextRenderData2D* TextRenderer::AddTextToRender(const char* Text, const float& X
 		Indices[IndexOffset + 4] = VertexOffset + 1;
 		Indices[IndexOffset + 5] = VertexOffset + 0;
 
-		CharacterOffset += ScaledWidth;
+		CharacterOffsetX += ScaledWidth;
 	}
 
 	glBindBuffer(GL_ARRAY_BUFFER, NewTextRenderObject->VBO);
