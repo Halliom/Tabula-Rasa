@@ -14,6 +14,8 @@ if (DebugText)\
 	TextRenderer::RemoveText(DebugText);\
 DebugText = TextRenderer::AddTextToRender(Buffer, x, y);\
 
+#define NUM_LAYERS 4
+
 class GLShaderProgram;
 
 struct TextRenderData2D
@@ -47,6 +49,12 @@ struct TextRenderData2D
 	 * Number of vertices to render (amount of indices really)
 	 */
 	GLuint VertexCount;
+
+	/** 
+	 * The layer this is on, higher layer means it gets
+	 * rendered later
+	 */
+	unsigned int Layer;
 };
 
 struct RectRenderData2D
@@ -66,6 +74,12 @@ struct RectRenderData2D
 	* Screen coordínate to render to
 	*/
 	glm::vec3 Position;
+
+	/**
+	* The layer this is on, higher layer means it gets
+	* rendered later
+	*/
+	unsigned int Layer;
 };
 
 class TextRenderer
@@ -76,19 +90,19 @@ public:
 
 	static void Destroy2DTextRendering();
 
-	static TextRenderData2D* AddTextToRender(const char* Text, const float& X = 0.0f, const float& Y = 0.0f, float Size = 24.0f, unsigned int Font = 0);
+	static TextRenderData2D* AddTextToRender(const char* Text, const float& X = 0.0f, const float& Y = 0.0f, float Size = 24.0f, unsigned int Layer = 0, unsigned int Font = 0);
 
 	static void RemoveText(TextRenderData2D* TextToRemove);
 
-	static RectRenderData2D* AddRectToRender(float MinX, float MinY, float MaxX, float MaxY, glm::vec4 Color);
+	static RectRenderData2D* AddRectToRender(float MinX, float MinY, float MaxX, float MaxY, glm::vec4 Color, unsigned int Layer = 0);
 
 	static void RemoveRect(RectRenderData2D* RectToRemove);
 
 	static void Render();
 
-	static std::vector<TextRenderData2D*> g_TextRenderObjects;
+	static std::vector<TextRenderData2D*> g_TextRenderObjects[NUM_LAYERS];
 
-	static std::vector<RectRenderData2D*> g_RectRenderObjects;
+	static std::vector<RectRenderData2D*> g_RectRenderObjects[NUM_LAYERS];
 
 private:
 

@@ -177,7 +177,7 @@ bool PlatformWindow::PrepareForRender()
 					}
 #endif
 					// TODO: Remove in build perhaps?
-					case SDL_SCANCODE_PERIOD:
+					case SDL_SCANCODE_GRAVE:
 					{
 						g_Console->m_bIsActive = !g_Console->m_bIsActive;
 						g_Console->OnUpdateInputMode();

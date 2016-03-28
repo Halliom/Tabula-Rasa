@@ -63,25 +63,25 @@ void PythonScriptEngine::Destroy()
 	Py_Finalize();
 }
 
-void PythonScriptEngine::ExecuteStringInInterpreter(char *String)
+void PythonScriptEngine::ExecuteStringInInterpreter(char* String)
 {
 	PyRun_SimpleString(String);
 }
 
-char *PythonScriptEngine::GetVariableValue(char *VariableName)
+char *PythonScriptEngine::GetVariableValue(char* VariableName)
 {
-	PyObject *MainModule = PyImport_AddModule("__main__");
-	PyObject *ModuleDictionary = PyModule_GetDict(MainModule);
+	PyObject* MainModule = PyImport_AddModule("__main__");
+	PyObject* ModuleDictionary = PyModule_GetDict(MainModule);
 
-	PyObject *Result = PyDict_GetItemString(ModuleDictionary, VariableName);
+	PyObject* Result = PyDict_GetItemString(ModuleDictionary, VariableName);
 	if (!Result)
 		return "";
 	
-	PyObject *ObjectRepr = PyObject_Repr(Result);
-	PyObject *Unicode = PyUnicode_AsUTF8String(ObjectRepr);
-	char *String= PyBytes_AsString(Unicode);
+	PyObject* ObjectRepr = PyObject_Repr(Result);
+	PyObject* Unicode = PyUnicode_AsUTF8String(ObjectRepr);
+	char* String= PyBytes_AsString(Unicode);
 	unsigned int StringLength = strlen(String);
-	char *ResultString = new char[StringLength];
+	char* ResultString = new char[StringLength];
 
 	strcpy(ResultString, String);
 	Py_DECREF(Unicode);

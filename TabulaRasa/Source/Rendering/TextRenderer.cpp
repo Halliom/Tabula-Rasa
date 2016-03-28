@@ -17,32 +17,48 @@ GLShaderProgram* TextRenderer::g_RectRenderShader = NULL;
 glm::mat4 TextRenderer::g_TextRenderProjectionMatrix = glm::ortho(0.0f, 800.0f, 600.0f, 0.0f); //TODO: Update this and be watchful of ints (use floats)
 
 // Init the RenderObjects
-std::vector<TextRenderData2D*> TextRenderer::g_TextRenderObjects;
-std::vector<RectRenderData2D*> TextRenderer::g_RectRenderObjects;
+std::vector<TextRenderData2D*> TextRenderer::g_TextRenderObjects[NUM_LAYERS];
+std::vector<RectRenderData2D*> TextRenderer::g_RectRenderObjects[NUM_LAYERS];
+
+bool SortRenderObjectsText(TextRenderData2D* FirstObject, TextRenderData2D* SecondObject)
+{
+	return FirstObject->Layer < SecondObject->Layer;
+}
+
+bool SortRenderObjectsRect(RectRenderData2D* FirstObject, RectRenderData2D* SecondObject)
+{
+	return FirstObject->Layer < SecondObject->Layer;
+}
 
 void TextRenderer::Initialize2DTextRendering()
 {
 	// Init the RenderObjects to hold 64 text objects by default (since it's a vector
 	// it will grow automatically if it needs to
-	g_TextRenderObjects.reserve(32);
-	g_RectRenderObjects.reserve(32);
+	for (unsigned int LayerID = 0; LayerID < NUM_LAYERS; ++LayerID)
+	{
+		g_TextRenderObjects[LayerID].reserve(32);
+		g_RectRenderObjects[LayerID].reserve(32);
+	}
 }
 
 void TextRenderer::Destroy2DTextRendering()
 {
-	for (auto& It : g_TextRenderObjects)
+	for (unsigned int LayerID = 0; LayerID < NUM_LAYERS; ++LayerID)
 	{
-		if (It)
-			delete It;
+		for (auto& It : g_TextRenderObjects[LayerID])
+		{
+			if (It)
+				delete It;
+		}
+		g_TextRenderObjects[LayerID].clear();
+
+		for (auto& It : g_RectRenderObjects[LayerID])
+		{
+			if (It)
+				delete It;
+		}
+		g_RectRenderObjects[LayerID].clear();
 	}
-	g_TextRenderObjects.clear();
-	
-	for (auto& It : g_RectRenderObjects)
-	{
-		if (It)
-			delete It;
-	}
-	g_RectRenderObjects.clear();
 }
 
 struct GlyphVertex
@@ -51,7 +67,7 @@ struct GlyphVertex
 	glm::vec2 Tex;
 };
 
-TextRenderData2D* TextRenderer::AddTextToRender(const char* Text, const float& X, const float& Y, float Size, unsigned int RenderFont)
+TextRenderData2D* TextRenderer::AddTextToRender(const char* Text, const float& X, const float& Y, float Size, unsigned int Layer, unsigned int RenderFont)
 {
 	if (g_TextRenderShader == NULL)
 		g_TextRenderShader = GLShaderProgram::CreateVertexFragmentShaderFromFile(std::string("vertex_font_render.glsl"), std::string("fragment_font_render.glsl"));
@@ -163,7 +179,8 @@ TextRenderData2D* TextRenderer::AddTextToRender(const char* Text, const float& X
 
 	// 6 vertices per glyph
 	NewTextRenderObject->VertexCount = TextLength * 6;
-	g_TextRenderObjects.push_back(NewTextRenderObject);
+	NewTextRenderObject->Layer = Layer;
+	g_TextRenderObjects[Layer].push_back(NewTextRenderObject);
 	glBindVertexArray(0);
 
 	return NewTextRenderObject;
@@ -171,14 +188,14 @@ TextRenderData2D* TextRenderer::AddTextToRender(const char* Text, const float& X
 
 void TextRenderer::RemoveText(TextRenderData2D* TextToRemove)
 {
-	auto Position = std::find(g_TextRenderObjects.begin(), g_TextRenderObjects.end(), TextToRemove);
-	if (Position != g_TextRenderObjects.end())
+	auto Position = std::find(g_TextRenderObjects[TextToRemove->Layer].begin(), g_TextRenderObjects[TextToRemove->Layer].end(), TextToRemove);
+	if (Position != g_TextRenderObjects[TextToRemove->Layer].end())
 	{
 		TextRenderData2D* RenderData = *Position;
 		glDeleteBuffers(1, &RenderData->VBO);
 		glDeleteBuffers(1, &RenderData->IBO);
 		glDeleteTextures(1, &RenderData->TextureID);
-		g_TextRenderObjects.erase(Position);
+		g_TextRenderObjects[TextToRemove->Layer].erase(Position);
 
 		// This needs to be done since std::vector does not automatically
 		// destruct the object (if it's a pointer, which it is) when calling erase
@@ -186,7 +203,7 @@ void TextRenderer::RemoveText(TextRenderData2D* TextToRemove)
 	}
 }
 
-RectRenderData2D * TextRenderer::AddRectToRender(float MinX, float MinY, float MaxX, float MaxY, glm::vec4 Color)
+RectRenderData2D * TextRenderer::AddRectToRender(float MinX, float MinY, float MaxX, float MaxY, glm::vec4 Color, unsigned int Layer)
 {
 	if (g_RectRenderShader == NULL)
 		g_RectRenderShader = GLShaderProgram::CreateVertexFragmentShaderFromFile(std::string("vertex_rect_render.glsl"), std::string("fragment_rect_render.glsl"));
@@ -214,18 +231,19 @@ RectRenderData2D * TextRenderer::AddRectToRender(float MinX, float MinY, float M
 
 	glBindVertexArray(0);
 
-	g_RectRenderObjects.push_back(RenderData);
+	RenderData->Layer = Layer;
+	g_RectRenderObjects[Layer].push_back(RenderData);
 	return RenderData;
 }
 
-void TextRenderer::RemoveRect(RectRenderData2D * RectToRemove)
+void TextRenderer::RemoveRect(RectRenderData2D* RectToRemove)
 {
-	auto Position = std::find(g_RectRenderObjects.begin(), g_RectRenderObjects.end(), RectToRemove);
-	if (Position != g_RectRenderObjects.end())
+	auto Position = std::find(g_RectRenderObjects[RectToRemove->Layer].begin(), g_RectRenderObjects[RectToRemove->Layer].end(), RectToRemove);
+	if (Position != g_RectRenderObjects[RectToRemove->Layer].end())
 	{
 		RectRenderData2D* RenderData = *Position;
 		glDeleteBuffers(1, &RenderData->VBO);
-		g_RectRenderObjects.erase(Position);
+		g_RectRenderObjects[RectToRemove->Layer].erase(Position);
 
 		// This needs to be done since std::vector does not automatically
 		// destruct the object (if it's a pointer, which it is) when calling erase
@@ -237,40 +255,43 @@ void TextRenderer::Render()
 {
 	glEnable(GL_BLEND);
 
-	if (g_RectRenderShader)
+	for (unsigned int LayerID = 0; LayerID < NUM_LAYERS; ++LayerID)
 	{
-		g_RectRenderShader->Bind();
-		g_RectRenderShader->SetProjectionMatrix(g_TextRenderProjectionMatrix);
-
-		for (auto& It : g_RectRenderObjects)
+		if (g_RectRenderShader)
 		{
-			if (!It)
-				continue;
+			g_RectRenderShader->Bind();
+			g_RectRenderShader->SetProjectionMatrix(g_TextRenderProjectionMatrix);
 
-			static GLubyte QUAD_INDICES[6] = { 3, 2, 0, 2, 1, 0 };
+			for (auto& It : g_RectRenderObjects[LayerID])
+			{
+				if (!It)
+					continue;
 
-			glBindVertexArray(It->VAO);
-			glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, QUAD_INDICES);
+				static GLubyte QUAD_INDICES[6] = { 3, 2, 0, 2, 1, 0 };
+
+				glBindVertexArray(It->VAO);
+				glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, QUAD_INDICES);
+			}
 		}
-	}
 
-	if (g_TextRenderShader)
-	{
-		g_TextRenderShader->Bind();
-		g_TextRenderShader->SetProjectionMatrix(g_TextRenderProjectionMatrix); //TODO: Do we need to update this every frame?
-
-		for (auto& It : g_TextRenderObjects)
+		if (g_TextRenderShader)
 		{
-			if (!It)
-				continue;
+			g_TextRenderShader->Bind();
+			g_TextRenderShader->SetProjectionMatrix(g_TextRenderProjectionMatrix); //TODO: Do we need to update this every frame?
 
-			g_TextRenderShader->SetPositionOffset(It->Position);
+			for (auto& It : g_TextRenderObjects[LayerID])
+			{
+				if (!It)
+					continue;
 
-			glBindVertexArray(It->VAO);
-			glActiveTexture(GL_TEXTURE0);
-			glBindTexture(GL_TEXTURE_2D, It->TextureID);
+				g_TextRenderShader->SetPositionOffset(It->Position);
 
-			glDrawElements(GL_TRIANGLES, It->VertexCount, GL_UNSIGNED_SHORT, (void*)0);
+				glBindVertexArray(It->VAO);
+				glActiveTexture(GL_TEXTURE0);
+				glBindTexture(GL_TEXTURE_2D, It->TextureID);
+
+				glDrawElements(GL_TRIANGLES, It->VertexCount, GL_UNSIGNED_SHORT, (void*)0);
+			}
 		}
 	}
 

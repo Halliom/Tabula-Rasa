@@ -17,14 +17,15 @@ Console::Console() :
 {
 	m_pTextBufferRenderData = TextRenderer::AddTextToRender("");
 	m_pActiveLineText = TextRenderer::AddTextToRender("");
+	m_pBackgroundRect = NULL;
 }
 
 Console::~Console()
 {
-	TextRenderer::RemoveText(m_pActiveLineText);
-	TextRenderer::RemoveText(m_pTextBufferRenderData);
-
-	TextRenderer::RemoveRect(m_pBackgroundRect);
+	// We actually don't need to dereference anything here
+	// since the console only gets destroyed when the game 
+	// closes and then the text/rect rendering has already
+	// been destroyed
 }
 
 void Console::Print(char* Message)
@@ -194,7 +195,7 @@ void Console::ReceiveTextInput(SDL_Keycode* KeyCode, bool IsShiftDown, bool IsAl
 
 		TextRenderer::RemoveText(m_pActiveLineText);
 
-		m_pActiveLineText = TextRenderer::AddTextToRender(m_CurrentlyTyping.c_str(), 0.0f, g_RenderingEngine->m_ScreenHeight / 2.0f - 24.0f, 16.0f);
+		m_pActiveLineText = TextRenderer::AddTextToRender(m_CurrentlyTyping.c_str(), 0.0f, g_RenderingEngine->m_ScreenHeight / 2.0f - 24.0f, 16.0f, 1);
 	}
 }
 
@@ -204,18 +205,22 @@ void Console::OnUpdateInputMode()
 	{
 		TextRenderer::RemoveText(m_pActiveLineText);
 		TextRenderer::RemoveText(m_pTextBufferRenderData);
+		m_pTextBufferRenderData = TextRenderer::AddTextToRender("");
+		m_pActiveLineText = TextRenderer::AddTextToRender("");
 
-		TextRenderer::RemoveRect(m_pBackgroundRect);
+		if (m_pBackgroundRect)
+			TextRenderer::RemoveRect(m_pBackgroundRect);
 	}
 	else
 	{
-		m_pActiveLineText = TextRenderer::AddTextToRender(m_CurrentlyTyping.c_str(), 0.0f, g_RenderingEngine->m_ScreenHeight / 2.0f - 24.0f, 16.0f);
+		m_pActiveLineText = TextRenderer::AddTextToRender(m_CurrentlyTyping.c_str(), 0.0f, g_RenderingEngine->m_ScreenHeight / 2.0f - 24.0f, 16.0f, 1);
 		m_pBackgroundRect = TextRenderer::AddRectToRender(
 			0.0f, 
 			0.0f, 
 			(float) g_RenderingEngine->m_ScreenWidth, 
 			(float) g_RenderingEngine->m_ScreenHeight / 2.0f, 
-			glm::vec4(1.0f / 255.0f, 25.0f / 255.0f, 0.0f, 0.65f));
+			glm::vec4(1.0f / 255.0f, 25.0f / 255.0f, 0.0f, 0.65f), 
+			1);
 
 		RedrawTextBuffer();
 	}
@@ -237,7 +242,8 @@ void Console::RedrawTextBuffer()
 			m_TextBuffer.c_str(),
 			0.0f,
 			(g_RenderingEngine->m_ScreenHeight / 2.0f) - (16.0f * NumLines) - 24.0f,
-			16.0f);
+			16.0f,
+			1);
 	}
 }
 
@@ -265,10 +271,15 @@ bool IsSingleWord(char* String)
 
 char* Console::ExecuteCommand(char* Command)
 {
-	//if (IsSingleWord(Command))
-	//{
-	//	return g_ScriptEngine->GetVariableValue(Command);
-	//}
+	if (IsSingleWord(Command))
+	{
+		char* ReturnValue = g_ScriptEngine->GetVariableValue(Command);
+		if (ReturnValue[0] != '\0')
+		{
+			return ReturnValue;
+		}
+		return "";
+	}
 	g_ScriptEngine->ExecuteStringInInterpreter(Command);
 
 	return "";
