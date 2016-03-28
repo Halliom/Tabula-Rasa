@@ -54,17 +54,17 @@ void World::Initialize()
 		}
 	}
 
-	PerlinNoise NoiseFunction;
+	//PerlinNoise NoiseFunction;
 
-#if 0
-	for (int i = -64; i < 64; ++i)
+#if 1
+	for (int i = 0; i < 24; ++i)
 	{
-		for (int k = -64; k < 64; ++k)
+		for (int j = 0; j < 24; ++j)
 		{
-			int Height = NoiseFunction.GetHeight(i, k);
-			for (int j = 0; j < Height; ++j)
+			for (int k = 0; k < 24; ++k)
 			{
-				AddBlock(i, j, k, BLOCK_ID_GRASS);
+				if (rand() % 10 > 5)
+					AddBlock(i, j, k, BLOCK_ID_GRASS);
 			}
 		}
 	}
@@ -78,6 +78,11 @@ void World::Initialize()
 	AddBlock(2, 0, 0, BLOCK_ID_GRASS);
 	AddBlock(2, 0, 1, BLOCK_ID_GRASS);
 	AddBlock(2, 0, 2, BLOCK_ID_GRASS);
+
+	AddBlock(4, 0, 4, BLOCK_ID_GRASS);
+	AddBlock(4, 1, 4, BLOCK_ID_GRASS);
+	AddBlock(4, 0, 5, BLOCK_ID_GRASS);
+	AddBlock(4, 1, 5, BLOCK_ID_GRASS);
 
 	AddBlock(1, 1, 1, BLOCK_ID_GRASS);
 

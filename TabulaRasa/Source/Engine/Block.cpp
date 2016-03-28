@@ -10,6 +10,6 @@ BlockInfo BlockManager::LoadedBlocks[MAX_NUM_BLOCKS];
 void BlockManager::SetupBlocks()
 {
 	ADD_SOLID(BLOCK_ID_GRASS, 0, 0, 0, 0, 0, 0);
-	ADD_SOLID(BLOCK_ID_DIRT, 0, 0, 0, 0, 0, 0);
+	ADD_SOLID(BLOCK_ID_DIRT, 1, 1, 1, 1, 1, 1);
 	ADD_MULTIBLOCK(BLOCK_ID_CHEST, 2, 2, 2);
 }
