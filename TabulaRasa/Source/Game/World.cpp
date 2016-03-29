@@ -15,6 +15,7 @@
 World::World()
 {
 	CurrentPlayer = NULL;
+	CachedChunk = NULL;
 }
 
 World::~World()
@@ -110,21 +111,32 @@ void World::Update(float DeltaTime)
 	}
 }
 
-Chunk * World::GetLoadedChunk(const int& ChunkX, const int& ChunkY, const int& ChunkZ)
+Chunk* World::GetLoadedChunk(const int& ChunkX, const int& ChunkY, const int& ChunkZ)
 {
-	int HalfChunkRadius = CHUNK_LOADING_RADIUS / 2;
-	if ((ChunkX >= ChunkLoadingCenterX - HalfChunkRadius && ChunkX < ChunkLoadingCenterX + HalfChunkRadius) &&
-		(ChunkY >= ChunkLoadingCenterY - HalfChunkRadius && ChunkY < ChunkLoadingCenterY + HalfChunkRadius) &&
-		(ChunkZ >= ChunkLoadingCenterZ - HalfChunkRadius && ChunkZ < ChunkLoadingCenterZ + HalfChunkRadius))
+	if (CachedChunk && 
+		CachedChunk->m_ChunkX == ChunkX &&
+		CachedChunk->m_ChunkY == ChunkY &&
+		CachedChunk->m_ChunkZ == ChunkZ)
 	{
-		// Do the inverse of what we do when adding/creating chunks
-		int RelativeX = ChunkX - ChunkLoadingCenterX + HalfChunkRadius;
-		int RelativeY = ChunkY - ChunkLoadingCenterY + HalfChunkRadius;
-		int RelativeZ = ChunkZ - ChunkLoadingCenterZ + HalfChunkRadius;
-
-		return  m_LoadedChunks.GetNodeData(glm::uvec3(RelativeX, RelativeY, RelativeZ));
+		return CachedChunk;
 	}
-	return NULL;
+	else
+	{
+		int HalfChunkRadius = CHUNK_LOADING_RADIUS / 2;
+		if ((ChunkX >= ChunkLoadingCenterX - HalfChunkRadius && ChunkX < ChunkLoadingCenterX + HalfChunkRadius) &&
+			(ChunkY >= ChunkLoadingCenterY - HalfChunkRadius && ChunkY < ChunkLoadingCenterY + HalfChunkRadius) &&
+			(ChunkZ >= ChunkLoadingCenterZ - HalfChunkRadius && ChunkZ < ChunkLoadingCenterZ + HalfChunkRadius))
+		{
+			// Do the inverse of what we do when adding/creating chunks
+			int RelativeX = ChunkX - ChunkLoadingCenterX + HalfChunkRadius;
+			int RelativeY = ChunkY - ChunkLoadingCenterY + HalfChunkRadius;
+			int RelativeZ = ChunkZ - ChunkLoadingCenterZ + HalfChunkRadius;
+
+			CachedChunk = m_LoadedChunks.GetNodeData(glm::uvec3(RelativeX, RelativeY, RelativeZ));
+			return CachedChunk;
+		}
+		return NULL;
+	}
 }
 
 Voxel* World::GetBlock(const int& X, const int& Y, const int& Z)

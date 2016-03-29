@@ -41,6 +41,8 @@ private:
 
 	Octree<Chunk> m_LoadedChunks;
 
+	Chunk* CachedChunk;
+
 	int ChunkLoadingCenterX;
 	int ChunkLoadingCenterY;
 	int ChunkLoadingCenterZ;
