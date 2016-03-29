@@ -86,7 +86,7 @@ std::string PlatformFileSystem::GetAssetDirectory(const AssetDirectoryType& Dire
 	return OutDirectory;
 }
 
-std::vector<unsigned char>* PlatformFileSystem::LoadImageFromFile(const std::string& FileName, unsigned int& OutWidth, unsigned int& OutHeight)
+GLuint PlatformFileSystem::LoadImageFromFile(const std::string& FileName, unsigned int& OutWidth, unsigned int& OutHeight)
 {
 	std::ifstream File;
 	File.open(FileName, std::ios::binary);
@@ -110,16 +110,36 @@ std::vector<unsigned char>* PlatformFileSystem::LoadImageFromFile(const std::str
 
 	OutWidth = Width;
 	OutHeight = Height;
-	return Pixels;
+	
+	GLuint Result;
+	glGenTextures(1, &Result);
+	glBindTexture(GL_TEXTURE_2D, Result);
+
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, Width, Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, Pixels->data());
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+	return Result;
 }
 
 GLuint PlatformFileSystem::LoadBitmapFromFile(char* FileName)
 {
-	GLuint Result;
-	FILE* ImageFile = fopen(FileName, "r");
+	BITMAPFILEHEADER BitmapHeader;
+	BITMAPINFOHEADER BitmapInfoHeader;
 
-	glGenTextures(1, &Result);
-	fread();
+#if 0
+	unsigned int Width = 0, Height = 0;
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, Width, Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, ResultPixels);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+	return Result;
+#endif
+	return 0;
 }
 
 void PlatformFileSystem::LoadModel(LoadedModel *Model, const char *FileName)

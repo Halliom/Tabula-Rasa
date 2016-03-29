@@ -83,13 +83,12 @@ TextRenderData2D* TextRenderer::AddTextToRender(const char* Text, const float& X
 
 	glGenBuffers(1, &NewTextRenderObject->VBO);
 	glGenBuffers(1, &NewTextRenderObject->IBO);
-	glGenTextures(1, &NewTextRenderObject->TextureID);
 
 	NewTextRenderObject->Position = glm::vec3(X, Y, 0.0f);
 
 	unsigned int Width = (unsigned int) FontToUse->SizeX;
 	unsigned int Height = (unsigned int) FontToUse->SizeY;
-	std::vector<unsigned char>* FontImage = FontToUse->FontImage;
+	NewTextRenderObject->TextureID = FontToUse->Texture;
 
 	unsigned int TextLength = strlen(Text);
 	GlyphVertex* Vertices = new GlyphVertex[TextLength * 4];
@@ -167,13 +166,6 @@ TextRenderData2D* TextRenderer::AddTextToRender(const char* Text, const float& X
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(GlyphVertex), (void*)offsetof(GlyphVertex, Pos));
 	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(GlyphVertex), (void*)offsetof(GlyphVertex, Tex));
 
-	glBindTexture(GL_TEXTURE_2D, NewTextRenderObject->TextureID);
-
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, Width, Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, &(FontImage->at(0)));
-
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-
 	delete[] Vertices;
 	delete[] Indices;
 
@@ -194,7 +186,6 @@ void TextRenderer::RemoveText(TextRenderData2D* TextToRemove)
 		TextRenderData2D* RenderData = *Position;
 		glDeleteBuffers(1, &RenderData->VBO);
 		glDeleteBuffers(1, &RenderData->IBO);
-		glDeleteTextures(1, &RenderData->TextureID);
 		g_TextRenderObjects[TextToRemove->Layer].erase(Position);
 
 		// This needs to be done since std::vector does not automatically

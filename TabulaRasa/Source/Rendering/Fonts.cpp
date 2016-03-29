@@ -155,7 +155,7 @@ Font* LoadFontFromFile(const char* FontFileName, const char* Directory)
 	}
 
 	unsigned int OutWidth, OutHeight;
-	NewFont->Texture = PlatformFileSystem::LoadBitmapFromFile(NewFont->TextureAtlasFileName, OutWidth, OutHeight);
+	NewFont->Texture = PlatformFileSystem::LoadImageFromFile(NewFont->TextureAtlasFileName, OutWidth, OutHeight);
 
 	fclose(FilePointer);
 
@@ -168,7 +168,7 @@ void UnloadFontLibrary()
 	{
 		if (LoadedFonts[i])
 		{
-			delete LoadedFonts[i]->FontImage;
+			glDeleteTextures(1, &LoadedFonts[i]->Texture);
 			delete LoadedFonts[i];
 		}
 	}

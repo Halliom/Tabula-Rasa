@@ -4,6 +4,8 @@
 #include <stdlib.h>
 #include <unordered_map>
 
+#include "GL\glew.h"
+
 #define FONT_DEFAULT 0
 #define FONT_LIBRARY_SIZE 1
 
