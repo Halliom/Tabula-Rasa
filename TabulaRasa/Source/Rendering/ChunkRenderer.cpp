@@ -24,20 +24,9 @@ void ChunkRenderer::SetupChunkRenderer()
 
 	g_ChunkRenderShader = GLShaderProgram::CreateVertexFragmentShaderFromFile(std::string("VertexShader.glsl"), std::string("FragmentShader.glsl"));
 
-	//g_MultiblockShader = GLShaderProgram::CreateVertexFragmentShaderFromFile(std::string("CustomBlockVertexShader.glsl"), std::string("CustomBlockFragmentShader.glsl"));
-
-	glGenTextures(1, &g_TextureAtlas);
-	glBindTexture(GL_TEXTURE_2D, g_TextureAtlas);
-
 	unsigned int Width, Height;
 	std::string FileName = PlatformFileSystem::GetAssetDirectory(DT_TEXTURES).append(std::string("textures.png"));
-	std::vector<unsigned char>*	FontImage = PlatformFileSystem::LoadImageFromFile(FileName, Width, Height);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, Width, Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, &(FontImage->at(0)));
-
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	g_TextureAtlas = PlatformFileSystem::LoadImageFromFile((char*) FileName.c_str(), Width, Height);
 }
 
 void ChunkRenderer::DestroyChunkRenderer()
@@ -172,23 +161,23 @@ static void GreedyMesh(Chunk* Voxels, ChunkRenderData* RenderData)
 				{
 					for (x[u] = 0; x[u] < ChunkSize; n += 4)
 					{
-						int a0 = (0 <= x[d]				? GetVoxelSide(Voxels, &AdditionalRenderData, x[0],		x[1],			x[2],			Side) : -1);
-						int b0 = (x[d] < ChunkSize - 1	? GetVoxelSide(Voxels, &AdditionalRenderData, x[0] + q[0], x[1] + q[1],	x[2] + q[2],	Side) : -1);
+						int a0 = (0 <= x[d]				? GetVoxelSide(Voxels, &AdditionalRenderData, x[0],			x[1],			x[2],			Side) : -1);
+						int b0 = (x[d] < ChunkSize - 1	? GetVoxelSide(Voxels, &AdditionalRenderData, x[0] + q[0],	x[1] + q[1],	x[2] + q[2],	Side) : -1);
 						mask[n] = (a0 != -1 && b0 != -1 && a0 == b0) ? -1 : (BackFace ? b0 : a0);
 						++x[u];
 
-						int a1 = (0 <= x[d]				? GetVoxelSide(Voxels, &AdditionalRenderData, x[0],		x[1],			x[2],			Side) : -1);
-						int b1 = (x[d] < ChunkSize - 1	? GetVoxelSide(Voxels, &AdditionalRenderData, x[0] + q[0], x[1] + q[1],	x[2] + q[2],	Side) : -1);
+						int a1 = (0 <= x[d]				? GetVoxelSide(Voxels, &AdditionalRenderData, x[0],			x[1],			x[2],			Side) : -1);
+						int b1 = (x[d] < ChunkSize - 1	? GetVoxelSide(Voxels, &AdditionalRenderData, x[0] + q[0],	x[1] + q[1],	x[2] + q[2],	Side) : -1);
 						mask[n + 1] = (a1 != -1 && b1 != -1 && a1 == b1) ? -1 : (BackFace ? b1 : a1);
 						++x[u];
 
-						int a2 = (0 <= x[d]				? GetVoxelSide(Voxels, &AdditionalRenderData, x[0],		x[1],			x[2],			Side) : -1);
-						int b2 = (x[d] < ChunkSize - 1	? GetVoxelSide(Voxels, &AdditionalRenderData, x[0] + q[0], x[1] + q[1],	x[2] + q[2],	Side) : -1);
+						int a2 = (0 <= x[d]				? GetVoxelSide(Voxels, &AdditionalRenderData, x[0],			x[1],			x[2],			Side) : -1);
+						int b2 = (x[d] < ChunkSize - 1	? GetVoxelSide(Voxels, &AdditionalRenderData, x[0] + q[0],	x[1] + q[1],	x[2] + q[2],	Side) : -1);
 						mask[n + 2] = (a2 != -1 && b2 != -1 && a2 == b2) ? -1 : (BackFace ? b2 : a2);
 						++x[u];
 
-						int a3 = (0 <= x[d]				? GetVoxelSide(Voxels, &AdditionalRenderData, x[0],		x[1],			x[2],			Side) : -1);
-						int b3 = (x[d] < ChunkSize - 1	? GetVoxelSide(Voxels, &AdditionalRenderData, x[0] + q[0], x[1] + q[1],	x[2] + q[2],	Side) : -1);
+						int a3 = (0 <= x[d]				? GetVoxelSide(Voxels, &AdditionalRenderData, x[0],			x[1],			x[2],			Side) : -1);
+						int b3 = (x[d] < ChunkSize - 1	? GetVoxelSide(Voxels, &AdditionalRenderData, x[0] + q[0],	x[1] + q[1],	x[2] + q[2],	Side) : -1);
 						mask[n + 3] = (a3 != -1 && b3 != -1 && a3 == b3) ? -1 : (BackFace ? b3 : a3);
 						++x[u];
 					}
