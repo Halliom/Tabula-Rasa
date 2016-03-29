@@ -8,7 +8,7 @@ public:
 
 	Voxel m_pVoxels[32][32][32];
 
-	Voxel* GetVoxel(unsigned int X, unsigned int Y, unsigned int Z)
+	__forceinline Voxel* GetVoxel(unsigned int X, unsigned int Y, unsigned int Z)
 	{
 		Voxel *Result = &m_pVoxels[X][Y][Z];
 		return Result->BlockID > 0 ? Result : NULL; // Only return a value if the block id is not 0
