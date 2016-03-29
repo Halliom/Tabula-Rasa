@@ -37,7 +37,7 @@ struct Font
 	unsigned int Base;
 
 	char* TextureAtlasFileName;
-	std::vector<unsigned char>* FontImage;
+	GLuint Texture;
 };
 
 static Font** LoadedFonts;

@@ -40,7 +40,9 @@ public:
 
 	static std::string GetAssetDirectory(const AssetDirectoryType& Directory);
 
-	static std::vector<unsigned char> *LoadImageFromFile(const std::string& FileName, unsigned int& OutWidth, unsigned int& OutHeight);
+	static std::vector<unsigned char>* LoadImageFromFile(const std::string& FileName, unsigned int& OutWidth, unsigned int& OutHeight);
+
+	static GLuint LoadBitmapFromFile(char* FileName);
 
 	static void LoadModel(LoadedModel *Model, const char* FileName);
 };

@@ -77,7 +77,6 @@ Font* LoadFontFromFile(const char* FontFileName, const char* Directory)
 	char Line[150];
 
 	Font* NewFont = new Font();
-	NewFont->FontImage = NULL;
 
 	unsigned int LineNumber = 0;
 	while (fgets(Line, 150, FilePointer))
@@ -156,7 +155,7 @@ Font* LoadFontFromFile(const char* FontFileName, const char* Directory)
 	}
 
 	unsigned int OutWidth, OutHeight;
-	NewFont->FontImage = PlatformFileSystem::LoadImageFromFile(NewFont->TextureAtlasFileName, OutWidth, OutHeight);
+	NewFont->Texture = PlatformFileSystem::LoadBitmapFromFile(NewFont->TextureAtlasFileName, OutWidth, OutHeight);
 
 	fclose(FilePointer);
 

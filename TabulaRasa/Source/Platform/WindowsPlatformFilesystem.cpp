@@ -113,6 +113,15 @@ std::vector<unsigned char>* PlatformFileSystem::LoadImageFromFile(const std::str
 	return Pixels;
 }
 
+GLuint PlatformFileSystem::LoadBitmapFromFile(char* FileName)
+{
+	GLuint Result;
+	FILE* ImageFile = fopen(FileName, "r");
+
+	glGenTextures(1, &Result);
+	fread();
+}
+
 void PlatformFileSystem::LoadModel(LoadedModel *Model, const char *FileName)
 {
 	glGenVertexArrays(1, &Model->m_AssetVAO);

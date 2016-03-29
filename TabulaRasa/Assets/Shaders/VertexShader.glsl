@@ -30,7 +30,7 @@ void main()
 	gl_Position = g_ProjectionMatrix * viewPos;
 	
 	frag_atlasOffset = getAtlasOffset();
-	frag_texCoord = vec2(255.0, 255.0);//dimension;
+	frag_texCoord = dimension;
 	
 	mat3 normalMatrix = transpose(inverse(mat3(g_ViewMatrix * g_ModelMatrix)));
 	frag_normal = normalize(normalMatrix * normal);
