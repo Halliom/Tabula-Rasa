@@ -13,8 +13,18 @@ find_package(PythonLibs REQUIRED)
 message(${PYTHON_INCLUDE_DIRS})
 message(${PYTHON_LIBRARIES})
 
-if(CMAKE_BUILD_TOOL MATCHES "(msdev|devenv|nmake)")
+if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+  # using Clang
+elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+  # using GCC
+elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
+  # using Intel C++
+elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
     add_definitions("/W2")
+    add_definitions("/Oi")
+    add_definitions("/Ob1")
+    add_definitions("/arch:SSE2")
+    add_definitions("/fp:fast")
 endif()
 
 include_directories(${PROJECT_SOURCE_DIR}/Include/ ${PYTHON_INCLUDE_DIRS})
