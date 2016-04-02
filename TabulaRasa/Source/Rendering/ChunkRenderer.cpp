@@ -7,19 +7,29 @@
 #include "../Platform/Platform.h"
 #include "../Rendering/RenderingEngine.h"
 
+#include "../Engine/Core/Memory.h"
+
 #include "glm\gtc\matrix_transform.hpp"
+
+#include "SDL2\SDL.h"
 
 // Init the chunk list
 DynamicArray<ChunkRenderData*> ChunkRenderer::g_ChunksToRender;
 
 GLShaderProgram* ChunkRenderer::g_ChunkRenderShader = NULL;
 
+MemoryPool<ChunkRenderData>* ChunkRenderer::g_RenderDataMemoryPool = NULL;
+
 GLuint ChunkRenderer::g_TextureAtlas;
 
 extern RenderingEngine *g_RenderingEngine;
 
+extern GameMemoryManager* g_MemoryManager;
+
 void ChunkRenderer::SetupChunkRenderer()
 {
+	// Allocate a memory pool from the rendering memory to hold 512 ChunkRenderDatas
+	g_RenderDataMemoryPool = new MemoryPool<ChunkRenderData>(Allocate<ChunkRenderData>(g_MemoryManager->m_pRenderingMemory, 512), 512);
 	g_ChunksToRender.Reserve(16);
 
 	g_ChunkRenderShader = GLShaderProgram::CreateVertexFragmentShaderFromFile(std::string("VertexShader.glsl"), std::string("FragmentShader.glsl"));
@@ -113,8 +123,11 @@ static glm::vec3 BOTTOM_FACE_NORMAL = glm::vec3(0.0f, -1.0f, 0.0f);
 static glm::vec3 NORTH_FACE_NORMAL	= glm::vec3(0.0f, 0.0f, +1.0f);
 static glm::vec3 SOUTH_FACE_NORMAL	= glm::vec3(0.0f, 0.0f, -1.0f);
 
+extern GameMemoryManager* g_MemoryManager;
+
 static void GreedyMesh(Chunk* Voxels, ChunkRenderData* RenderData)
 {
+	double StartTime = SDL_GetTicks() / 1000.0;
 	DynamicArray<TexturedQuadVertex> Vertices;
 	Vertices.Reserve(32 * 32 * 32);
 	DynamicArray<unsigned int> Indices;
@@ -366,13 +379,15 @@ static void GreedyMesh(Chunk* Voxels, ChunkRenderData* RenderData)
 		RenderData->NumMultiblocksToRender = 0;
 	}
 
+	double StopTime = SDL_GetTicks() / 1000.0;
+
 	// Unbind so nothing else modifies it
 	glBindVertexArray(0);
 }
 
 ChunkRenderData* ChunkRenderer::CreateRenderData(const glm::vec3& Position, Chunk* Voxels)
 {
-	ChunkRenderData* RenderData = new ChunkRenderData();
+	ChunkRenderData* RenderData = g_RenderDataMemoryPool->Allocate();
 	glGenVertexArrays(1, &RenderData->VertexArrayObject);
 	glGenBuffers(2, &RenderData->VertexBufferObject);
 
