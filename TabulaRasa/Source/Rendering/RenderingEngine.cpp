@@ -61,6 +61,12 @@ void RenderingEngine::Initialize(const unsigned int& ScreenWidth, const unsigned
 	LogLn((char*) glGetString(GL_VENDOR));
 	LogLn((char*) glGetString(GL_RENDERER));
 	LogLn((char*) glGetString(GL_VERSION));
+
+	SYSTEM_INFO SystemInfo;
+	GetSystemInfo(&SystemInfo);
+	char Buffer[32];
+	sprintf(Buffer, "Number of processors: %d\n", SystemInfo.dwNumberOfProcessors);
+	Log(Buffer);
 }
 
 void RenderingEngine::AddRendererForBlock(unsigned int BlockID, const char *BlockModelFileName)
