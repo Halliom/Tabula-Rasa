@@ -92,9 +92,9 @@ bool GameMemoryManager::Initialize()
 	if (m_pGameMemory == NULL)
 		return false;
 
-	m_pTransientFrameMemory = new LinearAllocator(m_pGameMemory, (MB(16))); // 16 MB total
-	m_pRenderingMemory = new LinearAllocator(m_pGameMemory + (MB(16)), MB(12)); // 28 MB total
-	m_pChunkAllocator = new MemoryPool<Chunk>(m_pGameMemory + (MB(28)), MB(100)); // 128 MB total
+	m_pTransientFrameMemory = new LinearAllocator(m_pGameMemory, (MB(8))); // 8 MB total
+	m_pRenderingMemory = new LinearAllocator(m_pGameMemory + (MB(8)), MB(12)); // 20 MB total
+	m_pChunkAllocator = new MemoryPool<Chunk>(m_pGameMemory + (MB(20)), MB(80)); // 100 MB total
 
 	return true;
 }
