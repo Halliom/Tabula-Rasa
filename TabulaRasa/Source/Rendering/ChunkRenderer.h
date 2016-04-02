@@ -4,6 +4,7 @@
 #include "DynamicArray.cpp"
 
 #include "GL_shader.h"
+#include "../Engine/Core/Memory.h"
 #include "../Game/Player.h"
 
 struct MultiblockRenderData
@@ -70,6 +71,6 @@ private:
 
 	static GLShaderProgram *g_ChunkRenderShader;
 
-	//static GLShaderProgram *g_MultiblockShader;
+	static MemoryPool<ChunkRenderData>* g_RenderDataMemoryPool;
 
 };
