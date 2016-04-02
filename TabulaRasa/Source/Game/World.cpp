@@ -271,10 +271,6 @@ void World::AddMultiblock(const int &X, const int &Y, const int &Z, const unsign
 						LocalZ %= 16;
 					}
 
-					Voxel NewVoxel = Voxel();
-					NewVoxel.BlockID = BlockID;
-					NewVoxel.Parent = Parent;
-
 					if (XCoord == 0 && YCoord == 0 && ZCoord == 0)
 					{
 						Parent = QueriedChunk->GetVoxel(LocalX, LocalY, LocalZ);
