@@ -8,12 +8,16 @@
 #include "Rendering\RenderingEngine.h"
 #include "Engine\PythonScript.h"
 
+#include "Engine\Core\Memory.h"
+
 #define SAFE_DELETE(ptr) if (ptr) { delete ptr; }
+
 
 World* g_World = NULL;
 RenderingEngine* g_RenderingEngine = NULL;
 PythonScriptEngine* g_ScriptEngine = NULL;
 Console* g_Console = NULL;
+GameMemoryManager* g_MemoryManager;
 
 #ifdef _WIN32
 
@@ -59,6 +63,9 @@ int main(int argc, char* argv[])
 	// Loads the font library
 	std::string Directory = PlatformFileSystem::GetAssetDirectory(DT_FONTS);
 	LoadFontLibrary(&Directory);
+
+	g_MemoryManager = new GameMemoryManager();
+	bool MemSuccess = g_MemoryManager->Initialize();
 
 	g_Console = new Console();
 	g_Console->OnUpdateInputMode();
@@ -106,6 +113,7 @@ int main(int argc, char* argv[])
 			CumulativeFrameTime = 0;
 			FramesPerSecond = 0;
 		}
+		g_MemoryManager->ClearTransientMemory();
 	}
 
 	g_ScriptEngine->Destroy();
@@ -114,6 +122,7 @@ int main(int argc, char* argv[])
 	SAFE_DELETE(g_ScriptEngine);
 	SAFE_DELETE(g_RenderingEngine);
 	SAFE_DELETE(g_Console);
+	SAFE_DELETE(g_MemoryManager);
 
 	Window.DestroyWindow();
 }
