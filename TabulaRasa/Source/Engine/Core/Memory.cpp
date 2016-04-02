@@ -85,20 +85,21 @@ GameMemoryManager::~GameMemoryManager()
 	free(m_pGameMemory);
 }
 
-#define GB(b) MB(b) * 1000
-#define MB(b) KB(b) * 1000
-#define KB(b) b * 1000
-
 bool GameMemoryManager::Initialize()
 {
-	m_pGameMemory = (unsigned char*) malloc(MB(100));
+	m_pGameMemory = new unsigned char[MB(100)];
 
 	if (m_pGameMemory == NULL)
 		return false;
 
-	m_pTransientFrameMemory = new LinearAllocator(m_pGameMemory, (MB(2)));
-	m_pRenderingMemory = new LinearAllocator(m_pGameMemory + (MB(2)), MB(8));
-	m_pChunkAllocator = new MemoryPool<Chunk>(m_pGameMemory + (MB(10)), MB(80));
+	m_pTransientFrameMemory = new LinearAllocator(m_pGameMemory, (MB(16))); // 16 MB total
+	m_pRenderingMemory = new LinearAllocator(m_pGameMemory + (MB(16)), MB(12)); // 28 MB total
+	m_pChunkAllocator = new MemoryPool<Chunk>(m_pGameMemory + (MB(28)), MB(100)); // 128 MB total
 
 	return true;
+}
+
+void GameMemoryManager::ClearTransientMemory()
+{
+	m_pTransientFrameMemory->ClearMemory();
 }

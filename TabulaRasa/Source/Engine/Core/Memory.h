@@ -169,13 +169,14 @@ T* MemoryPool<T>::Allocate()
 	{
 		T* Result = &m_pFreeList->m_Value;
 		m_pFreeList = m_pFreeList->m_pNext;
-		return Result;
-	}
 
 #ifdef _DEBUG
-	++m_NumAllocations;
-	m_UsedMemory += m_ObjectSize;
+		++m_NumAllocations;
+		m_UsedMemory += m_ObjectSize;
 #endif
+
+		return Result;
+	}
 }
 
 template<typename T>
@@ -228,6 +229,16 @@ __forceinline void MemoryPool<T>::DeallocateDelete(T* Pointer)
 #endif
 }
 
+template<typename T>
+__forceinline unsigned char* Allocate(LinearAllocator* Allocator, size_t NumInstances = 1)
+{
+	return Allocator->Allocate(sizeof(T) * NumInstances, __alignof(T));
+}
+
+#define GB(b) MB(b) * 1000
+#define MB(b) KB(b) * 1000
+#define KB(b) b * 1000
+
 class GameMemoryManager
 {
 public:
@@ -237,9 +248,11 @@ public:
 
 	bool Initialize();
 
-	LinearAllocator* m_pTransientFrameMemory;
-	LinearAllocator* m_pRenderingMemory;
-	MemoryPool<Chunk>* m_pChunkAllocator;
+	void ClearTransientMemory();
+
+	LinearAllocator*				m_pTransientFrameMemory;
+	LinearAllocator*				m_pRenderingMemory;
+	MemoryPool<Chunk>*				m_pChunkAllocator;
 
 private:
 
