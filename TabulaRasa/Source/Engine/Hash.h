@@ -21,7 +21,7 @@ private:
 
 	unsigned int m_Size;
 	unsigned int m_NumElements;
-	
+
 	T* m_pKeyValuePairs;
 
 };
@@ -72,4 +72,3 @@ inline void IntegerHashTable<T>::Remove(const uint32_t& Key)
 	m_pKeyValuePairs[Index] = NULL;
 	return Value;
 }
-
