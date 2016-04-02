@@ -4,6 +4,7 @@
 #include "glm\gtc\matrix_transform.hpp"
 
 #include "../Engine/Block.h"
+#include "../Engine/Chunk.h"
 #include "../Engine/PerlinNoise.h"
 
 #include "../Rendering/ChunkRenderer.h"
@@ -160,10 +161,7 @@ void World::AddBlock(const int& X, const int& Y, const int& Z, const unsigned in
 		int LocalX = X % Octree<Voxel>::SIZE;
 		int LocalZ = Z % Octree<Voxel>::SIZE;
 
-		Voxel NewVoxel;
-		NewVoxel.BlockID = BlockID;
-
-		ChunkToAddTo->SetVoxel(LocalX, LocalY, LocalZ, &NewVoxel, this);
+		ChunkToAddTo->SetVoxel(this, LocalX, LocalY, LocalZ, BlockID);
 	}
 }
 
@@ -178,7 +176,7 @@ void World::RemoveBlock(const int & X, const int & Y, const int & Z)
 		int LocalY = Y % Octree<Voxel>::SIZE;
 		int LocalZ = Z % Octree<Voxel>::SIZE;
 
-		QueriedChunk->SetVoxel(LocalX, LocalY, LocalZ, NULL, this);
+		QueriedChunk->RemoveVoxel(this, LocalX, LocalY, LocalZ);
 	}
 }
 
@@ -279,9 +277,9 @@ void World::AddMultiblock(const int &X, const int &Y, const int &Z, const unsign
 
 					if (XCoord == 0 && YCoord == 0 && ZCoord == 0)
 					{
-						Parent = &NewVoxel;
+						Parent = QueriedChunk->GetVoxel(LocalX, LocalY, LocalZ);
 					}
-					QueriedChunk->SetVoxel(LocalX, LocalY, LocalZ, &NewVoxel, this);
+					QueriedChunk->SetVoxel(this, LocalX, LocalY, LocalZ, BlockID, Parent);
 
 					++LocalZ;
 				}
@@ -341,7 +339,7 @@ void World::RemoveMultiblock(const int& X, const int& Y, const int& Z)
 							LocalZ %= 16;
 						}
 
-						QueriedChunk->SetVoxel(LocalX, LocalY, LocalZ, NULL, this);
+						QueriedChunk->RemoveVoxel(this, LocalX, LocalY, LocalZ);
 					}
 					++LocalY;
 				}
@@ -351,12 +349,13 @@ void World::RemoveMultiblock(const int& X, const int& Y, const int& Z)
 	}
 }
 
-Chunk* World::LoadChunk(const int& ChunkX, const int& ChunkY, const int& ChunkZ)
+Chunk* World::LoadChunk(const int ChunkX, const int ChunkY, const int ChunkZ)
 {
-	Chunk* Result = g_MemoryManager->m_pChunkAllocator->AllocateNew();
+	Chunk* Result = g_MemoryManager->m_pChunkAllocator->Allocate();
 	Result->m_ChunkX = ChunkX;
 	Result->m_ChunkY = ChunkY;
 	Result->m_ChunkZ = ChunkZ;
+	Result->m_bIsRenderStateDirty = false;
 
 	// Make sure that everything is initialized to zero
 	memset(Result->m_pVoxels, NULL, 32 * 32 * 32 * sizeof(Voxel));

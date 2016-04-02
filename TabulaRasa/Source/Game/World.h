@@ -5,7 +5,6 @@
 
 #include "Player.h"
 
-#include "../Engine/Chunk.h"
 #include "../Engine/Octree.h"
 
 class World
@@ -19,7 +18,7 @@ public:
 
 	void Update(float DeltaTime);
 
-	Chunk* GetLoadedChunk(const int &ChunkX, const int &ChunkY, const int &ChunkZ);
+	class Chunk* GetLoadedChunk(const int &ChunkX, const int &ChunkY, const int &ChunkZ);
 
 	Voxel* GetBlock(const int& X, const int& Y, const int& Z);
 
@@ -33,13 +32,13 @@ public:
 
 	void RemoveMultiblock(const int& X, const int& Y, const int& Z);
 
-	Chunk* LoadChunk(const int& ChunkX, const int& ChunkY, const int& ChunkZ);
+	class Chunk* LoadChunk(const int ChunkX, const int ChunkY, const int ChunkZ);
 
 	Player* CurrentPlayer;
 
 private:
 
-	Octree<Chunk> m_LoadedChunks;
+	Octree<class Chunk> m_LoadedChunks;
 
 	Chunk* CachedChunk;
 
