@@ -18,10 +18,29 @@ __forceinline size_t CalcualteAlignmentAdjustment(const unsigned char* Address, 
 	return Adjustment;
 }
 
+struct LinearAllocator
+{
+	LinearAllocator(unsigned char* StartAddress, size_t MaxByteSize);
+
+	~LinearAllocator();
+
+	unsigned char* Allocate(size_t NumBytes, size_t ByteAlignment);
+
+	void ClearMemory();
+
+	unsigned char* m_pStartAddress;
+	size_t m_MaxByteSize;
+
+	unsigned char* m_pCurrentPos;
+
+	size_t m_UsedMemory; /* Total amount of bytes used */
+	size_t m_NumAllocations; /* Total number of allocations made */
+};
+
 template<typename T>
 struct MemoryPool
 {
-	MemoryPool(unsigned char* StartAddress, size_t MaxSize);
+	MemoryPool(unsigned char* StartAddress, size_t MaxByteSize);
 
 	~MemoryPool();
 
@@ -38,24 +57,24 @@ struct MemoryPool
 		MemorySlot* m_pNext; /* Pointer to the next free slot of memory */
 	};
 
-	unsigned char* m_pStartAdress; /* The start address for the memory block */
-	size_t m_MaxSize; /* Maximum number of bytes this memory block gets to use, marks the end the block*/
-
-	size_t m_ObjectSize; /* The computed size of the object + pointer to next free object */
-	size_t m_Alignment; /* The alignment for the memoryslot*/
-
-	MemorySlot* m_pFreeList; /* Singly-linked list of all free memory chunks with the head first */
+	unsigned char* m_pStartAddress; /* The start address for the memory block */
+	size_t m_MaxByteSize; /* Maximum number of bytes this memory block gets to use, marks the end the block*/
 
 #ifdef _DEBUG
 	size_t m_UsedMemory; /* Total amount of bytes used */
 	size_t m_NumAllocations; /* Total number of allocations made */
 #endif
+
+	size_t m_ObjectSize; /* The computed size of the object + pointer to next free object */
+	size_t m_Alignment; /* The alignment for the memoryslot*/
+
+	MemorySlot* m_pFreeList; /* Singly-linked list of all free memory chunks with the head first */
 };
 
 template<typename T>
-MemoryPool<T>::MemoryPool(unsigned char* StartAddress, size_t MaxSize) :
-	m_pStartAdress(StartAddress),
-	m_MaxSize(MaxSize)
+MemoryPool<T>::MemoryPool(unsigned char* StartAddress, size_t MaxByteSize) :
+	m_pStartAddress(StartAddress),
+	m_MaxByteSize(MaxByteSize)
 {
 #ifdef _DEBUG
 	m_UsedMemory = 0;
@@ -69,7 +88,7 @@ MemoryPool<T>::MemoryPool(unsigned char* StartAddress, size_t MaxSize) :
 	
 	m_pFreeList = (MemorySlot*) (StartAddress + Adjustment);
 
-	size_t NumObjects = (MaxSize - Adjustment) / m_ObjectSize;
+	size_t NumObjects = (MaxByteSize - Adjustment) / m_ObjectSize;
 	size_t LastObject = NumObjects - 1;
 	for (unsigned int i = 0; i < NumObjects; ++i)
 	{
@@ -86,8 +105,8 @@ MemoryPool<T>::~MemoryPool()
 	assert(m_NumAllocations == 0 && m_UsedMemory == 0);
 #endif
 
-	m_pStartAdress = 0;
-	m_MaxSize = 0;
+	m_pStartAddress = 0;
+	m_MaxByteSize = 0;
 	m_pFreeList = NULL;
 }
 
@@ -132,7 +151,7 @@ T* MemoryPool<T>::AllocateNew()
 }
 
 template<typename T>
-void MemoryPool<T>::Deallocate(T* Pointer)
+__forceinline void MemoryPool<T>::Deallocate(T* Pointer)
 {
 	MemorySlot* Slot = (MemorySlot*) Pointer;
 	
@@ -146,10 +165,10 @@ void MemoryPool<T>::Deallocate(T* Pointer)
 }
 
 template<typename T>
-void MemoryPool<T>::DeallocateDelete(T* Pointer)
+__forceinline void MemoryPool<T>::DeallocateDelete(T* Pointer)
 {
 	MemorySlot* Slot = (MemorySlot*) Pointer;
-	Slot->mValue.~T();
+	Pointer->~T();
 
 	Slot->m_pNext = m_pFreeList->m_pNext;
 	m_pFreeList = Slot;
@@ -159,3 +178,8 @@ void MemoryPool<T>::DeallocateDelete(T* Pointer)
 	m_UsedMemory -= m_ObjectSize;
 #endif
 }
+
+class GameMemoryManager
+{
+
+};
