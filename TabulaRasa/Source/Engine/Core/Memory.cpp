@@ -1,5 +1,7 @@
 #include "Memory.h"
 
+#include <Windows.h>
+
 LinearAllocator::LinearAllocator(unsigned char* StartAddress, size_t MaxByteSize) :
 	m_pStartAddress(StartAddress),
 	m_MaxByteSize(MaxByteSize),
@@ -50,4 +52,53 @@ void LinearAllocator::ClearMemory()
 	m_NumAllocations = 0;
 	m_UsedMemory = 0;
 	m_pCurrentPos = m_pStartAddress;
+}
+
+FreeList::FreeList(unsigned char* StartAddress, size_t MaxByteSize)
+{
+	m_pNextFree = (MemorySlot*) StartAddress;
+	m_pNextFree->m_Size = MaxByteSize;
+	m_pNextFree->m_pNext = NULL;
+}
+
+FreeList::~FreeList()
+{
+	m_pNextFree = NULL;
+}
+
+unsigned char* FreeList::Allocate(size_t Size, size_t Alignment)
+{
+	return NULL;
+}
+
+void FreeList::Free(unsigned char * Pointer)
+{
+}
+
+GameMemoryManager::GameMemoryManager()
+{
+	m_pGameMemory = NULL;
+}
+
+GameMemoryManager::~GameMemoryManager()
+{
+	free(m_pGameMemory);
+}
+
+#define GB(b) MB(b) * 1000
+#define MB(b) KB(b) * 1000
+#define KB(b) b * 1000
+
+bool GameMemoryManager::Initialize()
+{
+	m_pGameMemory = (unsigned char*) malloc(MB(100));
+
+	if (m_pGameMemory == NULL)
+		return false;
+
+	m_pTransientFrameMemory = new LinearAllocator(m_pGameMemory, (MB(2)));
+	m_pRenderingMemory = new LinearAllocator(m_pGameMemory + (MB(2)), MB(8));
+	m_pChunkAllocator = new MemoryPool<Chunk>(m_pGameMemory + (MB(10)), MB(80));
+
+	return true;
 }

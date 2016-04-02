@@ -8,9 +8,13 @@
 
 #include "../Rendering/ChunkRenderer.h"
 
+#include "../Engine/Core/Memory.h"
+
 #define CHUNK_LOADING_RADIUS 4
 
 #define TOCHUNK_COORD(X, Y, Z) X / (int) Octree<Voxel>::SIZE, Y / (int) Octree<Voxel>::SIZE, Z / (int) Octree<Voxel>::SIZE
+
+extern GameMemoryManager* g_MemoryManager;
 
 World::World()
 {
@@ -349,7 +353,7 @@ void World::RemoveMultiblock(const int& X, const int& Y, const int& Z)
 
 Chunk* World::LoadChunk(const int& ChunkX, const int& ChunkY, const int& ChunkZ)
 {
-	Chunk* Result = new Chunk();
+	Chunk* Result = g_MemoryManager->m_pChunkAllocator->AllocateNew();
 	Result->m_ChunkX = ChunkX;
 	Result->m_ChunkY = ChunkY;
 	Result->m_ChunkZ = ChunkZ;

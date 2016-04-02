@@ -3,6 +3,8 @@
 #include <assert.h>
 #include <cstdint>
 
+#include "../Chunk.h"
+
 __forceinline unsigned char* AlignAddress(unsigned char* Address, size_t Alignment)
 {
 	return (unsigned char*) ((reinterpret_cast<unsigned char>(Address) + static_cast<unsigned char>(Alignment - 1)) & static_cast<unsigned char>(~(Alignment - 1)));
@@ -14,6 +16,26 @@ __forceinline size_t CalcualteAlignmentAdjustment(const unsigned char* Address, 
 
 	if (Adjustment == Alignment)
 		return 0;
+
+	return Adjustment;
+}
+
+__forceinline uint8_t AlignForwardAdjustmentWithHeader(const unsigned char* Address, uint8_t Alignment, uint8_t HeaderSize)
+{
+	uint8_t Adjustment = CalcualteAlignmentAdjustment(Address, Alignment);
+
+	uint8_t NeededSpace = HeaderSize;
+
+	if (Adjustment < NeededSpace)
+	{
+		NeededSpace -= Adjustment;
+
+		//Increase adjustment to fit header
+		Adjustment += Alignment * (NeededSpace / Alignment);
+
+		if (NeededSpace % Alignment > 0)
+			Adjustment += Alignment;
+	}
 
 	return Adjustment;
 }
@@ -37,6 +59,33 @@ struct LinearAllocator
 	size_t m_NumAllocations; /* Total number of allocations made */
 };
 
+struct FreeList
+{
+	FreeList(unsigned char* StartAddress, size_t MaxByteSize);
+	~FreeList();
+
+	unsigned char* Allocate(size_t Size, size_t Alignment);
+	
+	void Free(unsigned char* Pointer);
+
+	struct AllocationHeader
+	{
+		size_t	m_Size;
+		uint8_t	m_AlignAdjustment;
+	};
+
+	struct MemorySlot
+	{
+		size_t		m_Size;
+		MemorySlot* m_pNext;
+	};
+
+	unsigned char* m_pStartAddress;
+	size_t m_MaxByteSize;
+
+	MemorySlot* m_pNextFree;
+};
+
 template<typename T>
 struct MemoryPool
 {
@@ -44,7 +93,6 @@ struct MemoryPool
 
 	~MemoryPool();
 
-	//T* Allocate(size_t Size);
 	T* Allocate();
 	T* AllocateNew();
 
@@ -141,13 +189,14 @@ T* MemoryPool<T>::AllocateNew()
 	{
 		T* Result = new (&m_pFreeList->m_Value) T;
 		m_pFreeList = m_pFreeList->m_pNext;
-		return Result;
-	}
 
 #ifdef _DEBUG
-	++m_NumAllocations;
-	m_UsedMemory += m_ObjectSize;
+		++m_NumAllocations;
+		m_UsedMemory += m_ObjectSize;
 #endif
+
+		return Result;
+	}
 }
 
 template<typename T>
@@ -181,5 +230,19 @@ __forceinline void MemoryPool<T>::DeallocateDelete(T* Pointer)
 
 class GameMemoryManager
 {
+public:
+
+	GameMemoryManager();
+	~GameMemoryManager();
+
+	bool Initialize();
+
+	LinearAllocator* m_pTransientFrameMemory;
+	LinearAllocator* m_pRenderingMemory;
+	MemoryPool<Chunk>* m_pChunkAllocator;
+
+private:
+
+	unsigned char* m_pGameMemory;
 
 };
