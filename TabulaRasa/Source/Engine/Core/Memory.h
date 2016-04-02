@@ -235,6 +235,12 @@ __forceinline unsigned char* Allocate(LinearAllocator* Allocator, size_t NumInst
 	return Allocator->Allocate(sizeof(T) * NumInstances, __alignof(T));
 }
 
+template<typename T>
+__forceinline T* AllocateWithType(LinearAllocator* Allocator, size_t NumInstances = 1)
+{
+	return (T*) Allocator->Allocate(sizeof(T) * NumInstances, __alignof(T));
+}
+
 #define GB(b) MB(b) * 1000
 #define MB(b) KB(b) * 1000
 #define KB(b) b * 1000
