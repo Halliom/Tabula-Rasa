@@ -32,7 +32,6 @@ CMakeCache.txt
 *.mp4
 *.pak
 *.bmp
-*.obj
 *.pdb
 *.vcxproj
 *.filters
