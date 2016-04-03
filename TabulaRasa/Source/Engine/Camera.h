@@ -10,7 +10,7 @@ public:
 
 	Camera();
 
-	void InitProjection(const float& FOV = 45.0f, const float& NearPlane = 0.1f, const float& FarPlane = 100.0f);
+	void InitProjection(const float& FOV = 35.0f, const float& NearPlane = 0.1f, const float& FarPlane = 100.0f);
 
 	void UpdateCameraRotation(const float& Yaw, const float& Pitch);
 
