@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <sys/types.h>
 
+#include "../Engine/Core/Memory.h"
 #include "../Rendering/RenderingEngine.h"
 #include "../Engine/PythonScript.h"
 
@@ -74,10 +75,34 @@ void Console::ReceiveTextInput(SDL_Keycode* KeyCode, bool IsShiftDown, bool IsAl
 				m_CurrentlyTyping.append(" ");
 				break;
 			}
+			case SDLK_PERIOD:
+			{
+				if (IsShiftDown)
+					m_CurrentlyTyping.append(":");
+				else
+					m_CurrentlyTyping.append(".");
+				break;
+			}
+			case SDLK_COMMA:
+			{
+				if (IsShiftDown)
+					m_CurrentlyTyping.append(";");
+				else
+					m_CurrentlyTyping.append(",");
+				break;
+			}
+			case SDLK_MINUS:
+			{
+				if (IsShiftDown)
+					m_CurrentlyTyping.append("_");
+				else
+					m_CurrentlyTyping.append("-");
+				break;
+			}
 			case SDLK_RETURN:
 			{
 				// Remove the '>' character
-				char* Command = new char[m_CurrentlyTyping.size() - 1]; 
+				char* Command = AllocateWithType<char>(g_MemoryManager->m_pTransientFrameMemory, m_CurrentlyTyping.size() - 1);
 				strcpy(Command, m_CurrentlyTyping.c_str() + 1);
 
 				if (strcmp(Command, "clear") == 0)
