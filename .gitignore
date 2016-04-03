@@ -18,7 +18,6 @@ CMakeCache.txt
 *.idb
 *.a
 *.exe
-*.png
 *.bz2
 *.psd
 *.gif
@@ -30,7 +29,6 @@ CMakeCache.txt
 *.jar
 *.mp4
 *.pak
-*.bmp
 *.pdb
 *.vcxproj
 *.filters
