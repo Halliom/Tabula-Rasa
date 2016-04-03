@@ -15,7 +15,6 @@ Win32/
 
 CMakeCache.txt
 
-*.lib
 *.idb
 *.a
 *.exe
@@ -42,6 +41,14 @@ CMakeCache.txt
 *.opensdf
 *.sdf
 
+!assimp.exe
+!assimp_view.exe
+!Assimp32.dll
+!D3DCompiler_42.dll
+!D3DX9_42.dll
+!glew32.dll
+!SDL2.dll
+
 TabulaRasa/Binaries/**
 TabaluRasa/TabaluRasa.VC.opendb
 *.ilk
@@ -54,3 +61,4 @@ TabulaRasa/Debug/TabulaRasa.ilk
 *.etl
 *.exp
 TabulaRasa/Debug/TabulaRasa.ilk
+TabulaRasa/Debug/TabulaRasa.lib
