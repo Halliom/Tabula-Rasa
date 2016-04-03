@@ -1,5 +1,4 @@
-#ifndef __GL_SHADER_H__
-#define __GL_SHADER_H__
+#pragma once
 
 #include <string>
 #include <vector>
@@ -114,5 +113,3 @@ private:
 
 	GLint ScreenDimensionLocation;
 };
-
-#endif

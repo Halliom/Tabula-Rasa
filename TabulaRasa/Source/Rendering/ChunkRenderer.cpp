@@ -4,9 +4,8 @@
 #include "../Engine/Camera.h"
 #include "../Engine/Block.h"
 #include "../Engine/Chunk.h"
-#include "../Platform/Platform.h"
 #include "../Rendering/RenderingEngine.h"
-
+#include "../Platform/Platform.h"
 #include "../Engine/Core/Memory.h"
 
 #include "glm\gtc\matrix_transform.hpp"
@@ -22,14 +21,15 @@ MemoryPool<ChunkRenderData>* ChunkRenderer::g_RenderDataMemoryPool = NULL;
 
 GLuint ChunkRenderer::g_TextureAtlas;
 
-extern RenderingEngine *g_RenderingEngine;
-
+extern RenderingEngine* g_RenderingEngine;
 extern GameMemoryManager* g_MemoryManager;
 
 void ChunkRenderer::SetupChunkRenderer()
 {
 	// Allocate a memory pool from the rendering memory to hold 512 ChunkRenderDatas
-	g_RenderDataMemoryPool = new MemoryPool<ChunkRenderData>(Allocate<ChunkRenderData>(g_MemoryManager->m_pRenderingMemory, 512), 512);
+	g_RenderDataMemoryPool = new MemoryPool<ChunkRenderData>(
+		Allocate<ChunkRenderData>(g_MemoryManager->m_pRenderingMemory, 512), 
+		512 * sizeof(ChunkRenderData));
 	g_ChunksToRender.Reserve(16);
 
 	g_ChunkRenderShader = GLShaderProgram::CreateVertexFragmentShaderFromFile(std::string("VertexShader.glsl"), std::string("FragmentShader.glsl"));
@@ -43,7 +43,7 @@ void ChunkRenderer::DestroyChunkRenderer()
 {
 	for (int Index = 0; Index < g_ChunksToRender.GetNum(); ++Index)
 	{
-		delete g_ChunksToRender[Index];
+		g_RenderDataMemoryPool->Deallocate(g_ChunksToRender[Index]);
 	}
 	g_ChunksToRender.Reserve(0);
 
@@ -70,11 +70,12 @@ void ChunkRenderer::RenderAllChunks(Player* CurrentPlayer)
 		if (!g_ChunksToRender[Index])
 			continue;
 
-		for (unsigned int MultiblockID = 0;
-		MultiblockID < g_ChunksToRender[Index]->NumMultiblocksToRender;
+		for (
+			unsigned int MultiblockID = 0;
+			MultiblockID < g_ChunksToRender[Index]->NumMultiblocksToRender;
 			++MultiblockID)
 		{
-			MultiblockRenderData *Multiblock = &g_ChunksToRender[Index]->MultiblocksToRender[MultiblockID];
+			MultiblockRenderData* Multiblock = &g_ChunksToRender[Index]->MultiblocksToRender[MultiblockID];
 			LoadedModel Model = g_RenderingEngine->CustomBlockRenderers[Multiblock->BlockID];
 
 			g_ChunkRenderShader->SetModelMatrix(glm::translate(
@@ -122,8 +123,6 @@ static glm::vec3 TOP_FACE_NORMAL	= glm::vec3(0.0f, +1.0f, 0.0f);
 static glm::vec3 BOTTOM_FACE_NORMAL = glm::vec3(0.0f, -1.0f, 0.0f);
 static glm::vec3 NORTH_FACE_NORMAL	= glm::vec3(0.0f, 0.0f, +1.0f);
 static glm::vec3 SOUTH_FACE_NORMAL	= glm::vec3(0.0f, 0.0f, -1.0f);
-
-extern GameMemoryManager* g_MemoryManager;
 
 static void GreedyMesh(Chunk* Voxels, ChunkRenderData* RenderData)
 {
@@ -388,6 +387,9 @@ static void GreedyMesh(Chunk* Voxels, ChunkRenderData* RenderData)
 ChunkRenderData* ChunkRenderer::CreateRenderData(const glm::vec3& Position, Chunk* Voxels)
 {
 	ChunkRenderData* RenderData = g_RenderDataMemoryPool->Allocate();
+	RenderData->NumMultiblocksToRender = 0;
+	RenderData->MultiblocksToRender = NULL;
+
 	glGenVertexArrays(1, &RenderData->VertexArrayObject);
 	glGenBuffers(2, &RenderData->VertexBufferObject);
 

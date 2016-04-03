@@ -6,7 +6,6 @@
 #include "../Engine/Camera.h"
 
 #include "../Rendering/Fonts.h"
-
 #include "../Rendering/RenderingEngine.h"
 #include "../Engine/Console.h"
 

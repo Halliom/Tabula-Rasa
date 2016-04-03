@@ -4,6 +4,7 @@
 
 #include "../Platform/Platform.h"
 #include "GL_shader.h"
+#include "../Engine/Core/Memory.h"
 
 #ifdef _WIN32
 #include <intrin.h>
@@ -20,6 +21,11 @@ glm::mat4 TextRenderer::g_TextRenderProjectionMatrix = glm::ortho(0.0f, 800.0f, 
 std::vector<TextRenderData2D*> TextRenderer::g_TextRenderObjects[NUM_LAYERS];
 std::vector<RectRenderData2D*> TextRenderer::g_RectRenderObjects[NUM_LAYERS];
 
+MemoryPool<TextRenderData2D>* TextRenderer::g_TextRenderDataMemoryPool = NULL;
+MemoryPool<RectRenderData2D>* TextRenderer::g_RectRenderDataMemoryPool = NULL;
+
+extern GameMemoryManager* g_MemoryManager;
+
 bool SortRenderObjectsText(TextRenderData2D* FirstObject, TextRenderData2D* SecondObject)
 {
 	return FirstObject->Layer < SecondObject->Layer;
@@ -32,6 +38,12 @@ bool SortRenderObjectsRect(RectRenderData2D* FirstObject, RectRenderData2D* Seco
 
 void TextRenderer::Initialize2DTextRendering()
 {
+	g_TextRenderDataMemoryPool = new MemoryPool<TextRenderData2D>(
+		Allocate<TextRenderData2D>(g_MemoryManager->m_pRenderingMemory, 256),
+		sizeof(TextRenderData2D) * 256);
+	g_RectRenderDataMemoryPool = new MemoryPool<RectRenderData2D>(
+		Allocate<RectRenderData2D>(g_MemoryManager->m_pRenderingMemory, 64),
+		sizeof(RectRenderData2D) * 64);
 	// Init the RenderObjects to hold 64 text objects by default (since it's a vector
 	// it will grow automatically if it needs to
 	for (unsigned int LayerID = 0; LayerID < NUM_LAYERS; ++LayerID)
@@ -47,15 +59,13 @@ void TextRenderer::Destroy2DTextRendering()
 	{
 		for (auto& It : g_TextRenderObjects[LayerID])
 		{
-			if (It)
-				delete It;
+			g_TextRenderDataMemoryPool->DeallocateDelete(It);
 		}
 		g_TextRenderObjects[LayerID].clear();
 
 		for (auto& It : g_RectRenderObjects[LayerID])
 		{
-			if (It)
-				delete It;
+			g_RectRenderDataMemoryPool->DeallocateDelete(It);
 		}
 		g_RectRenderObjects[LayerID].clear();
 	}
@@ -76,7 +86,8 @@ TextRenderData2D* TextRenderer::AddTextToRender(const char* Text, const float& X
 	if (FontToUse == (Font*) 0xdddddddd) //TODO: Remove this
 		return NULL;
 
-	TextRenderData2D* NewTextRenderObject = new TextRenderData2D();
+	TextRenderData2D* NewTextRenderObject = g_TextRenderDataMemoryPool->Allocate();
+	memset(NewTextRenderObject, NULL, sizeof(TextRenderData2D));
 
 	glGenVertexArrays(1, &NewTextRenderObject->VAO);
 	glBindVertexArray(NewTextRenderObject->VAO);
@@ -91,8 +102,8 @@ TextRenderData2D* TextRenderer::AddTextToRender(const char* Text, const float& X
 	NewTextRenderObject->TextureID = FontToUse->Texture;
 
 	unsigned int TextLength = strlen(Text);
-	GlyphVertex* Vertices = new GlyphVertex[TextLength * 4];
-	unsigned short* Indices = new unsigned short[TextLength * 6];
+	GlyphVertex* Vertices = AllocateTransient<GlyphVertex>(TextLength * 4);
+	unsigned short* Indices = AllocateTransient<unsigned short>(TextLength * 6);
 	unsigned int i = 0;
 	float CharacterOffsetX = 0.0f;
 	float CharacterOffsetY = 0.0f;
@@ -163,11 +174,8 @@ TextRenderData2D* TextRenderer::AddTextToRender(const char* Text, const float& X
 	glEnableVertexAttribArray(0); // Vertex position
 	glEnableVertexAttribArray(1); // Vertex texture coordinate
 
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(GlyphVertex), (void*)offsetof(GlyphVertex, Pos));
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(GlyphVertex), (void*)offsetof(GlyphVertex, Tex));
-
-	delete[] Vertices;
-	delete[] Indices;
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(GlyphVertex), (void*) offsetof(GlyphVertex, Pos));
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(GlyphVertex), (void*) offsetof(GlyphVertex, Tex));
 
 	// 6 vertices per glyph
 	NewTextRenderObject->VertexCount = TextLength * 6;
@@ -188,9 +196,7 @@ void TextRenderer::RemoveText(TextRenderData2D* TextToRemove)
 		glDeleteBuffers(1, &RenderData->IBO);
 		g_TextRenderObjects[TextToRemove->Layer].erase(Position);
 
-		// This needs to be done since std::vector does not automatically
-		// destruct the object (if it's a pointer, which it is) when calling erase
-		delete RenderData;
+		g_TextRenderDataMemoryPool->Deallocate(RenderData);
 	}
 }
 
@@ -199,7 +205,8 @@ RectRenderData2D * TextRenderer::AddRectToRender(float MinX, float MinY, float M
 	if (g_RectRenderShader == NULL)
 		g_RectRenderShader = GLShaderProgram::CreateVertexFragmentShaderFromFile(std::string("vertex_rect_render.glsl"), std::string("fragment_rect_render.glsl"));
 
-	RectRenderData2D* RenderData = new RectRenderData2D();
+	RectRenderData2D* RenderData = g_RectRenderDataMemoryPool->Allocate();
+	memset(RenderData, NULL, sizeof(RectRenderData2D));
 
 	glGenVertexArrays(1, &RenderData->VAO);
 	glBindVertexArray(RenderData->VAO);
@@ -238,7 +245,7 @@ void TextRenderer::RemoveRect(RectRenderData2D* RectToRemove)
 
 		// This needs to be done since std::vector does not automatically
 		// destruct the object (if it's a pointer, which it is) when calling erase
-		delete RenderData;
+		g_RectRenderDataMemoryPool->Deallocate(RenderData);
 	}
 }
 

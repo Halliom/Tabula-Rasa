@@ -3,11 +3,12 @@
 #include <random>
 #include "glm\common.hpp"
 
-#include "../Engine/Common.h"
 #include "../Platform/Platform.h"
 #include "../Game/Player.h"
 #include "TextRenderer.h"
 #include "ChunkRenderer.h"
+
+#include "../Engine/Console.h"
 
 #include "GL\glew.h"
 
@@ -56,7 +57,10 @@ void RenderingEngine::Initialize(const unsigned int& ScreenWidth, const unsigned
 	SetupGeometryPass();
 
 	SetupSSAOPass();
+}
 
+void RenderingEngine::PostInitialize()
+{
 	LogLn("Rendering system initialized on system:");
 	LogLn((char*) glGetString(GL_VENDOR));
 	LogLn((char*) glGetString(GL_RENDERER));

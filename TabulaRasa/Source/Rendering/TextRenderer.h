@@ -16,6 +16,9 @@ DebugText = TextRenderer::AddTextToRender(Buffer, x, y);\
 
 #define NUM_LAYERS 4
 
+template<typename T>
+struct MemoryPool;
+
 class GLShaderProgram;
 
 struct TextRenderData2D
@@ -111,4 +114,8 @@ private:
 	static GLShaderProgram* g_RectRenderShader;
 
 	static glm::mat4 g_TextRenderProjectionMatrix;
+
+	static MemoryPool<TextRenderData2D>* g_TextRenderDataMemoryPool;
+
+	static MemoryPool<RectRenderData2D>* g_RectRenderDataMemoryPool;
 };

@@ -2,9 +2,7 @@
 
 #include "../Rendering/GL_shader.h"
 #include "../Rendering/TextRenderer.h"
-
 #include "Player.h"
-
 #include "../Engine/Octree.h"
 
 class World

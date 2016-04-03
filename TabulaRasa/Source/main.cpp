@@ -17,7 +17,7 @@ World* g_World = NULL;
 RenderingEngine* g_RenderingEngine = NULL;
 PythonScriptEngine* g_ScriptEngine = NULL;
 Console* g_Console = NULL;
-GameMemoryManager* g_MemoryManager;
+GameMemoryManager* g_MemoryManager = NULL;
 
 #ifdef _WIN32
 
@@ -65,14 +65,17 @@ int main(int argc, char* argv[])
 	LoadFontLibrary(&Directory);
 
 	g_MemoryManager = new GameMemoryManager();
-	bool MemSuccess = g_MemoryManager->Initialize();
-
-	g_Console = new Console();
-	g_Console->OnUpdateInputMode();
+	if (!g_MemoryManager->Initialize())
+	{
+		assert(false, "Failure to load memory");
+	}
 
 	g_RenderingEngine = new RenderingEngine();
 	g_RenderingEngine->Initialize(WindowParams.Width, WindowParams.Height);
 	g_RenderingEngine->AddRendererForBlock(3, "Chest_Model_2.obj");
+
+	g_Console = new Console();
+	g_Console->OnUpdateInputMode();
 
 	g_ScriptEngine = new PythonScriptEngine();
 	g_ScriptEngine->Initialize();
@@ -80,6 +83,8 @@ int main(int argc, char* argv[])
 	// Loads the world and initializes subobjects
 	g_World = new World();
 	g_World->Initialize();
+
+	g_RenderingEngine->PostInitialize();
 
 	TextRenderData2D* FPSCounter = TextRenderer::AddTextToRender("FPS: 0", 8.0f, 8.0f, 16.0f);
 

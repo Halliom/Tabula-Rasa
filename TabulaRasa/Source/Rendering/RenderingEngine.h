@@ -2,9 +2,9 @@
 
 #include "GL\glew.h"
 
-#include "../Game/World.h"
 #include "../Platform/Platform.h"
 #include "../Engine/Block.h"
+#include "../Rendering/GL_shader.h"
 
 enum GBufferTextureLayerGeometryPass
 {
@@ -22,6 +22,8 @@ public:
 
 	void Initialize(const unsigned int &ScreenWidth, const unsigned int &ScreenHeight);
 
+	void PostInitialize();
+
 	void AddRendererForBlock(unsigned int BlockID, const char *BlockModelFileName);
 
 	void SetupGeometryPass();
@@ -30,7 +32,7 @@ public:
 
 	void SetupQuad();
 
-	void RenderFrame(World* RenderWorld, const float& DeltaTime);
+	void RenderFrame(class World* RenderWorld, const float& DeltaTime);
 
 	void StartGeometryPass();
 

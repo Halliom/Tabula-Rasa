@@ -3,8 +3,9 @@
 #include "glm\common.hpp"
 #include "DynamicArray.cpp"
 
-#include "GL_shader.h"
 #include "../Engine/Core/Memory.h"
+
+#include "GL_shader.h"
 #include "../Game/Player.h"
 
 struct MultiblockRenderData
