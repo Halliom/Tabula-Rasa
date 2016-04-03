@@ -159,9 +159,9 @@ MemoryPool<T>::~MemoryPool()
 }
 
 template<typename T>
-T* MemoryPool<T>::Allocate()
+__forceinline T* MemoryPool<T>::Allocate()
 {
-	if (m_pFreeList->m_pNext == NULL)
+	if (m_pFreeList == NULL)
 	{
 		return NULL;
 	}
@@ -180,7 +180,7 @@ T* MemoryPool<T>::Allocate()
 }
 
 template<typename T>
-T* MemoryPool<T>::AllocateNew()
+__forceinline T* MemoryPool<T>::AllocateNew()
 {
 	if (m_pFreeList->m_pNext == NULL)
 	{
@@ -201,11 +201,11 @@ T* MemoryPool<T>::AllocateNew()
 }
 
 template<typename T>
-__forceinline void MemoryPool<T>::Deallocate(T* Pointer)
+__forceinline void MemoryPool<T>::Deallocate(T* Pointer) // TODO: Add __forceinline
 {
 	MemorySlot* Slot = (MemorySlot*) Pointer;
 	
-	Slot->m_pNext = m_pFreeList->m_pNext;
+	Slot->m_pNext = m_pFreeList;
 	m_pFreeList = Slot;
 
 #ifdef _DEBUG
