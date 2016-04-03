@@ -72,7 +72,7 @@ int main(int argc, char* argv[])
 
 	g_RenderingEngine = new RenderingEngine();
 	g_RenderingEngine->Initialize(WindowParams.Width, WindowParams.Height);
-	g_RenderingEngine->AddRendererForBlock(3, "Chest_Model_2.obj");
+	g_RenderingEngine->AddRendererForBlock(3, "Chest_Model.obj");
 
 	g_Console = new Console();
 	g_Console->OnUpdateInputMode();

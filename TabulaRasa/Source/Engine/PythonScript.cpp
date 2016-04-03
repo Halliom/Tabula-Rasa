@@ -68,7 +68,7 @@ PyObject* World_Addblock(PyObject* Self, PyObject* Arguments)
 	if (!PyArg_ParseTuple(Arguments, "iiii", &PosX, &PosY, &PosZ, &BlockID))
 		return NULL;
 
-
+	g_World->AddBlock(PosX, PosY, PosZ, BlockID);
 
 	Py_INCREF(Py_None);
 	return Py_None;
