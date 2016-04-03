@@ -62,7 +62,7 @@ void World::Initialize()
 
 	//PerlinNoise NoiseFunction;
 
-#if 1
+#if 0
 	for (int i = 0; i < 16; ++i)
 	{
 		for (int j = 0; j < 16; ++j)
@@ -75,24 +75,14 @@ void World::Initialize()
 		}
 	}
 #else
-	AddBlock(0, 0, 0, BLOCK_ID_GRASS);
-	AddBlock(0, 0, 1, BLOCK_ID_GRASS);
-	AddBlock(0, 0, 2, BLOCK_ID_GRASS);
-	AddBlock(1, 0, 0, BLOCK_ID_GRASS);
-	AddBlock(1, 0, 1, BLOCK_ID_GRASS);
-	AddBlock(1, 0, 2, BLOCK_ID_GRASS);
-	AddBlock(2, 0, 0, BLOCK_ID_GRASS);
-	AddBlock(2, 0, 1, BLOCK_ID_GRASS);
-	AddBlock(2, 0, 2, BLOCK_ID_GRASS);
-
-	AddBlock(4, 0, 4, BLOCK_ID_GRASS);
+	/*AddBlock(4, 0, 4, BLOCK_ID_GRASS);
 	AddBlock(4, 1, 4, BLOCK_ID_GRASS);
 	AddBlock(4, 0, 5, BLOCK_ID_GRASS);
-	AddBlock(4, 1, 5, BLOCK_ID_GRASS);
+	AddBlock(4, 1, 5, BLOCK_ID_GRASS);*/
 
-	AddBlock(1, 1, 1, BLOCK_ID_GRASS);
+	AddBlock(-1, 1, 1, BLOCK_ID_GRASS);
 
-	AddMultiblock(2, 2, 2, BLOCK_ID_CHEST);
+	//AddMultiblock(2, 2, 2, BLOCK_ID_CHEST);
 #endif
 }
 
@@ -152,14 +142,16 @@ Voxel* World::GetBlock(const int& X, const int& Y, const int& Z)
 
 void World::AddBlock(const int& X, const int& Y, const int& Z, const unsigned int& BlockID)
 {
+	assert(BlockID != 0);
+
 	Chunk* ChunkToAddTo = GetLoadedChunk(TOCHUNK_COORD(X, Y, Z));
 	if (ChunkToAddTo)
 	{
 		// This gets the local coordinate in the chunks local coordinate
 		// system, which ranges from 0 to 31
-		int LocalY = Y % Octree<Voxel>::SIZE;
-		int LocalX = X % Octree<Voxel>::SIZE;
-		int LocalZ = Z % Octree<Voxel>::SIZE;
+		int LocalX = abs(X) % Octree<Voxel>::SIZE;
+		int LocalY = abs(Y) % Octree<Voxel>::SIZE;
+		int LocalZ = abs(Z) % Octree<Voxel>::SIZE;
 
 		ChunkToAddTo->SetVoxel(this, LocalX, LocalY, LocalZ, BlockID);
 	}

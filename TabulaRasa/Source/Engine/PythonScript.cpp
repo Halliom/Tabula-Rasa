@@ -74,9 +74,26 @@ PyObject* World_Addblock(PyObject* Self, PyObject* Arguments)
 	return Py_None;
 }
 
+PyObject* World_RemoveBlock(PyObject* Self, PyObject* Arguments)
+{
+	int PosX;
+	int PosY;
+	int PosZ;
+	char* Result = new char[64];
+
+	if (!PyArg_ParseTuple(Arguments, "iii", &PosX, &PosY, &PosZ))
+		return NULL;
+
+	g_World->RemoveBlock(PosX, PosY, PosZ);
+
+	Py_INCREF(Py_None);
+	return Py_None;
+}
+
 PyMethodDef WorldMethods[]
 {
-	{ "addblock", World_Addblock, METH_VARARGS, "Place a block" },
+	{ "add_block", World_Addblock, METH_VARARGS, "Place a block" },
+	{ "remove_block", World_Addblock, METH_VARARGS, "Remove a block" },
 	{ 0, 0, 0, 0 }
 };
 
