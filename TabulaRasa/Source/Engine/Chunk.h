@@ -1,7 +1,6 @@
 #pragma once
 
 #include "../Game/World.h"
-#include "Octree.h"
 
 class Chunk
 {
@@ -22,9 +21,9 @@ public:
 		m_pVoxels[X][Y][Z].SidesToRender = 0;
 
 		m_pVoxels[X][Y][Z].OnNodeUpdatedAdjacent(
-			(uint8_t)X,
-			(uint8_t)Y,
-			(uint8_t)Z,
+			(uint8_t) X,
+			(uint8_t) Y,
+			(uint8_t) Z,
 			WorldObject->GetBlock(X + 1, Y, Z),
 			WorldObject->GetBlock(X - 1, Y, Z),
 			WorldObject->GetBlock(X, Y + 1, Z),
