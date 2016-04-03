@@ -1,8 +1,11 @@
 #include "PythonScript.h"
 
+#include "Core\Memory.h"
 #include "Console.h"
+#include "../Game/World.h"
 
 extern Console* g_Console;
+extern World* g_World;
 
 PyObject* __cdecl Write(PyObject* self, PyObject* args)
 {
@@ -54,18 +57,59 @@ PyMODINIT_FUNC PyInit_aview(void)
 	return m;
 }
 
+PyObject* World_Addblock(PyObject* Self, PyObject* Arguments)
+{
+	int PosX;
+	int PosY;
+	int PosZ;
+	int BlockID;
+	char* Result = new char[64];
+
+	if (!PyArg_ParseTuple(Arguments, "iiii", &PosX, &PosY, &PosZ, &BlockID))
+		return NULL;
+
+
+
+	Py_INCREF(Py_None);
+	return Py_None;
+}
+
+PyMethodDef WorldMethods[]
+{
+	{ "addblock", World_Addblock, METH_VARARGS, "Place a block" },
+	{ 0, 0, 0, 0 }
+};
+
+PyModuleDef WorldModule =
+{
+	PyModuleDef_HEAD_INIT,
+	"world",		/* name of module */
+	"World functions for modifying the world",
+	-1,				/* size of per-interpreter state of the module, or -1 if the module keeps state in global variables. */
+	WorldMethods
+};
+
+PyMODINIT_FUNC PyInit_world(void)
+{
+	PyObject* Module = PyModule_Create(&WorldModule);
+	return Module;
+}
+
 void PythonScriptEngine::Initialize()
 {
+	PyImport_AppendInittab("world", PyInit_world);
+
+	PyImport_AppendInittab("aview", PyInit_aview);
+
 	Py_Initialize();
+
+	PyImport_ImportModule("aview");
+	PyImport_ImportModule("world");
+	PyRun_String("import aview", Py_single_input, m_InterpreterContext.Locals, m_InterpreterContext.Locals);
 
 	m_InterpreterContext = { 0 };
 	m_InterpreterContext.Main = PyImport_ImportModule("__main__");
 	m_InterpreterContext.Locals = PyModule_GetDict(m_InterpreterContext.Main);
-	//PyObject_GetAttr();
-
-	PyImport_AppendInittab("aview", PyInit_aview);
-	PyImport_ImportModule("aview");
-	PyRun_String("import aview", Py_single_input, m_InterpreterContext.Locals, m_InterpreterContext.Locals);
 }
 
 void PythonScriptEngine::Destroy()
@@ -84,7 +128,7 @@ void PythonScriptEngine::ExecuteStringInInterpreter(char* String)
 	PyObject* Unicode = PyUnicode_AsUTF8String(ObjectRepr);
 	char* PythonResultString = PyBytes_AsString(Unicode);
 	unsigned int StringLength = strlen(PythonResultString);
-	char* ResultString = new char[StringLength];
+	char* ResultString = AllocateTransient<char>(StringLength);
 
 	strcpy(ResultString, PythonResultString);
 	Py_DecRef(Unicode);
@@ -101,7 +145,7 @@ char* PythonScriptEngine::GetVariableValue(char* VariableName)
 	PyObject* Unicode = PyUnicode_AsUTF8String(ObjectRepr);
 	char* String = PyBytes_AsString(Unicode);
 	unsigned int StringLength = strlen(String);
-	char* ResultString = new char[StringLength];
+	char* ResultString = AllocateTransient<char>(StringLength);
 
 	strcpy(ResultString, String);
 	Py_DECREF(Unicode);
