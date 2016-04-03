@@ -258,10 +258,18 @@ public:
 
 	LinearAllocator*				m_pTransientFrameMemory;
 	LinearAllocator*				m_pRenderingMemory;
-	MemoryPool<Chunk>*				m_pChunkAllocator;
+	MemoryPool<Chunk>*		m_pChunkAllocator;
 
 private:
 
 	unsigned char* m_pGameMemory;
 
 };
+
+extern GameMemoryManager* g_MemoryManager;
+
+template<typename T>
+__forceinline T* AllocateTransient(size_t Num)
+{
+	return (T*) g_MemoryManager->m_pTransientFrameMemory->Allocate(sizeof(T) * Num, __alignof(T));
+}
