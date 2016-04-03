@@ -20,5 +20,5 @@ void main(void)
 		vec4 ambientLighting = vec4(ssao, 1.0);
 		frag_color = texture2D(textureSampler4, texCoord) * ambientLighting;
 	}
-	//frag_color = vec4(vec3(texture2D(textureSampler3, frag_texCoord).r), 1.0);
+	//frag_color = vec4(vec3(texture2D(textureSampler1, frag_texCoord).rgb), 1.0);
 }
