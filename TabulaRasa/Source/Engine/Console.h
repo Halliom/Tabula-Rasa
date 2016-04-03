@@ -45,3 +45,8 @@ private:
 	RectRenderData2D* m_pBackgroundRect;
 
 };
+
+extern Console* g_Console;
+
+#define LogLn(str) g_Console->PrintLine(str);
+#define Log(str) g_Console->Print(str);
