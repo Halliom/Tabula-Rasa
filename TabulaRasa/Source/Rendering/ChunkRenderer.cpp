@@ -89,12 +89,12 @@ void ChunkRenderer::RenderAllChunks(Player* CurrentPlayer)
 		g_ChunkRenderShader->SetModelMatrix(glm::translate(Identity, g_ChunksToRender[Index]->ChunkPosition));
 
 		glBindVertexArray(g_ChunksToRender[Index]->VertexArrayObject);
-		glDrawElements(GL_TRIANGLES, g_ChunksToRender[Index]->NumVertices, GL_UNSIGNED_INT, 0);
+		glDrawElements(GL_TRIANGLES, g_ChunksToRender[Index]->NumVertices, GL_UNSIGNED_SHORT, 0);
 	}
 	glBindVertexArray(0);
 }
 
-int GetVoxelSide(Chunk *Voxels, DynamicArray<MultiblockRenderData> *AdditionalRenderData,  const int& X, const int& Y, const int& Z, const VoxelSide& Side)
+__forceinline int GetVoxelSide(Chunk *Voxels, DynamicArray<MultiblockRenderData> *AdditionalRenderData,  const int& X, const int& Y, const int& Z, const VoxelSide& Side)
 {
 	Voxel* Node = Voxels->GetVoxel(X, Y, Z);
 	if (Node && ((Node->SidesToRender & Side) == Side))
@@ -112,7 +112,6 @@ int GetVoxelSide(Chunk *Voxels, DynamicArray<MultiblockRenderData> *AdditionalRe
 				return -1;
 			}
 		}
-		//return Block.RenderType == TYPE_SOLID ? Block.RenderData.Textures[SideToInt(Side)] : -1;
 	}
 	return -1;
 }
@@ -126,11 +125,11 @@ static glm::vec3 SOUTH_FACE_NORMAL	= glm::vec3(0.0f, 0.0f, -1.0f);
 
 static void GreedyMesh(Chunk* Voxels, ChunkRenderData* RenderData)
 {
-	double StartTime = SDL_GetTicks() / 1000.0;
-	DynamicArray<TexturedQuadVertex> Vertices;
-	Vertices.Reserve(32 * 32 * 32);
-	DynamicArray<unsigned int> Indices;
-	Indices.Reserve(32 * 32 * 32);
+	TexturedQuadVertex* Vertices = AllocateTransient<TexturedQuadVertex>(32 * 32 * 32 * 4);
+	unsigned int NumVertices = 0;
+	unsigned short* Indices = AllocateTransient<unsigned short>(32 * 32 * 32 * 6);
+	unsigned int NumIndices = 0;
+
 	DynamicArray<MultiblockRenderData> AdditionalRenderData;
 	bool Counter = false;
 
@@ -228,99 +227,134 @@ static void GreedyMesh(Chunk* Voxels, ChunkRenderData* RenderData)
 							du[u] = w;
 							dv[v] = h;
 
-							// Reserve 4 vertices
-							unsigned int StartIndex = Vertices.GetNum();
+							unsigned int StartIndex = NumVertices;
 
 							switch (d)
 							{
 								case 0:
 								{
-									Vertices.Push({ glm::vec3(x[0],					x[1],					x[2]),
+									Vertices[NumVertices] = { 
+										glm::vec3(x[0],					x[1],					x[2]),
 										glm::vec3(BackFace ? WEST_FACE_NORMAL : EAST_FACE_NORMAL),
 										glm::vec2((float)h, (float)w),
-										(unsigned char)CurrentBlock });
+										(unsigned char)CurrentBlock };
+									++NumVertices;
 
-									Vertices.Push({ glm::vec3(x[0] + du[0],			x[1] + du[1],			x[2] + du[2]),
+									Vertices[NumVertices] = { 
+										glm::vec3(x[0] + du[0],			x[1] + du[1],			x[2] + du[2]),
 										glm::vec3(BackFace ? WEST_FACE_NORMAL : EAST_FACE_NORMAL),
 										glm::vec2((float)h, 0.0f),
-										(unsigned char)CurrentBlock });
+										(unsigned char)CurrentBlock };
+									++NumVertices;
 
-									Vertices.Push({ glm::vec3(x[0] + du[0] + dv[0],	x[1] + du[1] + dv[1],	x[2] + du[2] + dv[2]),
+									Vertices[NumVertices] = { 
+										glm::vec3(x[0] + du[0] + dv[0],	x[1] + du[1] + dv[1],	x[2] + du[2] + dv[2]),
 										glm::vec3(BackFace ? WEST_FACE_NORMAL : EAST_FACE_NORMAL),
 										glm::vec2(0.0f, 0.0f),
-										(unsigned char)CurrentBlock });
+										(unsigned char)CurrentBlock };
+									++NumVertices;
 
-									Vertices.Push({ glm::vec3(x[0] + dv[0],	x[1] + dv[1],	x[2] + dv[2]),
+									Vertices[NumVertices] = { 
+										glm::vec3(x[0] + dv[0],	x[1] + dv[1],	x[2] + dv[2]),
 										glm::vec3(BackFace ? WEST_FACE_NORMAL : EAST_FACE_NORMAL),
 										glm::vec2(0.0f, (float)w),
-										(unsigned char)CurrentBlock });
+										(unsigned char)CurrentBlock };
+									++NumVertices;
 									break;
 								}
 								case 1:
 								{
-									Vertices.Push({ glm::vec3(x[0],					x[1],					x[2]),
+									Vertices[NumVertices] = { 
+										glm::vec3(x[0],					x[1],					x[2]),
 										glm::vec3(BackFace ? BOTTOM_FACE_NORMAL : TOP_FACE_NORMAL),
 										glm::vec2((float)h, (float)w),
-										(unsigned char)CurrentBlock });
+										(unsigned char)CurrentBlock };
+									++NumVertices;
 
-									Vertices.Push({ glm::vec3(x[0] + du[0],			x[1] + du[1],			x[2] + du[2]),
+									Vertices[NumVertices] = { 
+										glm::vec3(x[0] + du[0],			x[1] + du[1],			x[2] + du[2]),
 										glm::vec3(BackFace ? BOTTOM_FACE_NORMAL : TOP_FACE_NORMAL),
 										glm::vec2((float)h, 0.0f),
-										(unsigned char)CurrentBlock });
+										(unsigned char)CurrentBlock };
+									++NumVertices;
 
-									Vertices.Push({ glm::vec3(x[0] + du[0] + dv[0],	x[1] + du[1] + dv[1],	x[2] + du[2] + dv[2]),
+									Vertices[NumVertices] = { 
+										glm::vec3(x[0] + du[0] + dv[0],	x[1] + du[1] + dv[1],	x[2] + du[2] + dv[2]),
 										glm::vec3(BackFace ? BOTTOM_FACE_NORMAL : TOP_FACE_NORMAL),
 										glm::vec2(0.0f, 0.0f),
-										(unsigned char)CurrentBlock });
+										(unsigned char)CurrentBlock };
+									++NumVertices;
 
-									Vertices.Push({ glm::vec3(x[0] + dv[0],	x[1] + dv[1],	x[2] + dv[2]),
+									Vertices[NumVertices] = { 
+										glm::vec3(x[0] + dv[0],	x[1] + dv[1],	x[2] + dv[2]),
 										glm::vec3(BackFace ? BOTTOM_FACE_NORMAL : TOP_FACE_NORMAL),
 										glm::vec2(0.0f, (float)w),
-										(unsigned char)CurrentBlock });
+										(unsigned char)CurrentBlock };
+									++NumVertices;
 									break;
 								}
 								case 2:
 								{
-									Vertices.Push({ glm::vec3(x[0],					x[1],					x[2]),
+									Vertices[NumVertices] = { 
+										glm::vec3(x[0],					x[1],					x[2]),
 										glm::vec3(BackFace ? SOUTH_FACE_NORMAL : NORTH_FACE_NORMAL),
 										glm::vec2(0.0f, (float) h),
-										(unsigned char)CurrentBlock });
+										(unsigned char)CurrentBlock };
+									++NumVertices;
 
-									Vertices.Push({ glm::vec3(x[0] + du[0],			x[1] + du[1],			x[2] + du[2]),
+									Vertices[NumVertices] = { 
+										glm::vec3(x[0] + du[0],			x[1] + du[1],			x[2] + du[2]),
 										glm::vec3(BackFace ? SOUTH_FACE_NORMAL : NORTH_FACE_NORMAL),
 										glm::vec2((float)w, (float)h),
-										(unsigned char)CurrentBlock });
+										(unsigned char)CurrentBlock };
+									++NumVertices;
 
-									Vertices.Push({ glm::vec3(x[0] + du[0] + dv[0],	x[1] + du[1] + dv[1],	x[2] + du[2] + dv[2]),
+									Vertices[NumVertices] = { 
+										glm::vec3(x[0] + du[0] + dv[0],	x[1] + du[1] + dv[1],	x[2] + du[2] + dv[2]),
 										glm::vec3(BackFace ? SOUTH_FACE_NORMAL : NORTH_FACE_NORMAL),
 										glm::vec2((float)w, 0.0f),
-										(unsigned char)CurrentBlock });
+										(unsigned char)CurrentBlock };
+									++NumVertices;
 
-									Vertices.Push({ glm::vec3(x[0] + dv[0],	x[1] + dv[1],	x[2] + dv[2]),
+									Vertices[NumVertices] = { 
+										glm::vec3(x[0] + dv[0],	x[1] + dv[1],	x[2] + dv[2]),
 										glm::vec3(BackFace ? SOUTH_FACE_NORMAL : NORTH_FACE_NORMAL),
 										glm::vec2(0.0f, 0.0f),
-										(unsigned char)CurrentBlock });
+										(unsigned char)CurrentBlock };
+									++NumVertices;
 									break;
 								}
 							}
 
 							if (BackFace)
 							{
-								Indices.Push(StartIndex);
-								Indices.Push(StartIndex + 1);
-								Indices.Push(StartIndex + 2);
-								Indices.Push(StartIndex + 0);
-								Indices.Push(StartIndex + 2);
-								Indices.Push(StartIndex + 3);
+								Indices[NumIndices] = (StartIndex);
+								++NumIndices;
+								Indices[NumIndices] = (StartIndex + 1);
+								++NumIndices;
+								Indices[NumIndices] = (StartIndex + 2);
+								++NumIndices;
+								Indices[NumIndices] = (StartIndex + 0);
+								++NumIndices;
+								Indices[NumIndices] = (StartIndex + 2);
+								++NumIndices;
+								Indices[NumIndices] = (StartIndex + 3);
+								++NumIndices;
 							}
 							else
 							{
-								Indices.Push(StartIndex + 3);
-								Indices.Push(StartIndex + 2);
-								Indices.Push(StartIndex + 0);
-								Indices.Push(StartIndex + 2);
-								Indices.Push(StartIndex + 1);
-								Indices.Push(StartIndex);
+								Indices[NumIndices] = (StartIndex + 3);
+								++NumIndices;
+								Indices[NumIndices] = (StartIndex + 2);
+								++NumIndices;
+								Indices[NumIndices] = (StartIndex + 0);
+								++NumIndices;
+								Indices[NumIndices] = (StartIndex + 2);
+								++NumIndices;
+								Indices[NumIndices] = (StartIndex + 1);
+								++NumIndices;
+								Indices[NumIndices] = (StartIndex);
+								++NumIndices;
 							}
 
 							// Reset mask memory
@@ -347,15 +381,15 @@ static void GreedyMesh(Chunk* Voxels, ChunkRenderData* RenderData)
 		}
 	}
 
-	RenderData->NumVertices = Indices.GetNum();
+	RenderData->NumVertices = NumIndices;
 
 	glBindVertexArray(RenderData->VertexArrayObject);
 
 	glBindBuffer(GL_ARRAY_BUFFER, RenderData->VertexBufferObject);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(TexturedQuadVertex) * Vertices.GetNum(), &Vertices[0].Position.x, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(TexturedQuadVertex) * NumVertices, Vertices, GL_STATIC_DRAW);
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, RenderData->IndexBufferObject);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * Indices.GetNum(), &Indices[0], GL_STATIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned short) * NumIndices, Indices, GL_STATIC_DRAW);
 
 	glEnableVertexAttribArray(0);
 	glEnableVertexAttribArray(1);
@@ -377,8 +411,6 @@ static void GreedyMesh(Chunk* Voxels, ChunkRenderData* RenderData)
 		RenderData->MultiblocksToRender = NULL;
 		RenderData->NumMultiblocksToRender = 0;
 	}
-
-	double StopTime = SDL_GetTicks() / 1000.0;
 
 	// Unbind so nothing else modifies it
 	glBindVertexArray(0);

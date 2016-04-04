@@ -39,10 +39,11 @@ enum VoxelSide : uint32_t;
 
 struct TexturedQuadVertex
 {
-	glm::vec3 Position;
-	glm::vec3 Normal;
-	glm::vec2 Dimension;
-	unsigned char TextureCoord;
+	// TODO: FIX THESE (align is all kinds of fukd)
+	glm::vec3 Position; /* size 12, align 4 */ 
+	glm::vec3 Normal; /* size 12, align 4 */
+	glm::vec2 Dimension; /* size 8, align 4 */
+	unsigned char TextureCoord; /* size 4, align 4 */
 };
 
 template<typename T> class Octree;
