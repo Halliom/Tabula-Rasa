@@ -8,6 +8,8 @@
 #include "../Engine/PerlinNoise.h"
 
 #include "../Rendering/ChunkRenderer.h"
+#include "../Engine/PythonScript.h"
+#include "../Platform/Platform.h"
 
 #include "../Engine/Core/Memory.h"
 
@@ -16,6 +18,7 @@
 #define TOCHUNK_COORD(X, Y, Z) X / (int) Octree<Voxel>::SIZE, Y / (int) Octree<Voxel>::SIZE, Z / (int) Octree<Voxel>::SIZE
 
 extern GameMemoryManager* g_MemoryManager;
+extern PythonScriptEngine* g_ScriptEngine;
 
 World::World()
 {
@@ -62,7 +65,7 @@ void World::Initialize()
 
 	//PerlinNoise NoiseFunction;
 
-#if 0
+#if 1
 	for (int i = 0; i < 16; ++i)
 	{
 		for (int j = 0; j < 16; ++j)

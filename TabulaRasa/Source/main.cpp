@@ -88,6 +88,12 @@ int main(int argc, char* argv[])
 
 	TextRenderData2D* FPSCounter = TextRenderer::AddTextToRender("FPS: 0", 8.0f, 8.0f, 16.0f);
 
+	char* ScriptSource = PlatformFileSystem::LoadScript("init.py");
+	PythonScript TestScript = g_ScriptEngine->CreateScript("init", ScriptSource);
+	g_ScriptEngine->ExecuteScript(&TestScript);
+	g_ScriptEngine->DeleteScript(&TestScript);
+	delete[] ScriptSource;
+
 	double LastFrameTime = SDL_GetTicks() / 1000.0;
 	double DeltaTime = 0.0;
 	double CumulativeFrameTime = 0.0;
