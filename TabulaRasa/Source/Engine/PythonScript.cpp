@@ -173,17 +173,32 @@ PythonScript PythonScriptEngine::CreateScript(char* ScriptName, char* ScriptStri
 {
 	PythonScript NewScript = { 0 };
 	//PyParser_SimpleParseStringFlagsFilename
-	PyObject* CompiledScript = Py_CompileString(ScriptString, NULL, Py_file_input);
+	PyObject* CompiledScript = Py_CompileString(ScriptString, ScriptName, Py_file_input);
 
 	if (CompiledScript == NULL)
 	{
-		//TODO: Compilation error
+		// Get the error
+		PyErr_Print();
 	}
 	NewScript.CompiledSource = CompiledScript;
 
 	NewScript.Context.Main = PyImport_ImportModule("__main__");
-	NewScript.Context.Locals = PyModule_GetDict(m_InterpreterContext.Main);
-	PyRun_String("import aview", Py_single_input, NewScript.Context.Locals, NewScript.Context.Locals);
+	NewScript.Context.Globals = PyModule_GetDict(NewScript.Context.Main);
+	NewScript.Context.Locals = PyDict_New();
+	PyRun_String("import aview", Py_single_input, NewScript.Context.Globals, NewScript.Context.Locals);
 
 	return NewScript;
+}
+
+void PythonScriptEngine::ExecuteScript(PythonScript* Script)
+{
+	PyObject* Result = PyEval_EvalCode(Script->CompiledSource, Script->Context.Globals, Script->Context.Locals);
+	Py_DECREF(Result);
+}
+
+void PythonScriptEngine::DeleteScript(PythonScript* Script)
+{
+	Py_DECREF(Script->Context.Locals);
+	Py_DECREF(Script->Context.Main);
+	Py_DECREF(Script->CompiledSource);
 }

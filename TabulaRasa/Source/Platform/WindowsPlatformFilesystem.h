@@ -10,7 +10,8 @@ enum AssetDirectoryType
 	DT_SHADERS,
 	DT_FONTS,
 	DT_TEXTURES,
-	DT_MODELS
+	DT_MODELS,
+	DT_SCRIPTS
 };
 
 struct LoadedModel
@@ -45,4 +46,6 @@ public:
 	static GLuint LoadBitmapFromFile(char* FileName);
 
 	static void LoadModel(LoadedModel *Model, const char* FileName);
+
+	static char* LoadScript(char* ScriptName);
 };

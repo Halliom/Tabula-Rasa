@@ -9,6 +9,7 @@
 struct PythonContext
 {
 	PyObject* Main;
+	PyObject* Globals;
 	PyObject* Locals;
 };
 
@@ -51,7 +52,9 @@ public:
 
 	PythonScript CreateScript(char* ScriptName, char* ScriptString);
 
-	void ExecuteScript();
+	void ExecuteScript(PythonScript* Script);
+
+	void DeleteScript(PythonScript* Script);
 	
 	PythonContext m_InterpreterContext;
 

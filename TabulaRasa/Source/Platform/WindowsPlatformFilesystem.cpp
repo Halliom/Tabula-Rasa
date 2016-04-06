@@ -81,6 +81,10 @@ std::string PlatformFileSystem::GetAssetDirectory(const AssetDirectoryType& Dire
 			OutDirectory.append("\\Assets\\Models\\");
 			break;
 		}
+		case DT_SCRIPTS:
+		{
+			OutDirectory.append("\\Assets\\Scripts\\");
+		}
 		default: { break; }
 	}
 	return OutDirectory;
@@ -210,4 +214,26 @@ void PlatformFileSystem::LoadModel(LoadedModel *Model, const char *FileName)
 	Model->m_NumVertices = Indices.size();
 
 	glBindVertexArray(0);
+}
+
+char* PlatformFileSystem::LoadScript(char* ScriptName)
+{
+	std::string FileName = GetAssetDirectory(DT_SCRIPTS).append(ScriptName);
+
+	std::ifstream File;
+	File.open(FileName, std::ios::binary);
+
+	File.seekg(0, std::ios::end);
+	size_t Size = File.tellg();
+	File.seekg(0, std::ios::beg);
+
+	//Reduce the file size by any header bytes that might be present
+	Size -= File.tellg();
+
+	char* Data = new char[Size + 1];
+	File.read(Data, Size);
+	File.close();
+	Data[Size] = '\0';
+
+	return Data;
 }
