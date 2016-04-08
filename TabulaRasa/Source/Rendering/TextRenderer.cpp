@@ -136,8 +136,8 @@ TextRenderData2D* TextRenderer::AddTextToRender(const char* Text, const float& X
 		// Calculate the scale of the character with this scale and font
 		float ScaledWidth = Size * CharacterGlyph->Width / (float) FontToUse->Base;
 		float ScaledHeight = Size * CharacterGlyph->Height / (float) FontToUse->Base;
-		float BaseWidth = CharacterOffsetX + Size * CharacterGlyph->XOffset / FontToUse->LineHeight;
-		float BaseHeight = CharacterOffsetY + Size * CharacterGlyph->YOffset / FontToUse->LineHeight;
+		float BaseWidth = CharacterOffsetX + (Size * CharacterGlyph->XOffset / (float) FontToUse->LineHeight);
+		float BaseHeight = CharacterOffsetY + (Size * CharacterGlyph->YOffset / (float) FontToUse->LineHeight);
 
 		Vertices[VertexOffset + 0] = { 
 			glm::vec3(BaseWidth,													BaseHeight,														1.0f),
