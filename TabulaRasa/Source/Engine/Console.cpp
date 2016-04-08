@@ -14,7 +14,8 @@ extern PythonScriptEngine* g_ScriptEngine;
 
 Console::Console() :
 	m_bIsActive(false),
-	m_CurrentlyTyping(">")
+	m_CurrentlyTyping(">"),
+	m_LastTyped("")
 {
 	m_pTextBufferRenderData = TextRenderer::AddTextToRender("");
 	m_pActiveLineText = TextRenderer::AddTextToRender("");
@@ -67,6 +68,11 @@ void Console::ReceiveTextInput(SDL_Keycode* KeyCode, bool IsShiftDown, bool IsAl
 				{
 					m_CurrentlyTyping.pop_back();
 				}
+				break;
+			}
+			case SDLK_UP:
+			{
+				m_CurrentlyTyping = std::string(">").append(m_LastTyped);
 				break;
 			}
 			case SDLK_TAB:
@@ -129,6 +135,11 @@ void Console::ReceiveTextInput(SDL_Keycode* KeyCode, bool IsShiftDown, bool IsAl
 					return;
 				}
 
+				m_LastTyped = std::string(Command);
+
+				m_TextBuffer.append(Command);
+				m_TextBuffer.append("\n");
+
 				char* Result = ExecuteCommand(Command);
 				if (Result[0] != '\0')
 				{
@@ -136,12 +147,12 @@ void Console::ReceiveTextInput(SDL_Keycode* KeyCode, bool IsShiftDown, bool IsAl
 					//m_TextBuffer[m_TextBuffer.size()] = '\n';
 					m_TextBuffer.append(Result);
 					m_TextBuffer.append("\n");
-					RedrawTextBuffer();
 				}
 
 				m_CurrentlyTyping.clear();
 				m_CurrentlyTyping.append(">");
 
+				RedrawTextBuffer();
 				break;
 			}
 			default:

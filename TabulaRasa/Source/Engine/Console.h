@@ -38,6 +38,8 @@ private:
 
 	std::string m_TextBuffer;
 
+	std::string m_LastTyped;
+
 	TextRenderData2D* m_pTextBufferRenderData;
 
 	TextRenderData2D* m_pActiveLineText;
