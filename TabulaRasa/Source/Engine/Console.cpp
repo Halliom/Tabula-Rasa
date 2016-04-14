@@ -17,8 +17,8 @@ Console::Console() :
 	m_CurrentlyTyping(">"),
 	m_LastTyped("")
 {
-	m_pTextBufferRenderData = TextRenderer::AddTextToRender("");
-	m_pActiveLineText = TextRenderer::AddTextToRender("");
+	m_pTextBufferRenderData = TextRenderer::AddEmptyTextToRender("");
+	m_pActiveLineText = TextRenderer::AddEmptyTextToRender("");
 	m_pBackgroundRect = NULL;
 }
 
@@ -231,7 +231,7 @@ void Console::ReceiveTextInput(SDL_Keycode* KeyCode, bool IsShiftDown, bool IsAl
 
 		TextRenderer::RemoveText(m_pActiveLineText);
 
-		m_pActiveLineText = TextRenderer::AddTextToRender(m_CurrentlyTyping.c_str(), 0.0f, g_RenderingEngine->m_ScreenHeight / 2.0f - 24.0f, 16.0f, 1);
+		m_pActiveLineText = TextRenderer::AddTextToRender(m_CurrentlyTyping.c_str(), 0.0f, g_RenderingEngine->m_ScreenHeight / 2.0f - 24.0f, 1);
 	}
 }
 
@@ -241,15 +241,15 @@ void Console::OnUpdateInputMode()
 	{
 		TextRenderer::RemoveText(m_pActiveLineText);
 		TextRenderer::RemoveText(m_pTextBufferRenderData);
-		m_pTextBufferRenderData = TextRenderer::AddTextToRender("");
-		m_pActiveLineText = TextRenderer::AddTextToRender("");
+		m_pTextBufferRenderData = TextRenderer::AddEmptyTextToRender("");
+		m_pActiveLineText = TextRenderer::AddEmptyTextToRender("");
 
 		if (m_pBackgroundRect)
 			TextRenderer::RemoveRect(m_pBackgroundRect);
 	}
 	else
 	{
-		m_pActiveLineText = TextRenderer::AddTextToRender(m_CurrentlyTyping.c_str(), 0.0f, g_RenderingEngine->m_ScreenHeight / 2.0f - 24.0f, 16.0f, 1);
+		m_pActiveLineText = TextRenderer::AddTextToRender(m_CurrentlyTyping.c_str(), 0.0f, g_RenderingEngine->m_ScreenHeight / 2.0f - 24.0f, 1);
 		m_pBackgroundRect = TextRenderer::AddRectToRender(
 			0.0f, 
 			0.0f, 
@@ -278,7 +278,6 @@ void Console::RedrawTextBuffer()
 			m_TextBuffer.c_str(),
 			0.0f,
 			(g_RenderingEngine->m_ScreenHeight / 2.0f) - (16.0f * NumLines) - 24.0f,
-			16.0f,
 			1);
 	}
 }

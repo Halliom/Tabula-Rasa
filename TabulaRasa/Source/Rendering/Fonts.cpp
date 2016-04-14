@@ -1,176 +1,169 @@
 #include "Fonts.h"
 
 #include "windows.h"
-#include "../Platform/Platform.h"
 
-//TODO: Force inline?
-inline int GetSequentialLineValue()
+#include "../Engine/Core/Memory.h"
+
+FontLibrary* FontLibrary::g_FontLibrary;
+
+static inline int NextPower2(int x)
 {
-	char* Argument = strtok(NULL, " ");
-	char* StartOfValue = strrchr(Argument, '=');
-	char* EndOfValue = strrchr(StartOfValue + 1, '\0');
-	char* Value = new char[EndOfValue - StartOfValue];
-
-	strncpy(Value, StartOfValue + 1, EndOfValue - StartOfValue);
-	Value[EndOfValue - StartOfValue] = '\0';
-
-	return atoi(Value);
+	int val = 1;
+	while (val < x) val <<= 1;
+	return val;
 }
 
-Font* GetLoadedFont(unsigned int Index)
+TrueTypeFont FontLibrary::LoadFontFromFile(char* FontFileName, char* Directory)
 {
-	return LoadedFonts[min(max(Index, FONT_LIBRARY_SIZE - 1), 0)];
+	static int SIZE = 16;
+	FT_Face FontFace;
+
+	if (FT_New_Face(m_pFreeTypeLibrary, FontFileName, 0, &FontFace))
+	{
+		// TODO: Errro logging
+	}
+
+	// TODO: Change this so that you can vary the font size
+	FT_Set_Pixel_Sizes(FontFace, 0, SIZE);
+
+	TrueTypeFont NewFont = {};
+
+	int NumGlyphsPerX = 16;
+	int NumGlyphsPerY = 8;
+
+	int GlyphWidth = 0;
+	int GlyphHeight = 0;
+	for (char c = 0; c < 127; ++c)
+	{
+		FT_Load_Char(FontFace, c, FT_LOAD_RENDER);
+		FT_GlyphSlot LoadedGlyph = FontFace->glyph;
+
+		if (LoadedGlyph->bitmap.width > GlyphWidth)
+			GlyphWidth = LoadedGlyph->bitmap.width;
+
+		if (LoadedGlyph->bitmap.rows > GlyphHeight)
+			GlyphHeight = LoadedGlyph->bitmap.rows;
+	}
+
+	int TextureWidth = NextPower2(NumGlyphsPerX * GlyphWidth);
+	int TextureHeight = NextPower2(NumGlyphsPerY * GlyphHeight);
+
+	int Offset = 0;
+
+	glActiveTexture(GL_TEXTURE0);
+
+	glGenTextures(1, &NewFont.TextureObject);
+	glBindTexture(GL_TEXTURE_2D, NewFont.TextureObject);
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, TextureWidth, TextureHeight, 0, GL_RED, GL_UNSIGNED_BYTE, NULL);
+
+	for (char c = 0; c < 127; ++c)
+	{
+		FT_Load_Char(FontFace, c, FT_LOAD_RENDER);
+		FT_GlyphSlot LoadedChar = FontFace->glyph;
+
+		int BitmapWidth = LoadedChar->bitmap.width;
+		int BitmapHeight = LoadedChar->bitmap.rows;
+
+		int PositionX = c % NumGlyphsPerX;
+		int PositionY = c / NumGlyphsPerX;
+		int TexPositionX = PositionX * GlyphWidth;
+		int TexPositionY = PositionY * GlyphHeight;
+
+		NewFont.Glyphs[c].TexCoordBottomX = (float) TexPositionX / (float) TextureWidth;
+		NewFont.Glyphs[c].TexCoordBottomY = (float) TexPositionY / (float) TextureHeight;
+
+		NewFont.Glyphs[c].TexCoordTopX = (float) (TexPositionX + BitmapWidth) / (float) TextureWidth;
+		NewFont.Glyphs[c].TexCoordTopY = (float) (TexPositionY + BitmapHeight) / (float) TextureHeight;
+
+		// This needs to be shifted by 6 since LoadedChar->advance is in 
+		// 1/64th of a pixel and 2^6=64
+		NewFont.Glyphs[c].Advance = LoadedChar->advance.x >> 6;
+
+		NewFont.Glyphs[c].Width = BitmapWidth;
+		NewFont.Glyphs[c].Height = BitmapHeight;
+
+		NewFont.Glyphs[c].BearingX = LoadedChar->bitmap_left;
+		NewFont.Glyphs[c].BearingY = LoadedChar->bitmap_top;
+
+		glTexSubImage2D(
+			GL_TEXTURE_2D, 
+			0, 
+			TexPositionX, 
+			TexPositionY, 
+			BitmapWidth,
+			BitmapHeight,
+			GL_RED,
+			GL_UNSIGNED_BYTE,
+			LoadedChar->bitmap.buffer);
+	}
+
+	NewFont.Size = SIZE;
+
+	FT_Done_Face(FontFace);
+	return NewFont;
 }
 
-Glyph* GetGlyphFromChar(const char& Char, const Font* FontToSearch)
+TrueTypeFont FontLibrary::GetFont(int Index)
 {
-	const auto FindResult = FontToSearch->FontGlyphs.find((unsigned int) Char);
-	if (FindResult == FontToSearch->FontGlyphs.end())
-		return NULL;
-	else
-		return ((*FindResult).second);
+	return m_LoadedFonts[Index];
 }
 
-void LoadFontLibrary(std::string* font_library_location)
+void FontLibrary::Initialize(std::string& FontLibraryLocation)
 {
-	LoadedFonts = new Font*[FONT_LIBRARY_SIZE];
+	if (FT_Init_FreeType(&m_pFreeTypeLibrary))
+	{
+		// TODO: Error logging
+	}
 
 	HANDLE FileHandle;
 	WIN32_FIND_DATAA FindData;
 
-	if (font_library_location->at(0) == '\0') 
+	if (FontLibraryLocation.at(0) == '\0')
 		FileHandle = FindFirstFileA("*.*", &FindData); // search through all files in current dir
 	else
-		FileHandle = FindFirstFileA(font_library_location->append("\\*").c_str(), &FindData);
+		FileHandle = FindFirstFileA(FontLibraryLocation.append("\\*").c_str(), &FindData);
 
-	if (FileHandle == INVALID_HANDLE_VALUE) 
+	if (FileHandle == INVALID_HANDLE_VALUE)
 		return;
 
 	unsigned int CurrentFontIndex = 0;
 	do
 	{
-		if (FindData.dwFileAttributes & FILE_ATTRIBUTE_HIDDEN) 
+		if (FindData.dwFileAttributes & FILE_ATTRIBUTE_HIDDEN)
 			continue;
 		if ((FindData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
 			continue;
 		char* FileExtension = strrchr(FindData.cFileName, '.');
-		if (FileExtension != NULL && strcmp(FileExtension, ".fnt") == 0)
+		if (FileExtension != NULL && strcmp(FileExtension, ".ttf") == 0)
 		{
 			// Load the font from file
-			font_library_location->pop_back(); //remove last character
+			FontLibraryLocation.pop_back(); //remove last character
 
-			// Save the directory
+											   // Save the directory
 			char Directory[MAX_PATH];
-			strcpy(Directory, font_library_location->c_str());
+			strcpy(Directory, FontLibraryLocation.c_str());
 
-			LoadedFonts[CurrentFontIndex] = LoadFontFromFile(font_library_location->append(FindData.cFileName).c_str(), Directory);
-			font_library_location->assign(Directory);
+			TrueTypeFont LoadedFont = LoadFontFromFile((char*) FontLibraryLocation.append(FindData.cFileName).c_str(), Directory);
+			m_LoadedFonts.Push(LoadedFont);
+			FontLibraryLocation.assign(Directory);
 		}
 	} while (FindNextFileA(FileHandle, &FindData));
 	FindClose(FileHandle);
+	FT_Done_FreeType(m_pFreeTypeLibrary);
 }
 
-Font* LoadFontFromFile(const char* FontFileName, const char* Directory)
+void FontLibrary::Destroy()
 {
-	FILE* FilePointer = fopen(FontFileName, "r");
-
-	char Line[150];
-
-	Font* NewFont = new Font();
-
-	unsigned int LineNumber = 0;
-	while (fgets(Line, 150, FilePointer))
+	for (int i = 0; i < m_LoadedFonts.GetNum(); ++i)
 	{
-		switch (LineNumber)
-		{
-			case 0: // first line is info
-			{
-
-				break;
-			}
-			case 1: // second line is common
-			{
-				char* Argument = strtok(Line, " "); // Skip the word "common"
-				NewFont->LineHeight = GetSequentialLineValue();
-				NewFont->Base = GetSequentialLineValue();
-				NewFont->SizeX = (float) GetSequentialLineValue();
-				NewFont->SizeY = (float) GetSequentialLineValue();
-				break;
-			}
-			case 2: // third line is pages
-			{
-				char* Argument = strtok(Line, " ");
-				Argument = strtok(NULL, " "); // skip the first two tokens
-				Argument = strtok(NULL, " ");
-				if (Argument)
-				{
-					char* FileName = strrchr(Argument, '=');
-					char* EndOfFileName = strrchr(FileName + 2, '\"');
-					unsigned int DirectoryLength = strlen(Directory);
-					NewFont->TextureAtlasFileName = new char[EndOfFileName - FileName - 2 + DirectoryLength]; // +1 because we need to null terminate
-					strcpy(NewFont->TextureAtlasFileName, Directory);
-					strncpy(NewFont->TextureAtlasFileName + DirectoryLength, FileName + 2, EndOfFileName - FileName - 2);
-					NewFont->TextureAtlasFileName[EndOfFileName - FileName - 2 + DirectoryLength] = '\0'; // Null-terminate
-				}
-				break;
-			}
-			case 3: // fourth line is charcount
-			{
-				char* Argument = strtok(Line, " ");
-				Argument = strtok(NULL, " ");
-				if (Argument)
-				{
-					char* StartOfValue = strrchr(Argument, '=');
-					char* EndOfValue = strrchr(StartOfValue + 1, '\n');
-					char* Value = new char[EndOfValue - StartOfValue];
-
-					strncpy(Value,StartOfValue + 1, EndOfValue - StartOfValue);
-					Value[EndOfValue - StartOfValue] = '\0';
-					
-					int CharacterCount = atoi(Value);
-					NewFont->FontGlyphs.reserve(CharacterCount);
-					NewFont->GlyphCount = CharacterCount;
-				}
-				break;
-			}
-			default: //rest are all character definitions
-			{
-				char* Argument = strtok(Line, " "); // Skip first value since it only says char
-				Glyph* NewGlyph = new Glyph();
-				NewGlyph->GlyphID = GetSequentialLineValue();
-				NewGlyph->PositionX = (float) GetSequentialLineValue() / NewFont->SizeX;
-				NewGlyph->PositionY = (float) GetSequentialLineValue() / NewFont->SizeY;
-				NewGlyph->Width = (float) GetSequentialLineValue();
-				NewGlyph->Height = (float) GetSequentialLineValue();
-				NewGlyph->NormalizedWidth = (float) NewGlyph->Width / NewFont->SizeX;
-				NewGlyph->NormalizedHeight = (float) NewGlyph->Height / NewFont->SizeY;
-				NewGlyph->XOffset = (float) GetSequentialLineValue();
-				NewGlyph->YOffset = (float) GetSequentialLineValue();
-				NewGlyph->XAdvance = (float) GetSequentialLineValue();
-
-				NewFont->FontGlyphs.insert({ NewGlyph->GlyphID, NewGlyph });
-			}
-		}
-		++LineNumber;
+		;
 	}
-
-	unsigned int OutWidth, OutHeight;
-	NewFont->Texture = PlatformFileSystem::LoadImageFromFile(NewFont->TextureAtlasFileName, OutWidth, OutHeight);
-
-	fclose(FilePointer);
-
-	return NewFont;
-}
-
-void UnloadFontLibrary()
-{
-	for (unsigned int i = 0; i < FONT_LIBRARY_SIZE; ++i)
-	{
-		if (LoadedFonts[i])
-		{
-			glDeleteTextures(1, &LoadedFonts[i]->Texture);
-			delete LoadedFonts[i];
-		}
-	}
-	delete[] LoadedFonts;
 }

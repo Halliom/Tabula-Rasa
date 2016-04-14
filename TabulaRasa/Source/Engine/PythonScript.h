@@ -2,6 +2,7 @@
 
 #ifdef _DEBUG
 #undef _DEBUG //Prevent linking debug build of python
+#undef HAVE_UNISTD_H
 #include <Python.h>
 #define _DEBUG 1
 #endif

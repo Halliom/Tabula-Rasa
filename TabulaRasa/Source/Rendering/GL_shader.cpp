@@ -48,6 +48,7 @@ GLShaderProgram* GLShaderProgram::CreateVertexFragmentShaderFromFile(std::string
 
 void GLShaderProgram::GenerateUniformBindings()
 {
+	ColorVectorLocation =				GetUniform("g_Color");
 	ProjectionMatrixLocation =			GetUniform("g_ProjectionMatrix");
 	ViewMatrixLocation =				GetUniform("g_ViewMatrix");
 	ProjectionViewMatrixLocation =		GetUniform("g_ProjectionViewMatrix");

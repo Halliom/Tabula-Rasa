@@ -16,8 +16,6 @@ extern Player* g_Player;
 
 RenderingEngine::~RenderingEngine()
 {
-	UnloadFontLibrary();
-
 	ChunkRenderer::DestroyChunkRenderer();
 	TextRenderer::Destroy2DTextRendering();
 

@@ -1,55 +1,61 @@
 #pragma once
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <unordered_map>
+#include <string>
 
 #include "GL\glew.h"
 
-#define FONT_DEFAULT 0
-#define FONT_LIBRARY_SIZE 1
+#include <ft2build.h>
+#include FT_FREETYPE_H
 
-struct Glyph
+#include "DynamicArray.cpp"
+
+struct TrueTypeGlyph
 {
-	unsigned int GlyphID;
+	float TexCoordBottomX;
+	float TexCoordBottomY;
 
-	float PositionX;
-	float PositionY;
+	float TexCoordTopX;
+	float TexCoordTopY;
 
-	float NormalizedWidth;
-	float NormalizedHeight;
-
-	float XOffset;
-	float YOffset;
-	float XAdvance;
+	float Advance;
 
 	float Width;
 	float Height;
+
+	float BearingX;
+	float BearingY;
 };
 
-struct Font
+struct TrueTypeFont
 {
-	std::unordered_map<unsigned int, Glyph*> FontGlyphs;
-	unsigned int GlyphCount;
+	TrueTypeGlyph Glyphs[128];
 
-	float SizeX;
-	float SizeY;
+	unsigned int Width;
+	unsigned int Height;
 
-	unsigned int LineHeight;
-	unsigned int Base;
+	unsigned int Size;
 
-	char* TextureAtlasFileName;
-	GLuint Texture;
+	GLuint TextureObject;
 };
 
-static Font** LoadedFonts;
+class FontLibrary
+{
+public:
 
-Font* GetLoadedFont(unsigned int Index);
+	void Initialize(std::string& FontLibraryLocation);
 
-Glyph* GetGlyphFromChar(const char& Char, const Font* FontToSearch);
+	void Destroy();
 
-void LoadFontLibrary(std::string* FontLibraryLocation);
+	TrueTypeFont LoadFontFromFile(char* FontFileName, char* Directory);
 
-Font* LoadFontFromFile(const char* FontFileName, const char* Directory);
+	TrueTypeFont GetFont(int Index);
 
-void UnloadFontLibrary();
+	static FontLibrary* g_FontLibrary;
+
+private:
+
+	DynamicArray<TrueTypeFont> m_LoadedFonts;
+
+	FT_Library m_pFreeTypeLibrary;
+
+};

@@ -60,10 +60,6 @@ int main(int argc, char* argv[])
 		Window.GetErrorMessage();
 	}
 
-	// Loads the font library
-	std::string Directory = PlatformFileSystem::GetAssetDirectory(DT_FONTS);
-	LoadFontLibrary(&Directory);
-
 	g_MemoryManager = new GameMemoryManager();
 	if (!g_MemoryManager->Initialize())
 	{
@@ -73,6 +69,11 @@ int main(int argc, char* argv[])
 	g_RenderingEngine = new RenderingEngine();
 	g_RenderingEngine->Initialize(WindowParams.Width, WindowParams.Height);
 	g_RenderingEngine->AddRendererForBlock(3, "Chest_Model.obj");
+
+	// Loads the font library
+	std::string Directory = PlatformFileSystem::GetAssetDirectory(DT_FONTS);
+	FontLibrary::g_FontLibrary = new FontLibrary();
+	FontLibrary::g_FontLibrary->Initialize(Directory);
 
 	g_Console = new Console();
 	g_Console->OnUpdateInputMode();
@@ -86,7 +87,7 @@ int main(int argc, char* argv[])
 
 	g_RenderingEngine->PostInitialize();
 
-	TextRenderData2D* FPSCounter = TextRenderer::AddTextToRender("FPS: 0", 8.0f, 8.0f, 16.0f);
+	TextRenderData2D* FPSCounter = TextRenderer::AddTextToRenderWithColor("FPS: 0", 8.0f, 8.0f, glm::vec4(1.0f, 1.0f, 0.0f, 1.0f));
 
 	char* ScriptSource = PlatformFileSystem::LoadScript("init.py");
 	PythonScript TestScript = g_ScriptEngine->CreateScript("init", ScriptSource);
@@ -120,7 +121,7 @@ int main(int argc, char* argv[])
 			TextRenderer::RemoveText(FPSCounter);
 			char Buffer[48];
 			sprintf(Buffer, "FPS: %d", FramesPerSecond);
-			FPSCounter = TextRenderer::AddTextToRender(Buffer, 8.0f, 8.0f, 16.0f);
+			FPSCounter = TextRenderer::AddTextToRenderWithColor(Buffer, 8.0f, 8.0f, glm::vec4(1.0f, 1.0f, 0.0f, 1.0f));
 			CumulativeFrameTime = 0;
 			FramesPerSecond = 0;
 		}
@@ -128,6 +129,7 @@ int main(int argc, char* argv[])
 	}
 
 	g_ScriptEngine->Destroy();
+	FontLibrary::g_FontLibrary->Destroy();
 
 	SAFE_DELETE(g_World);
 	SAFE_DELETE(g_ScriptEngine);

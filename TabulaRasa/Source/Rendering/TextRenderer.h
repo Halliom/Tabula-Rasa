@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <vector>
 
 #include "GL\glew.h"
 #include "glm\glm.hpp"
@@ -58,6 +59,11 @@ struct TextRenderData2D
 	 * rendered later
 	 */
 	unsigned int Layer;
+
+	/**
+	 * The color of the text
+	 */
+	glm::vec4 Color;
 };
 
 struct RectRenderData2D
@@ -93,7 +99,17 @@ public:
 
 	static void Destroy2DTextRendering();
 
-	static TextRenderData2D* AddTextToRender(const char* Text, const float& X = 0.0f, const float& Y = 0.0f, float Size = 24.0f, unsigned int Layer = 0, unsigned int Font = 0);
+	static TextRenderData2D* AddTextToRenderWithColor(const char* Text, const float& X = 0.0f, const float& Y = 0.0f, glm::vec4& Color = glm::vec4(1.0f), unsigned int Layer = 0, unsigned int Font = 0);
+
+	static __forceinline TextRenderData2D* AddTextToRender(const char* Text, const float& X = 0.0f, const float& Y = 0.0f, unsigned int Layer = 0, unsigned int Font = 0)
+	{
+		return AddTextToRenderWithColor(Text, X, Y, glm::vec4(1.0f), Layer, Font);
+	}
+
+	static __forceinline TextRenderData2D* AddEmptyTextToRender(const char* Text)
+	{
+		return AddTextToRender(Text, 0.0f, 0.0f, 0, 0);
+	}
 
 	static void RemoveText(TextRenderData2D* TextToRemove);
 
