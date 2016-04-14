@@ -15,7 +15,7 @@ GLShaderProgram* TextRenderer::g_TextRenderShader = NULL;
 GLShaderProgram* TextRenderer::g_RectRenderShader = NULL;
 
 // Init the static projection matrix to be the size of the screen
-glm::mat4 TextRenderer::g_TextRenderProjectionMatrix = glm::ortho(0.0f, 800.0f, 600.0f, 0.0f); //TODO: Update this and be watchful of ints (use floats)
+glm::mat4 TextRenderer::g_TextRenderProjectionMatrix = glm::ortho(0.0f, 1280.0f, 720.0f, 0.0f); //TODO: Update this and be watchful of ints (use floats)
 
 // Init the RenderObjects
 std::vector<TextRenderData2D*> TextRenderer::g_TextRenderObjects[NUM_LAYERS];
@@ -38,6 +38,8 @@ bool SortRenderObjectsRect(RectRenderData2D* FirstObject, RectRenderData2D* Seco
 
 void TextRenderer::Initialize2DTextRendering()
 {
+	g_TextRenderShader = GLShaderProgram::CreateVertexFragmentShaderFromFile(std::string("vertex_font_render.glsl"), std::string("fragment_font_render.glsl"));
+
 	g_TextRenderDataMemoryPool = new MemoryPool<TextRenderData2D>(
 		Allocate<TextRenderData2D>(g_MemoryManager->m_pRenderingMemory, 256),
 		sizeof(TextRenderData2D) * 256);
@@ -77,17 +79,12 @@ struct GlyphVertex
 	glm::vec2 Tex;
 };
 
-TextRenderData2D* TextRenderer::AddTextToRender(const char* Text, const float& X, const float& Y, float Size, unsigned int Layer, unsigned int RenderFont)
+TextRenderData2D* TextRenderer::AddTextToRenderWithColor(const char* Text, const float& X, const float& Y, glm::vec4& Color, unsigned int Layer, unsigned int Font)
 {
-	if (g_TextRenderShader == NULL)
-		g_TextRenderShader = GLShaderProgram::CreateVertexFragmentShaderFromFile(std::string("vertex_font_render.glsl"), std::string("fragment_font_render.glsl"));
-	
-	Font* FontToUse = GetLoadedFont(RenderFont);
-	if (FontToUse == (Font*) 0xdddddddd) //TODO: Remove this
-		return NULL;
-
 	TextRenderData2D* NewTextRenderObject = g_TextRenderDataMemoryPool->Allocate();
 	memset(NewTextRenderObject, NULL, sizeof(TextRenderData2D));
+
+	TrueTypeFont FontToUse = FontLibrary::g_FontLibrary->GetFont(Font);
 
 	glGenVertexArrays(1, &NewTextRenderObject->VAO);
 	glBindVertexArray(NewTextRenderObject->VAO);
@@ -95,91 +92,87 @@ TextRenderData2D* TextRenderer::AddTextToRender(const char* Text, const float& X
 	glGenBuffers(1, &NewTextRenderObject->VBO);
 	glGenBuffers(1, &NewTextRenderObject->IBO);
 
-	NewTextRenderObject->Position = glm::vec3(X, Y, 0.0f);
+	int StringLength = strlen(Text);
 
-	unsigned int Width = (unsigned int) FontToUse->SizeX;
-	unsigned int Height = (unsigned int) FontToUse->SizeY;
-	NewTextRenderObject->TextureID = FontToUse->Texture;
+	float* Vertices = AllocateTransient<float>(20 * StringLength);
+	unsigned short* Indices = AllocateTransient<unsigned short>(6 * StringLength);
 
-	unsigned int TextLength = strlen(Text);
-	GlyphVertex* Vertices = AllocateTransient<GlyphVertex>(TextLength * 4);
-	unsigned short* Indices = AllocateTransient<unsigned short>(TextLength * 6);
-	unsigned int i = 0;
-	float CharacterOffsetX = 0.0f;
-	float CharacterOffsetY = 0.0f;
-	for (i = 0; i < TextLength; ++i)
+	float OffsetX = 0.0f;
+	float OffsetY = FontToUse.Size;
+	for (unsigned int CurrentChar = 0; CurrentChar < StringLength; ++CurrentChar)
 	{
-		if (Text[i] == ' ')
+		if (Text[CurrentChar] == '\n')
 		{
-			// Advance with half the size
-			CharacterOffsetX += Size / 2.0f;
+			OffsetY += FontToUse.Size;
+			OffsetX = 0.0f;
 			continue;
 		}
 
-		if (Text[i] == '\n')
-		{
-			CharacterOffsetX = 0.0f; // Reset the line width
-			CharacterOffsetY += Size;
-		}
+		TrueTypeGlyph CurrentGlyph = FontToUse.Glyphs[Text[CurrentChar]];
+		float BaseX = OffsetX + CurrentGlyph.BearingX;
+		float BaseY = OffsetY + (CurrentGlyph.Height - CurrentGlyph.BearingY);
 
-		Glyph* CharacterGlyph = GetGlyphFromChar(Text[i], FontToUse);
+		int BaseIndex = CurrentChar * 20;
 
-		if (CharacterGlyph == NULL)
-		{
-			CharacterOffsetX += Size / 2.0f;
-			continue;
-		}
+		// (0, 0)
+		Vertices[BaseIndex] =		BaseX;
+		Vertices[BaseIndex + 1] =	BaseY;
+		Vertices[BaseIndex + 2] =	1.0f;
+		Vertices[BaseIndex + 3] =	CurrentGlyph.TexCoordBottomX;
+		Vertices[BaseIndex + 4] =	CurrentGlyph.TexCoordTopY;
 
-		unsigned int VertexOffset = i * 4; // the number of vertices offset from the previous set
-		unsigned int IndexOffset = i * 6;
+		// (0, 1)
+		Vertices[BaseIndex + 5] =	BaseX;
+		Vertices[BaseIndex + 6] =	BaseY - CurrentGlyph.Height;
+		Vertices[BaseIndex + 7] =	1.0f;
+		Vertices[BaseIndex + 8] =	CurrentGlyph.TexCoordBottomX;
+		Vertices[BaseIndex + 9] =	CurrentGlyph.TexCoordBottomY;
+		
+		// (1, 1)
+		Vertices[BaseIndex + 10] =	BaseX + CurrentGlyph.Width;
+		Vertices[BaseIndex + 11] =	BaseY - CurrentGlyph.Height;
+		Vertices[BaseIndex + 12] =	1.0f;
+		Vertices[BaseIndex + 13] =	CurrentGlyph.TexCoordTopX;
+		Vertices[BaseIndex + 14] =	CurrentGlyph.TexCoordBottomY;
+		
+		// (1, 0)
+		Vertices[BaseIndex + 15] =	BaseX + CurrentGlyph.Width;
+		Vertices[BaseIndex + 16] =	BaseY;
+		Vertices[BaseIndex + 17] =	1.0f;
+		Vertices[BaseIndex + 18] =	CurrentGlyph.TexCoordTopX;
+		Vertices[BaseIndex + 19] =	CurrentGlyph.TexCoordTopY;
 
-		// Calculate the scale of the character with this scale and font
-		float ScaledWidth = Size * CharacterGlyph->Width / (float) FontToUse->Base;
-		float ScaledHeight = Size * CharacterGlyph->Height / (float) FontToUse->Base;
-		float BaseWidth = CharacterOffsetX + (Size * CharacterGlyph->XOffset / (float) FontToUse->LineHeight);
-		float BaseHeight = CharacterOffsetY + (Size * CharacterGlyph->YOffset / (float) FontToUse->LineHeight);
+		int IndicesBaseIndex = CurrentChar * 6;
+		int IndexBase = CurrentChar * 4; // What index we currently are at
+		Indices[IndicesBaseIndex] =		IndexBase + 0; //3
+		Indices[IndicesBaseIndex + 1] = IndexBase + 1; //2
+		Indices[IndicesBaseIndex + 2] = IndexBase + 2; //0
+		Indices[IndicesBaseIndex + 3] = IndexBase + 0; //2
+		Indices[IndicesBaseIndex + 4] = IndexBase + 2; //1
+		Indices[IndicesBaseIndex + 5] = IndexBase + 3; //0
 
-		Vertices[VertexOffset + 0] = { 
-			glm::vec3(BaseWidth,													BaseHeight,														1.0f),
-			glm::vec2(CharacterGlyph->PositionX,									CharacterGlyph->PositionY) };
-		Vertices[VertexOffset + 1] = { 
-			glm::vec3(BaseWidth,													BaseHeight + ScaledHeight,										1.0f),
-			glm::vec2(CharacterGlyph->PositionX,									CharacterGlyph->PositionY + CharacterGlyph->NormalizedHeight) };
-		Vertices[VertexOffset + 2] = { 
-			glm::vec3(BaseWidth + ScaledWidth,										BaseHeight + ScaledHeight,										1.0f),
-			glm::vec2(CharacterGlyph->PositionX + CharacterGlyph->NormalizedWidth,	CharacterGlyph->PositionY + CharacterGlyph->NormalizedHeight) };
-		Vertices[VertexOffset + 3] = { 
-			glm::vec3(BaseWidth + ScaledWidth,										BaseHeight,														1.0f),
-			glm::vec2(CharacterGlyph->PositionX + CharacterGlyph->NormalizedWidth,	CharacterGlyph->PositionY) };
-
-		// Draw them in reverse order since the image is flipped (y=0 is not in the
-		// lower part of the screen - like OpenGL has it - it is in the top of the
-		// screen - like the monitor has it
-		Indices[IndexOffset + 0] = VertexOffset + 3;
-		Indices[IndexOffset + 1] = VertexOffset + 2;
-		Indices[IndexOffset + 2] = VertexOffset + 0;
-		Indices[IndexOffset + 3] = VertexOffset + 2;
-		Indices[IndexOffset + 4] = VertexOffset + 1;
-		Indices[IndexOffset + 5] = VertexOffset + 0;
-
-		CharacterOffsetX += ScaledWidth;
+		OffsetX += CurrentGlyph.Advance;
 	}
 
+	NewTextRenderObject->Position = glm::vec3(X, Y, 0.0f);
+
 	glBindBuffer(GL_ARRAY_BUFFER, NewTextRenderObject->VBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(GlyphVertex) * 4 * TextLength, Vertices, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 20 * StringLength, Vertices, GL_STATIC_DRAW);
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, NewTextRenderObject->IBO);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned short) * 6 * TextLength, Indices, GL_STATIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned short) * 6 * StringLength, Indices, GL_STATIC_DRAW);
 
 	glEnableVertexAttribArray(0); // Vertex position
 	glEnableVertexAttribArray(1); // Vertex texture coordinate
 
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(GlyphVertex), (void*) offsetof(GlyphVertex, Pos));
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(GlyphVertex), (void*) offsetof(GlyphVertex, Tex));
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 5, (void*) 0);
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 5, (void*) (sizeof(float) * 3));
 
 	// 6 vertices per glyph
-	NewTextRenderObject->VertexCount = TextLength * 6;
+	NewTextRenderObject->VertexCount = 6 * StringLength;
 	NewTextRenderObject->Layer = Layer;
+	NewTextRenderObject->TextureID = FontToUse.TextureObject;
+	NewTextRenderObject->Color = Color;
 	g_TextRenderObjects[Layer].push_back(NewTextRenderObject);
 	glBindVertexArray(0);
 
@@ -252,6 +245,7 @@ void TextRenderer::RemoveRect(RectRenderData2D* RectToRemove)
 void TextRenderer::Render()
 {
 	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	for (unsigned int LayerID = 0; LayerID < NUM_LAYERS; ++LayerID)
 	{
@@ -283,12 +277,13 @@ void TextRenderer::Render()
 					continue;
 
 				g_TextRenderShader->SetPositionOffset(It->Position);
+				g_TextRenderShader->SetColor(It->Color);
 
 				glBindVertexArray(It->VAO);
 				glActiveTexture(GL_TEXTURE0);
 				glBindTexture(GL_TEXTURE_2D, It->TextureID);
 
-				glDrawElements(GL_TRIANGLES, It->VertexCount, GL_UNSIGNED_SHORT, (void*)0);
+				glDrawElements(GL_TRIANGLES, It->VertexCount, GL_UNSIGNED_SHORT, (void*) 0);
 			}
 		}
 	}
