@@ -106,11 +106,6 @@ public:
 		return AddTextToRenderWithColor(Text, X, Y, glm::vec4(1.0f), Layer, Font);
 	}
 
-	static __forceinline TextRenderData2D* AddEmptyTextToRender(const char* Text)
-	{
-		return AddTextToRender(Text, 0.0f, 0.0f, 0, 0);
-	}
-
 	static void RemoveText(TextRenderData2D* TextToRemove);
 
 	static RectRenderData2D* AddRectToRender(float MinX, float MinY, float MaxX, float MaxY, glm::vec4 Color, unsigned int Layer = 0);

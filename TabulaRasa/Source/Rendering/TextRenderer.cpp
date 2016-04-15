@@ -181,6 +181,9 @@ TextRenderData2D* TextRenderer::AddTextToRenderWithColor(const char* Text, const
 
 void TextRenderer::RemoveText(TextRenderData2D* TextToRemove)
 {
+	if (TextToRemove == NULL)
+		return;
+
 	auto Position = std::find(g_TextRenderObjects[TextToRemove->Layer].begin(), g_TextRenderObjects[TextToRemove->Layer].end(), TextToRemove);
 	if (Position != g_TextRenderObjects[TextToRemove->Layer].end())
 	{
@@ -229,6 +232,9 @@ RectRenderData2D * TextRenderer::AddRectToRender(float MinX, float MinY, float M
 
 void TextRenderer::RemoveRect(RectRenderData2D* RectToRemove)
 {
+	if (RectToRemove == NULL)
+		return;
+
 	auto Position = std::find(g_RectRenderObjects[RectToRemove->Layer].begin(), g_RectRenderObjects[RectToRemove->Layer].end(), RectToRemove);
 	if (Position != g_RectRenderObjects[RectToRemove->Layer].end())
 	{
