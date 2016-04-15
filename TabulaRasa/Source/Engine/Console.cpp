@@ -17,8 +17,8 @@ Console::Console() :
 	m_CurrentlyTyping(">"),
 	m_LastTyped("")
 {
-	m_pTextBufferRenderData = TextRenderer::AddEmptyTextToRender("");
-	m_pActiveLineText = TextRenderer::AddEmptyTextToRender("");
+	m_pTextBufferRenderData = NULL;
+	m_pActiveLineText = NULL;
 	m_pBackgroundRect = NULL;
 }
 
@@ -241,8 +241,8 @@ void Console::OnUpdateInputMode()
 	{
 		TextRenderer::RemoveText(m_pActiveLineText);
 		TextRenderer::RemoveText(m_pTextBufferRenderData);
-		m_pTextBufferRenderData = TextRenderer::AddEmptyTextToRender("");
-		m_pActiveLineText = TextRenderer::AddEmptyTextToRender("");
+		m_pTextBufferRenderData = NULL;
+		m_pActiveLineText = NULL;
 
 		if (m_pBackgroundRect)
 			TextRenderer::RemoveRect(m_pBackgroundRect);
