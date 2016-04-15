@@ -32,6 +32,8 @@ World::~World()
 	{
 		delete CurrentPlayer;
 	}
+	g_ScriptEngine->DeleteScript(m_pTickScript);
+	delete m_pTickScript;
 }
 
 void World::Initialize()
@@ -63,7 +65,11 @@ void World::Initialize()
 		}
 	}
 
-	//PerlinNoise NoiseFunction;
+	char* ScriptSource = PlatformFileSystem::LoadScript("tick.py");
+	m_pTickScript = new PythonScript();
+	PythonScript Temp = g_ScriptEngine->CreateScript("tick", ScriptSource);
+	memcpy(m_pTickScript, &Temp, sizeof(PythonScript));
+	delete[] ScriptSource;
 
 #if 1
 	for (int i = 0; i < 16; ++i)
@@ -107,6 +113,8 @@ void World::Update(float DeltaTime)
 			It.second->m_pNodeData->m_bIsRenderStateDirty = false;
 		}
 	}
+
+	g_ScriptEngine->ExecuteScript(m_pTickScript);
 }
 
 Chunk* World::GetLoadedChunk(const int& ChunkX, const int& ChunkY, const int& ChunkZ)
