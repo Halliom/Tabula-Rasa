@@ -81,6 +81,12 @@ int main(int argc, char* argv[])
 	g_ScriptEngine = new PythonScriptEngine();
 	g_ScriptEngine->Initialize();
 
+	char* ScriptSource = PlatformFileSystem::LoadScript("init.py");
+	PythonScript TestScript = g_ScriptEngine->CreateScript("init", ScriptSource);
+	g_ScriptEngine->ExecuteScript(&TestScript);
+	g_ScriptEngine->DeleteScript(&TestScript);
+	delete[] ScriptSource;
+
 	// Loads the world and initializes subobjects
 	g_World = new World();
 	g_World->Initialize();
@@ -88,12 +94,6 @@ int main(int argc, char* argv[])
 	g_RenderingEngine->PostInitialize();
 
 	TextRenderData2D* FPSCounter = TextRenderer::AddTextToRenderWithColor("FPS: 0", 8.0f, 8.0f, glm::vec4(1.0f, 1.0f, 0.0f, 1.0f));
-
-	char* ScriptSource = PlatformFileSystem::LoadScript("init.py");
-	PythonScript TestScript = g_ScriptEngine->CreateScript("init", ScriptSource);
-	g_ScriptEngine->ExecuteScript(&TestScript);
-	g_ScriptEngine->DeleteScript(&TestScript);
-	delete[] ScriptSource;
 
 	double LastFrameTime = SDL_GetTicks() / 1000.0;
 	double DeltaTime = 0.0;

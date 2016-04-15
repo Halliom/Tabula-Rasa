@@ -7,6 +7,10 @@
 extern Console* g_Console;
 extern World* g_World;
 
+/**
+ * aview module functions
+ */
+
 PyObject* __cdecl Write(PyObject* self, PyObject* args)
 {
 	const char* Output;
@@ -32,12 +36,20 @@ PyObject* aview_flush(PyObject* self, PyObject* args)
 	return Flush(self, args);
 }
 
+/**
+ * aview method definitions
+ */
+
 PyMethodDef aview_methods[] =
 {
 	{ "write", aview_write, METH_VARARGS, "doc for write" },
 	{ "flush", aview_flush, METH_VARARGS, "doc for flush" },
 	{ 0, 0, 0, 0 } // sentinel
 };
+
+/**
+ * aview module defition
+ */
 
 PyModuleDef aview_module =
 {
@@ -56,6 +68,10 @@ PyMODINIT_FUNC PyInit_aview(void)
 	PySys_SetObject("stderr", m);
 	return m;
 }
+
+/**
+ * world module functions
+ */
 
 PyObject* World_Addblock(PyObject* Self, PyObject* Arguments)
 {
@@ -90,12 +106,20 @@ PyObject* World_RemoveBlock(PyObject* Self, PyObject* Arguments)
 	return Py_None;
 }
 
+/**
+ * world module method definitions
+ */
+
 PyMethodDef WorldMethods[]
 {
 	{ "add_block", World_Addblock, METH_VARARGS, "Place a block" },
-	{ "remove_block", World_Addblock, METH_VARARGS, "Remove a block" },
+	{ "remove_block", World_RemoveBlock, METH_VARARGS, "Remove a block" },
 	{ 0, 0, 0, 0 }
 };
+
+/**
+ * world module definition
+ */
 
 PyModuleDef WorldModule =
 {
@@ -112,15 +136,61 @@ PyMODINIT_FUNC PyInit_world(void)
 	return Module;
 }
 
+PyObject* Engine_LoadFont(PyObject* Self, PyObject* Arguments)
+{
+	char* Filename;
+	int Size;
+
+	if (!PyArg_ParseTuple(Arguments, "si", &Filename, &Size))
+		return NULL;
+
+	FontLibrary::g_FontLibrary->LoadFontFromFile(Filename, Size);
+
+	Py_INCREF(Py_None);
+	return Py_None;
+}
+
+/**
+* engine module method definitions
+*/
+
+PyMethodDef EngineMethods[]
+{
+	{ "load_font", Engine_LoadFont, METH_VARARGS, "Loads a font" },
+	{ 0, 0, 0, 0 }
+};
+
+/**
+* world module definition
+*/
+
+PyModuleDef EngineModule =
+{
+	PyModuleDef_HEAD_INIT,
+	"engine",		/* name of module */
+	"Engine functions for interacting with the engine",
+	-1,				/* size of per-interpreter state of the module, or -1 if the module keeps state in global variables. */
+	EngineMethods
+};
+
+PyMODINIT_FUNC PyInit_engine(void)
+{
+	PyObject* Module = PyModule_Create(&EngineModule);
+	return Module;
+}
+
 void PythonScriptEngine::Initialize()
 {
 	PyImport_AppendInittab("world", PyInit_world);
 
 	PyImport_AppendInittab("aview", PyInit_aview);
 
+	PyImport_AppendInittab("engine", PyInit_engine);
+
 	Py_Initialize();
 
 	PyImport_ImportModule("aview");
+	PyImport_ImportModule("engine");
 	PyImport_ImportModule("world");
 	PyRun_String("import aview", Py_single_input, m_InterpreterContext.Locals, m_InterpreterContext.Locals);
 
@@ -193,7 +263,15 @@ PythonScript PythonScriptEngine::CreateScript(char* ScriptName, char* ScriptStri
 void PythonScriptEngine::ExecuteScript(PythonScript* Script)
 {
 	PyObject* Result = PyEval_EvalCode(Script->CompiledSource, Script->Context.Globals, Script->Context.Locals);
-	Py_DECREF(Result);
+	if (Result == NULL)
+	{
+		// Get the error
+		PyErr_Print();
+	}
+	else
+	{
+		Py_DECREF(Result);
+	}
 }
 
 void PythonScriptEngine::DeleteScript(PythonScript* Script)

@@ -1,5 +1,5 @@
-def main():
-    print("Hello world from init.py!")
+import engine
 
 if __name__ == "__main__":
-    main()
+    print("Hello world from init.py!")
+    engine.load_font("TitilliumWeb-Regular.ttf", 16)

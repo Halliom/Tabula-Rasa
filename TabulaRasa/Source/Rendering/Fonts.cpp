@@ -13,18 +13,18 @@ static inline int NextPower2(int x)
 	return val;
 }
 
-TrueTypeFont FontLibrary::LoadFontFromFile(char* FontFileName, char* Directory)
+TrueTypeFont FontLibrary::LoadFontFromFile(char* FontFileName, int Size)
 {
-	static int SIZE = 16;
 	FT_Face FontFace;
 
-	if (FT_New_Face(m_pFreeTypeLibrary, FontFileName, 0, &FontFace))
+	std::string FullFileName = m_FontLibraryLocation.append(FontFileName);
+	if (FT_New_Face(m_pFreeTypeLibrary, FullFileName.c_str(), 0, &FontFace))
 	{
 		// TODO: Errro logging
 	}
 
 	// TODO: Change this so that you can vary the font size
-	FT_Set_Pixel_Sizes(FontFace, 0, SIZE);
+	FT_Set_Pixel_Sizes(FontFace, 0, Size);
 
 	TrueTypeFont NewFont = {};
 
@@ -105,9 +105,10 @@ TrueTypeFont FontLibrary::LoadFontFromFile(char* FontFileName, char* Directory)
 			LoadedChar->bitmap.buffer);
 	}
 
-	NewFont.Size = SIZE;
+	NewFont.Size = Size;
 
 	FT_Done_Face(FontFace);
+	m_LoadedFonts.Push(NewFont);
 	return NewFont;
 }
 
@@ -121,8 +122,12 @@ void FontLibrary::Initialize(std::string& FontLibraryLocation)
 	if (FT_Init_FreeType(&m_pFreeTypeLibrary))
 	{
 		// TODO: Error logging
+		assert(false, "Freetype could not initialize");
 	}
 
+	m_FontLibraryLocation = FontLibraryLocation.append("\\");
+
+#if 0
 	HANDLE FileHandle;
 	WIN32_FIND_DATAA FindData;
 
@@ -157,7 +162,7 @@ void FontLibrary::Initialize(std::string& FontLibraryLocation)
 		}
 	} while (FindNextFileA(FileHandle, &FindData));
 	FindClose(FileHandle);
-	FT_Done_FreeType(m_pFreeTypeLibrary);
+#endif
 }
 
 void FontLibrary::Destroy()
@@ -166,4 +171,5 @@ void FontLibrary::Destroy()
 	{
 		;
 	}
+	FT_Done_FreeType(m_pFreeTypeLibrary);
 }

@@ -46,15 +46,17 @@ public:
 
 	void Destroy();
 
-	TrueTypeFont LoadFontFromFile(char* FontFileName, char* Directory);
+	TrueTypeFont LoadFontFromFile(char* FontFileName, int Size);
 
 	TrueTypeFont GetFont(int Index);
 
 	static FontLibrary* g_FontLibrary;
+	
+	DynamicArray<TrueTypeFont> m_LoadedFonts;
 
 private:
 
-	DynamicArray<TrueTypeFont> m_LoadedFonts;
+	std::string m_FontLibraryLocation;
 
 	FT_Library m_pFreeTypeLibrary;
 
