@@ -17,10 +17,12 @@ TrueTypeFont FontLibrary::LoadFontFromFile(char* FontFileName, int Size)
 {
 	FT_Face FontFace;
 
-	std::string FullFileName = m_FontLibraryLocation.append(FontFileName);
-	if (FT_New_Face(m_pFreeTypeLibrary, FullFileName.c_str(), 0, &FontFace))
+	std::string FullFileName = std::string(m_FontLibraryLocation).append(FontFileName);
+	int ErrorCode = FT_New_Face(m_pFreeTypeLibrary, FullFileName.c_str(), 0, &FontFace);
+	if (ErrorCode)
 	{
 		// TODO: Errro logging
+		assert("Failure loading font");
 	}
 
 	// TODO: Change this so that you can vary the font size
