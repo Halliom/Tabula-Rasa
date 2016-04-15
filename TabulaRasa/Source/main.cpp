@@ -66,17 +66,10 @@ int main(int argc, char* argv[])
 		assert(false, "Failure to load memory");
 	}
 
-	g_RenderingEngine = new RenderingEngine();
-	g_RenderingEngine->Initialize(WindowParams.Width, WindowParams.Height);
-	g_RenderingEngine->AddRendererForBlock(3, "Chest_Model.obj");
-
 	// Loads the font library
 	std::string Directory = PlatformFileSystem::GetAssetDirectory(DT_FONTS);
 	FontLibrary::g_FontLibrary = new FontLibrary();
 	FontLibrary::g_FontLibrary->Initialize(Directory);
-
-	g_Console = new Console();
-	g_Console->OnUpdateInputMode();
 
 	g_ScriptEngine = new PythonScriptEngine();
 	g_ScriptEngine->Initialize();
@@ -86,6 +79,13 @@ int main(int argc, char* argv[])
 	g_ScriptEngine->ExecuteScript(&TestScript);
 	g_ScriptEngine->DeleteScript(&TestScript);
 	delete[] ScriptSource;
+
+	g_Console = new Console();
+	g_Console->OnUpdateInputMode();
+
+	g_RenderingEngine = new RenderingEngine();
+	g_RenderingEngine->Initialize(WindowParams.Width, WindowParams.Height);
+	g_RenderingEngine->AddRendererForBlock(3, "Chest_Model.obj");
 
 	// Loads the world and initializes subobjects
 	g_World = new World();
