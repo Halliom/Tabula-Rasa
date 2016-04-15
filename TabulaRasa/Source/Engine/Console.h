@@ -40,6 +40,8 @@ private:
 
 	std::string m_LastTyped;
 
+	TrueTypeFont m_ConsoleFont;
+
 	TextRenderData2D* m_pTextBufferRenderData;
 
 	TextRenderData2D* m_pActiveLineText;

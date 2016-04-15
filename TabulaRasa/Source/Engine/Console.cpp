@@ -20,6 +20,8 @@ Console::Console() :
 	m_pTextBufferRenderData = NULL;
 	m_pActiveLineText = NULL;
 	m_pBackgroundRect = NULL;
+
+	m_ConsoleFont = FontLibrary::g_FontLibrary->GetFont(0);
 }
 
 Console::~Console()
@@ -231,7 +233,12 @@ void Console::ReceiveTextInput(SDL_Keycode* KeyCode, bool IsShiftDown, bool IsAl
 
 		TextRenderer::RemoveText(m_pActiveLineText);
 
-		m_pActiveLineText = TextRenderer::AddTextToRender(m_CurrentlyTyping.c_str(), 0.0f, g_RenderingEngine->m_ScreenHeight / 2.0f - 24.0f, 1);
+		m_pActiveLineText = TextRenderer::AddTextToRender(
+			m_CurrentlyTyping.c_str(), 
+			0.0f, 
+			g_RenderingEngine->m_ScreenHeight / 2.0f - ((float) m_ConsoleFont.Size * 1.5f), 
+			1,
+			&m_ConsoleFont);
 	}
 }
 
@@ -249,7 +256,13 @@ void Console::OnUpdateInputMode()
 	}
 	else
 	{
-		m_pActiveLineText = TextRenderer::AddTextToRender(m_CurrentlyTyping.c_str(), 0.0f, g_RenderingEngine->m_ScreenHeight / 2.0f - 24.0f, 1);
+		m_pActiveLineText = TextRenderer::AddTextToRender(
+			m_CurrentlyTyping.c_str(), 
+			0.0f, 
+			g_RenderingEngine->m_ScreenHeight / 2.0f - ((float) m_ConsoleFont.Size * 1.5f), 
+			1,
+			&m_ConsoleFont);
+
 		m_pBackgroundRect = TextRenderer::AddRectToRender(
 			0.0f, 
 			0.0f, 
@@ -277,8 +290,9 @@ void Console::RedrawTextBuffer()
 		m_pTextBufferRenderData = TextRenderer::AddTextToRender(
 			m_TextBuffer.c_str(),
 			0.0f,
-			(g_RenderingEngine->m_ScreenHeight / 2.0f) - (16.0f * NumLines) - 24.0f,
-			1);
+			(g_RenderingEngine->m_ScreenHeight / 2.0f) - (m_ConsoleFont.Size * NumLines) - ((float) m_ConsoleFont.Size * 1.5f),
+			1,
+			&m_ConsoleFont);
 	}
 }
 
