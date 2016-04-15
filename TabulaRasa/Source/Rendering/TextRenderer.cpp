@@ -79,12 +79,20 @@ struct GlyphVertex
 	glm::vec2 Tex;
 };
 
-TextRenderData2D* TextRenderer::AddTextToRenderWithColor(const char* Text, const float& X, const float& Y, glm::vec4& Color, unsigned int Layer, unsigned int Font)
+TextRenderData2D* TextRenderer::AddTextToRenderWithColor(const char* Text, const float& X, const float& Y, glm::vec4& Color, unsigned int Layer, TrueTypeFont* Font)
 {
 	TextRenderData2D* NewTextRenderObject = g_TextRenderDataMemoryPool->Allocate();
 	memset(NewTextRenderObject, NULL, sizeof(TextRenderData2D));
 
-	TrueTypeFont FontToUse = FontLibrary::g_FontLibrary->GetFont(Font);
+	TrueTypeFont FontToUse;
+	if (Font == NULL)
+	{
+		FontToUse = FontLibrary::g_FontLibrary->GetFont(0);
+	}
+	else
+	{
+		FontToUse = *Font;
+	}
 
 	glGenVertexArrays(1, &NewTextRenderObject->VAO);
 	glBindVertexArray(NewTextRenderObject->VAO);
