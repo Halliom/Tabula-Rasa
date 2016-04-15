@@ -21,7 +21,7 @@ Console::Console() :
 	m_pActiveLineText = NULL;
 	m_pBackgroundRect = NULL;
 
-	m_ConsoleFont = FontLibrary::g_FontLibrary->GetFont(0);
+	m_ConsoleFont = FontLibrary::g_FontLibrary->GetFont(1);
 }
 
 Console::~Console()
