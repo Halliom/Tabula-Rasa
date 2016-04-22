@@ -6,16 +6,12 @@
 #include "Engine\Console.h"
 #include "Rendering\TextRenderer.h"
 #include "Rendering\RenderingEngine.h"
-#include "Engine\PythonScript.h"
-
 #include "Engine\Core\Memory.h"
 
 #define SAFE_DELETE(ptr) if (ptr) { delete ptr; }
 
-
 World* g_World = NULL;
 RenderingEngine* g_RenderingEngine = NULL;
-PythonScriptEngine* g_ScriptEngine = NULL;
 Console* g_Console = NULL;
 GameMemoryManager* g_MemoryManager = NULL;
 
@@ -70,15 +66,8 @@ int main(int argc, char* argv[])
 	std::string Directory = PlatformFileSystem::GetAssetDirectory(DT_FONTS);
 	FontLibrary::g_FontLibrary = new FontLibrary();
 	FontLibrary::g_FontLibrary->Initialize(Directory);
-
-	g_ScriptEngine = new PythonScriptEngine();
-	g_ScriptEngine->Initialize();
-
-	char* ScriptSource = PlatformFileSystem::LoadScript("init.py");
-	PythonScript TestScript = g_ScriptEngine->CreateScript("init", ScriptSource);
-	g_ScriptEngine->ExecuteScript(&TestScript);
-	g_ScriptEngine->DeleteScript(&TestScript);
-	delete[] ScriptSource;
+	FontLibrary::g_FontLibrary->LoadFontFromFile("TitilliumWeb-Regular.ttf", 20);
+	FontLibrary::g_FontLibrary->LoadFontFromFile("RobotoMono-Regular.ttf", 18);
 
 	g_Console = new Console();
 	g_Console->OnUpdateInputMode();
@@ -127,12 +116,9 @@ int main(int argc, char* argv[])
 		}
 		g_MemoryManager->ClearTransientMemory();
 	}
-
-	g_ScriptEngine->Destroy();
 	FontLibrary::g_FontLibrary->Destroy();
 
 	SAFE_DELETE(g_World);
-	SAFE_DELETE(g_ScriptEngine);
 	SAFE_DELETE(g_RenderingEngine);
 	SAFE_DELETE(g_Console);
 	SAFE_DELETE(g_MemoryManager);

@@ -44,7 +44,5 @@ private:
 	int ChunkLoadingCenterY;
 	int ChunkLoadingCenterZ;
 
-	struct PythonScript* m_pTickScript;
-
 	GLShaderProgram* Shader;
 };

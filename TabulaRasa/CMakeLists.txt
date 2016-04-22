@@ -10,9 +10,6 @@ find_package(OpenGL REQUIRED)
 find_package(GLEW REQUIRED)
 find_package(PythonLibs REQUIRED)
 
-message(${PYTHON_INCLUDE_DIRS})
-message(${PYTHON_LIBRARIES})
-
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
   # using Clang
 elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
@@ -27,7 +24,6 @@ elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
     add_definitions("/fp:fast")
 endif()
 
-include_directories(${PROJECT_SOURCE_DIR}/Include/ ${PYTHON_INCLUDE_DIRS})
 
 file(GLOB_RECURSE SOURCE_FILES
     "Source/*.h"
@@ -49,4 +45,3 @@ set(FREETYPEBCC "${CMAKE_SOURCE_DIR}/Lib/freetype-bcc.lib")
 set(ASSIMP "${CMAKE_SOURCE_DIR}/Lib/assimp.lib")
 
 add_executable(TabulaRasa WIN32 ${SOURCE_FILES})
-target_link_libraries(TabulaRasa ${OPENGL_LIBRARIES} ${GLEW32} ${GLEW32S} ${SDL2} ${SDL2MAIN} ${SDL2TEST} ${FREETYPE} ${PYTHON_LIBRARIES} ${ASSIMP})

@@ -7,10 +7,8 @@
 
 #include "../Engine/Core/Memory.h"
 #include "../Rendering/RenderingEngine.h"
-#include "../Engine/PythonScript.h"
 
 extern RenderingEngine* g_RenderingEngine;
-extern PythonScriptEngine* g_ScriptEngine;
 
 Console::Console() :
 	m_bIsActive(false),
@@ -34,6 +32,7 @@ Console::~Console()
 
 void Console::Print(char* Message)
 {
+	char a = 'a';
 	m_TextBuffer.append(Message);
 	RedrawTextBuffer();
 }
@@ -320,16 +319,7 @@ bool IsSingleWord(char* String)
 
 char* Console::ExecuteCommand(char* Command)
 {
-	if (IsSingleWord(Command))
-	{
-		char* ReturnValue = g_ScriptEngine->GetVariableValue(Command);
-		if (ReturnValue[0] != '\0')
-		{
-			return ReturnValue;
-		}
-		return "";
-	}
-	g_ScriptEngine->ExecuteStringInInterpreter(Command);
+	//g_ScriptEngine->ExecuteStringInInterpreter(Command);
 
 	return "";
 }
