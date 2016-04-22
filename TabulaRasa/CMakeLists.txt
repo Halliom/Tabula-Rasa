@@ -24,6 +24,7 @@ elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
     add_definitions("/fp:fast")
 endif()
 
+include_directories(${PROJECT_SOURCE_DIR}/Include/)
 
 file(GLOB_RECURSE SOURCE_FILES
     "Source/*.h"
@@ -45,3 +46,4 @@ set(FREETYPEBCC "${CMAKE_SOURCE_DIR}/Lib/freetype-bcc.lib")
 set(ASSIMP "${CMAKE_SOURCE_DIR}/Lib/assimp.lib")
 
 add_executable(TabulaRasa WIN32 ${SOURCE_FILES})
+target_link_libraries(TabulaRasa ${OPENGL_LIBRARIES} ${GLEW32} ${GLEW32S} ${SDL2} ${SDL2MAIN} ${SDL2TEST} ${FREETYPE} ${ASSIMP})
