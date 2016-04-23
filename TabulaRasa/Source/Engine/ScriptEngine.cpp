@@ -1,16 +1,17 @@
 #include "ScriptEngine.h"
 
+#include <string>
+
+#include "lua5.2\lua.hpp"
+#include "LuaBridge/LuaBridge.h"
+
 #include "Console.h"
 
 extern Console* g_Console;
 
-#include "lua5.2\lua.hpp"
-
-#include "LuaBridge/LuaBridge.h"
-
-void luaprint()
+void luaprint(std::string Message)
 {
-	g_Console->PrintLine("Hello from Lua");
+	g_Console->PrintLine(Message);
 }
 
 void DoSomething()
@@ -19,7 +20,7 @@ void DoSomething()
 	luaL_openlibs(State);
 
 	luabridge::getGlobalNamespace(State).
-		addFunction("log", &luaprint);
+		addFunction("print", &luaprint);
 
-	luaL_dostring(State, "log()");
+	luaL_dostring(State, "print(\"Hello World\")");
 }
