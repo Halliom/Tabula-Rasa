@@ -6,6 +6,7 @@
 #include "Engine\Console.h"
 #include "Rendering\TextRenderer.h"
 #include "Rendering\RenderingEngine.h"
+#include "Engine\ScriptEngine.h"
 #include "Engine\Core\Memory.h"
 
 #define SAFE_DELETE(ptr) if (ptr) { delete ptr; }
@@ -81,6 +82,8 @@ int main(int argc, char* argv[])
 	g_World->Initialize();
 
 	g_RenderingEngine->PostInitialize();
+
+	DoSomething();
 
 	TextRenderData2D* FPSCounter = TextRenderer::AddTextToRenderWithColor("FPS: 0", 8.0f, 8.0f, glm::vec4(1.0f, 1.0f, 0.0f, 1.0f));
 
