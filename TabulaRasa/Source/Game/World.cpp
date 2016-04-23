@@ -44,9 +44,6 @@ void World::Initialize()
 	ChunkLoadingCenterY = 0;
 	ChunkLoadingCenterZ = 0;
 
-	Script WorldGen = Script("world_gen.script");
-	WorldGen.CallMethod("gen_world");
-
 	for (int i = 0; i < CHUNK_LOADING_RADIUS; ++i)
 	{
 		for (int j = 0; j < CHUNK_LOADING_RADIUS; ++j)
@@ -65,28 +62,8 @@ void World::Initialize()
 		}
 	}
 
-#if 1
-	for (int i = 0; i < 16; ++i)
-	{
-		for (int j = 0; j < 16; ++j)
-		{
-			for (int k = 0; k < 16; ++k)
-			{
-				if (rand() % 10 > 5)
-					AddBlock(i, j, k, BLOCK_ID_GRASS);
-			}
-		}
-	}
-#else
-	/*AddBlock(4, 0, 4, BLOCK_ID_GRASS);
-	AddBlock(4, 1, 4, BLOCK_ID_GRASS);
-	AddBlock(4, 0, 5, BLOCK_ID_GRASS);
-	AddBlock(4, 1, 5, BLOCK_ID_GRASS);*/
-
-	AddBlock(-1, 1, 1, BLOCK_ID_GRASS);
-
-	//AddMultiblock(2, 2, 2, BLOCK_ID_CHEST);
-#endif
+	Script WorldGen = Script("world_gen.script");
+	WorldGen.CallMethod("gen_world");
 }
 
 void World::Update(float DeltaTime)
