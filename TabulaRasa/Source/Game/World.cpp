@@ -7,6 +7,7 @@
 #include "../Engine/Chunk.h"
 #include "../Engine/PerlinNoise.h"
 
+#include "../Engine/ScriptEngine.h"
 #include "../Rendering/ChunkRenderer.h"
 #include "../Platform/Platform.h"
 
@@ -42,6 +43,9 @@ void World::Initialize()
 	ChunkLoadingCenterX = 0;
 	ChunkLoadingCenterY = 0;
 	ChunkLoadingCenterZ = 0;
+
+	Script WorldGen = Script("world_gen.script");
+	WorldGen.CallMethod("gen_world");
 
 	for (int i = 0; i < CHUNK_LOADING_RADIUS; ++i)
 	{

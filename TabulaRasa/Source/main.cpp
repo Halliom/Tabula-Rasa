@@ -83,8 +83,6 @@ int main(int argc, char* argv[])
 
 	g_RenderingEngine->PostInitialize();
 
-	DoSomething();
-
 	TextRenderData2D* FPSCounter = TextRenderer::AddTextToRenderWithColor("FPS: 0", 8.0f, 8.0f, glm::vec4(1.0f, 1.0f, 0.0f, 1.0f));
 
 	double LastFrameTime = SDL_GetTicks() / 1000.0;

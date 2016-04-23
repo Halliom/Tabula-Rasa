@@ -2,25 +2,41 @@
 
 #include <string>
 
-#include "lua5.2\lua.hpp"
-#include "LuaBridge/LuaBridge.h"
-
 #include "Console.h"
+
+#include "../Platform/Platform.h"
 
 extern Console* g_Console;
 
-void luaprint(std::string Message)
+lua_State* Script::g_State = NULL;
+
+void LogToConsole(std::string Message)
 {
 	g_Console->PrintLine(Message);
 }
 
-void DoSomething()
+Script::Script(char* Filename)
 {
-	lua_State* State = luaL_newstate();
-	luaL_openlibs(State);
+	char* ScriptSource = PlatformFileSystem::LoadScript(Filename);
+	
+	if (!g_State)
+	{
+		g_State = luaL_newstate();
+		luaL_openlibs(g_State);
 
-	luabridge::getGlobalNamespace(State).
-		addFunction("print", &luaprint);
+		luabridge::getGlobalNamespace(g_State)
+			.addFunction("print", &LogToConsole);
+	}
 
-	luaL_dostring(State, "print(\"Hello World\")");
+	int Error = luaL_dostring(g_State, ScriptSource);
+	if (Error != 0)
+	{
+		LogToConsole("Failed to load script: ");
+	}
+}
+
+void Script::CallMethod(char* MethodName)
+{
+	luabridge::LuaRef Method = luabridge::getGlobal(g_State, MethodName);
+	Method();
 }

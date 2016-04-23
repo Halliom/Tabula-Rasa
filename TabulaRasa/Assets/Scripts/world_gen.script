@@ -1,0 +1,4 @@
+
+function gen_world()
+	print("Generating world")
+end

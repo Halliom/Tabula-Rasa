@@ -8,6 +8,8 @@
 #include "assimp/scene.h"
 #include "assimp/postprocess.h"
 
+#include "../Engine/Core/Memory.h"
+
 #define MAX_FILE_READ_SIZE 8192
 
 std::string PlatformFileSystem::LoadFile(const AssetDirectoryType& Directory, const char* FileName)
@@ -230,7 +232,7 @@ char* PlatformFileSystem::LoadScript(char* ScriptName)
 	//Reduce the file size by any header bytes that might be present
 	Size -= File.tellg();
 
-	char* Data = new char[Size + 1];
+	char* Data = AllocateTransient<char>(Size + 1);
 	File.read(Data, Size);
 	File.close();
 	Data[Size] = '\0';
