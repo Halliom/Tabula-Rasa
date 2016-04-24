@@ -62,7 +62,7 @@ void World::Initialize()
 		}
 	}
 
-	Script WorldGen = Script("world_gen.script");
+	Script WorldGen = Script("world_gen.lua");
 	WorldGen.CallMethod("gen_world");
 }
 
