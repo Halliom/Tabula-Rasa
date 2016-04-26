@@ -63,7 +63,7 @@ void World::Initialize()
 	}
 
 	Script WorldGen = Script("world_gen.lua");
-	WorldGen.CallMethod("gen_world");
+	WorldGen.CallFunction("gen_world");
 }
 
 void World::Update(float DeltaTime)

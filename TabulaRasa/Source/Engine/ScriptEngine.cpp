@@ -64,23 +64,23 @@ Script::Script(char* Filename)
 	}
 }
 
-void Script::CallMethod(char* MethodName)
+void Script::CallFunction(char* FunctionName)
 {
 	try
 	{
-		luabridge::LuaRef Method = luabridge::getGlobal(g_State, MethodName);
+		luabridge::LuaRef Method = luabridge::getGlobal(g_State, FunctionName);
 		Method();
 	}
 	catch (std::exception e)
 	{
-		LogErrors();
+		LogFunctionErrors(FunctionName);
 	}
 }
 
-void Script::LogErrors()
+void Script::LogFunctionErrors(char* FunctionName)
 {
-	char Buffer[256];
-	sprintf(Buffer, "Error in script: %s:", m_pScriptName);
+	char Buffer[300];
+	sprintf(Buffer, "Error in script: \"%s\" while calling function: \"%s\":", m_pScriptName, FunctionName);
 
 	LogToConsole(Buffer);
 	LogToConsole(lua_tostring(g_State, -1));

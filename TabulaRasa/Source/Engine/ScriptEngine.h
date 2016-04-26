@@ -17,9 +17,9 @@ public:
 
 	Script(char* Filename);
 
-	void CallMethod(char* MethodName);
+	void CallFunction(char* FunctionName);
 
-	void LogErrors();
+	void LogFunctionErrors(char* FunctionName);
 
 	char* m_pScriptName;
 
