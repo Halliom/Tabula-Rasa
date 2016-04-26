@@ -19,5 +19,9 @@ public:
 
 	void CallMethod(char* MethodName);
 
+	void LogErrors();
+
+	char* m_pScriptName;
+
 	static lua_State* g_State;
 };

@@ -1,6 +1,7 @@
 #include "ScriptEngine.h"
 
 #include <string>
+#include <exception>
 
 #include "Console.h"
 #include "../Game/World.h"
@@ -38,6 +39,7 @@ void WorldWrapper::RemoveMultiblock(int X, int Y, int Z)
 
 Script::Script(char* Filename)
 {
+	m_pScriptName = Filename;
 	char* ScriptSource = PlatformFileSystem::LoadScript(Filename);
 	
 	if (!g_State)
@@ -64,6 +66,23 @@ Script::Script(char* Filename)
 
 void Script::CallMethod(char* MethodName)
 {
-	luabridge::LuaRef Method = luabridge::getGlobal(g_State, MethodName);
-	Method();
+	try
+	{
+		luabridge::LuaRef Method = luabridge::getGlobal(g_State, MethodName);
+		Method();
+	}
+	catch (std::exception e)
+	{
+		LogErrors();
+	}
+}
+
+void Script::LogErrors()
+{
+	char Buffer[256];
+	sprintf(Buffer, "Error in script: %s:", m_pScriptName);
+
+	LogToConsole(Buffer);
+	LogToConsole(lua_tostring(g_State, -1));
+	lua_pop(g_State, 1); // remove error message
 }
