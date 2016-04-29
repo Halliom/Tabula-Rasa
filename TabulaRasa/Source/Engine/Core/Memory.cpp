@@ -68,11 +68,121 @@ FreeList::~FreeList()
 
 unsigned char* FreeList::Allocate(size_t Size, size_t Alignment)
 {
+	if (m_pNextFree == NULL)
+		return NULL;
+
+	MemorySlot* Previous = NULL;
+	MemorySlot* Current = m_pNextFree;
+
+	while (Current != NULL)
+	{
+		if (Current->m_Size >= Size)
+		{
+			if (Current->m_Size - Size < sizeof(MemorySlot)) // If we can't partition
+			{
+				unsigned char* Result = (unsigned char*) Current;
+				if (Previous)
+				{
+					Previous->m_pNext = Current->m_pNext;
+					Current->m_pNext = NULL;
+				}
+				else
+				{
+					m_pNextFree = Current->m_pNext;
+					Current->m_pNext = NULL;
+				}
+				return Result;
+			}
+			else
+			{
+				size_t InitialSize = Current->m_Size;
+				unsigned char* Result = (unsigned char*) Current;
+
+				MemorySlot* New = (MemorySlot*) (Result + Size);
+				New->m_pNext = Current->m_pNext;
+				if (Previous)
+				{
+					Previous->m_pNext = New;
+				}
+				else
+				{
+					m_pNextFree = New;
+				}
+
+				New->m_Size = InitialSize - Size;
+				return Result;
+			}
+		}
+		else
+		{
+			Previous = Current;
+			Current = Current->m_pNext;
+		}
+	}
 	return NULL;
 }
 
-void FreeList::Free(unsigned char * Pointer)
+void FreeList::MergeBlocks(MemorySlot* First, MemorySlot* Second)
 {
+	size_t TotalSize = First->m_Size + Second->m_Size;
+	First->m_Size = TotalSize;
+	if (Second->m_pNext == First) // They are in reverse order
+	{
+		// Do nothing since this one is already pointing to the next element
+	}
+	else
+	{
+		First->m_pNext = Second->m_pNext;
+	}
+}
+
+void FreeList::Free(unsigned char* Pointer, size_t Size)
+{
+	// This frees this memory chunk
+	MemorySlot* Current = (MemorySlot*) Pointer;
+	Current->m_pNext = m_pNextFree;
+	Current->m_Size = Size;
+	m_pNextFree = Current;
+
+	// Search through the linked list of MemorySlots for a free one that sits
+	// right next to the one we just freed
+	MemorySlot* Previous = NULL;
+	MemorySlot* Next = m_pNextFree->m_pNext;
+
+	unsigned char* MemoryBlockBegin = (unsigned char*) Current;
+	unsigned char* MemoryBlockEnd = ((unsigned char*) Current) + Current->m_Size;
+
+	while (Next != NULL)
+	{
+		bool NeedsReordering = false;
+		unsigned char* NextMemoryBlockBegin = (unsigned char*) Next;
+		unsigned char* NextMemoryBlockEnd = ((unsigned char*) Next) + Next->m_Size;
+		if (MemoryBlockBegin == NextMemoryBlockEnd)
+		{
+			if (Current == m_pNextFree)
+			{
+				NeedsReordering = true;
+			}
+			MergeBlocks(Next, Current);
+			Current = Next;
+
+			if (NeedsReordering)
+			{
+				m_pNextFree = Next;
+			}
+			
+			MemoryBlockBegin = (unsigned char*) Current;
+			MemoryBlockEnd = ((unsigned char*) Current) + Current->m_Size;
+		}
+		else if (MemoryBlockEnd == NextMemoryBlockBegin)
+		{
+			MergeBlocks(Current, Next);
+			unsigned char* MemoryBlockEnd = ((unsigned char*) Current) + Current->m_Size;
+		}
+		
+		Previous = Next;
+		Next = Next->m_pNext;
+	}
 }
 
 GameMemoryManager::GameMemoryManager()
