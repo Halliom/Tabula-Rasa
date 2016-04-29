@@ -71,14 +71,16 @@ unsigned char* FreeList::Allocate(size_t Size, size_t Alignment)
 	if (m_pNextFree == NULL)
 		return NULL;
 
+	size_t TotalSize = CalcualteAlignmentAdjustment((unsigned char*) m_pNextFree, Alignment);
+
 	MemorySlot* Previous = NULL;
 	MemorySlot* Current = m_pNextFree;
 
 	while (Current != NULL)
 	{
-		if (Current->m_Size >= Size)
+		if (Current->m_Size >= TotalSize)
 		{
-			if (Current->m_Size - Size < sizeof(MemorySlot)) // If we can't partition
+			if (Current->m_Size - TotalSize < sizeof(MemorySlot)) // If we can't partition
 			{
 				unsigned char* Result = (unsigned char*) Current;
 				if (Previous)
@@ -98,7 +100,7 @@ unsigned char* FreeList::Allocate(size_t Size, size_t Alignment)
 				size_t InitialSize = Current->m_Size;
 				unsigned char* Result = (unsigned char*) Current;
 
-				MemorySlot* New = (MemorySlot*) (Result + Size);
+				MemorySlot* New = (MemorySlot*) (Result + TotalSize);
 				New->m_pNext = Current->m_pNext;
 				if (Previous)
 				{
@@ -109,7 +111,7 @@ unsigned char* FreeList::Allocate(size_t Size, size_t Alignment)
 					m_pNextFree = New;
 				}
 
-				New->m_Size = InitialSize - Size;
+				New->m_Size = InitialSize - TotalSize;
 				return Result;
 			}
 		}
