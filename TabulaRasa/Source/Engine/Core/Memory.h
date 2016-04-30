@@ -66,7 +66,7 @@ struct FreeList
 
 	unsigned char* Allocate(size_t Size, size_t Alignment);
 	
-	void Free(unsigned char* Pointer);
+	void Free(void* Pointer);
 
 	struct AllocationHeader
 	{
@@ -246,9 +246,9 @@ __forceinline T* AllocateWithType(LinearAllocator* Allocator, size_t NumInstance
 	return (T*) Allocator->Allocate(sizeof(T) * NumInstances, __alignof(T));
 }
 
-#define GB(b) MB(b) * 1000
-#define MB(b) KB(b) * 1000
-#define KB(b) b * 1000
+#define GB(b) (MB(b) * 1000)
+#define MB(b) (KB(b) * 1000)
+#define KB(b) (b * 1000)
 
 class GameMemoryManager
 {
@@ -261,13 +261,14 @@ public:
 
 	void ClearTransientMemory();
 
-	LinearAllocator*				m_pTransientFrameMemory;
-	LinearAllocator*				m_pRenderingMemory;
-	MemoryPool<Chunk>*		m_pChunkAllocator;
+	LinearAllocator*	m_pTransientFrameMemory;
+	LinearAllocator*	m_pRenderingMemory;
+	MemoryPool<Chunk>*	m_pChunkAllocator;
+	FreeList*			m_pGameMemory;
 
 private:
 
-	unsigned char* m_pGameMemory;
+	unsigned char* m_pMemoryBuffer;
 
 };
 

@@ -137,8 +137,9 @@ unsigned char* FreeList::Allocate(size_t Size, size_t Alignment)
 	return NULL;
 }
 
-void FreeList::Free(unsigned char* Pointer)
+void FreeList::Free(void* VoidPointer)
 {
+	unsigned char* Pointer = (unsigned char*) VoidPointer;
 	AllocationHeader* AllocHeader = (AllocationHeader*) (Pointer - sizeof(AllocationHeader));
 	
 	size_t SlotSize = AllocHeader->m_Size;
@@ -198,24 +199,25 @@ void FreeList::Free(unsigned char* Pointer)
 
 GameMemoryManager::GameMemoryManager()
 {
-	m_pGameMemory = NULL;
+	m_pMemoryBuffer = NULL;
 }
 
 GameMemoryManager::~GameMemoryManager()
 {
-	free(m_pGameMemory);
+	delete[] m_pMemoryBuffer;
 }
 
 bool GameMemoryManager::Initialize()
 {
-	m_pGameMemory = new unsigned char[MB(100)];
+	m_pMemoryBuffer = new unsigned char[MB(128)];
 
-	if (m_pGameMemory == NULL)
+	if (m_pMemoryBuffer == NULL)
 		return false;
 
-	m_pTransientFrameMemory = new LinearAllocator(m_pGameMemory, (MB(8))); // 8 MB total
-	m_pRenderingMemory = new LinearAllocator(m_pGameMemory + (MB(8)), MB(12)); // 20 MB total
-	m_pChunkAllocator = new MemoryPool<Chunk>(m_pGameMemory + (MB(20)), MB(80)); // 100 MB total
+	m_pTransientFrameMemory = new LinearAllocator(m_pMemoryBuffer, MB(8)); // 8 MB total
+	m_pRenderingMemory = new LinearAllocator(m_pMemoryBuffer + MB(8), MB(12)); // 20 MB total
+	m_pChunkAllocator = new MemoryPool<Chunk>(m_pMemoryBuffer + MB(20), MB(80)); // 100 MB total
+	m_pGameMemory = new FreeList(m_pMemoryBuffer + MB(100), MB(28)); // 128 MB total
 
 	return true;
 }
