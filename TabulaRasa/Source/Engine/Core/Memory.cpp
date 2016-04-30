@@ -59,10 +59,19 @@ FreeList::FreeList(unsigned char* StartAddress, size_t MaxByteSize)
 	m_pNextFree = (MemorySlot*) StartAddress;
 	m_pNextFree->m_Size = MaxByteSize;
 	m_pNextFree->m_pNext = NULL;
+
+#ifdef _DEBUG
+	m_NumAllocations = 0;
+	m_UsedMemory = 0;
+#endif
 }
 
 FreeList::~FreeList()
 {
+#ifdef _DEBUG
+	// If m_NumAllocations != 0 then we have unallocated memory which will leak
+	assert(m_NumAllocations == 0 && m_UsedMemory == 0);
+#endif
 	m_pNextFree = NULL;
 }
 
@@ -71,120 +80,120 @@ unsigned char* FreeList::Allocate(size_t Size, size_t Alignment)
 	if (m_pNextFree == NULL)
 		return NULL;
 
-	size_t TotalSize = CalcualteAlignmentAdjustment((unsigned char*) m_pNextFree, Alignment);
+	MemorySlot* Previous = NULL;
+	MemorySlot* Current = m_pNextFree;
+
+	while (Current != NULL)
+	{
+		uint8_t Adjustment = AlignForwardAdjustmentWithHeader((unsigned char*)Current, Alignment, sizeof(AllocationHeader));
+		size_t TotalSize = Size + Adjustment;
+		if (Current->m_Size < TotalSize) // No space here, move on:(
+		{
+			// Move along
+			Previous = Current;
+			Current = Current->m_pNext;
+			continue;
+		}
+
+		if (Current->m_Size - TotalSize <= sizeof(AllocationHeader)) // We can't fit an allocation here
+		{
+			// Increase the size
+			TotalSize = Current->m_Size;
+			if (Previous != NULL)
+			{
+				Previous->m_pNext = Current->m_pNext;
+			}
+			else
+			{
+				Current = Current->m_pNext;
+			}
+		}
+		else
+		{
+			// Create a new MemorySlot containing the new free partition that sits right after 
+			// the current allocation
+			MemorySlot* Next = (MemorySlot*)(((unsigned char*)Current) + TotalSize);
+			Next->m_Size = Current->m_Size - TotalSize;
+			Next->m_pNext = Current->m_pNext;
+
+			if (Previous != NULL)
+				Previous->m_pNext = Next;
+			else
+				m_pNextFree = Next;
+		}
+
+		unsigned char* Result = ((unsigned char*)Current) + Adjustment;
+		AllocationHeader* AllocHeader = (AllocationHeader*)(Result - sizeof(AllocationHeader));
+		AllocHeader->m_Size = TotalSize;
+		AllocHeader->m_AlignAdjustment = Adjustment;
+
+#ifdef _DEBUG
+		++m_NumAllocations;
+		m_UsedMemory += TotalSize;
+#endif
+
+		return Result;
+	}
+	return NULL;
+}
+
+void FreeList::Free(unsigned char* Pointer)
+{
+	AllocationHeader* AllocHeader = (AllocationHeader*) (Pointer - sizeof(AllocationHeader));
+	
+	size_t SlotSize = AllocHeader->m_Size;
+	unsigned char* MemorySlotBegin = Pointer - AllocHeader->m_AlignAdjustment;
+	unsigned char* MemorySlotEnd = MemorySlotBegin + SlotSize;
 
 	MemorySlot* Previous = NULL;
 	MemorySlot* Current = m_pNextFree;
 
 	while (Current != NULL)
 	{
-		if (Current->m_Size >= TotalSize)
+		// The current memory slot is _after_ the current slot
+		if (((unsigned char*) Current) >= MemorySlotEnd)
 		{
-			if (Current->m_Size - TotalSize < sizeof(MemorySlot)) // If we can't partition
-			{
-				unsigned char* Result = (unsigned char*) Current;
-				if (Previous)
-				{
-					Previous->m_pNext = Current->m_pNext;
-					Current->m_pNext = NULL;
-				}
-				else
-				{
-					m_pNextFree = Current->m_pNext;
-					Current->m_pNext = NULL;
-				}
-				return Result;
-			}
-			else
-			{
-				size_t InitialSize = Current->m_Size;
-				unsigned char* Result = (unsigned char*) Current;
-
-				MemorySlot* New = (MemorySlot*) (Result + TotalSize);
-				New->m_pNext = Current->m_pNext;
-				if (Previous)
-				{
-					Previous->m_pNext = New;
-				}
-				else
-				{
-					m_pNextFree = New;
-				}
-
-				New->m_Size = InitialSize - TotalSize;
-				return Result;
-			}
+			break;
 		}
-		else
-		{
-			Previous = Current;
-			Current = Current->m_pNext;
-		}
+
+		Previous = Current;
+		Current = Current->m_pNext;
 	}
-	return NULL;
-}
 
-void FreeList::MergeBlocks(MemorySlot* First, MemorySlot* Second)
-{
-	size_t TotalSize = First->m_Size + Second->m_Size;
-	First->m_Size = TotalSize;
-	if (Second->m_pNext == First) // They are in reverse order
+	if (Previous == NULL)
 	{
-		// Do nothing since this one is already pointing to the next element
+		Previous = (MemorySlot*) MemorySlotBegin;
+		Previous->m_Size = SlotSize;
+		Previous->m_pNext = m_pNextFree;
+
+		m_pNextFree = Previous;
+	}
+	else if (((unsigned char*) Previous) + Previous->m_Size == MemorySlotBegin) // We found the slot just _before_ the deallocated memory
+	{
+		Previous->m_Size += SlotSize; // Just add this size as well
 	}
 	else
 	{
-		First->m_pNext = Second->m_pNext;
-	}
-}
-
-void FreeList::Free(unsigned char* Pointer, size_t Size)
-{
-	// This frees this memory chunk
-	MemorySlot* Current = (MemorySlot*) Pointer;
-	Current->m_pNext = m_pNextFree;
-	Current->m_Size = Size;
-	m_pNextFree = Current;
-
-	// Search through the linked list of MemorySlots for a free one that sits
-	// right next to the one we just freed
-	MemorySlot* Previous = NULL;
-	MemorySlot* Next = m_pNextFree->m_pNext;
-
-	unsigned char* MemoryBlockBegin = (unsigned char*) Current;
-	unsigned char* MemoryBlockEnd = ((unsigned char*) Current) + Current->m_Size;
-
-	while (Next != NULL)
-	{
-		bool NeedsReordering = false;
-		unsigned char* NextMemoryBlockBegin = (unsigned char*) Next;
-		unsigned char* NextMemoryBlockEnd = ((unsigned char*) Next) + Next->m_Size;
-		if (MemoryBlockBegin == NextMemoryBlockEnd)
-		{
-			if (Current == m_pNextFree)
-			{
-				NeedsReordering = true;
-			}
-			MergeBlocks(Next, Current);
-			Current = Next;
-
-			if (NeedsReordering)
-			{
-				m_pNextFree = Next;
-			}
-			
-			MemoryBlockBegin = (unsigned char*) Current;
-			MemoryBlockEnd = ((unsigned char*) Current) + Current->m_Size;
-		}
-		else if (MemoryBlockEnd == NextMemoryBlockBegin)
-		{
-			MergeBlocks(Current, Next);
-			unsigned char* MemoryBlockEnd = ((unsigned char*) Current) + Current->m_Size;
-		}
-		
+		// Insert new free slot
+		MemorySlot* Next = (MemorySlot*) MemorySlotBegin;
+		Next->m_Size = SlotSize;
+		Next->m_pNext = Previous->m_pNext;
+		Previous->m_pNext = Next;
 		Previous = Next;
-		Next = Next->m_pNext;
 	}
+
+	// If Current is the slot just _after_ the deallocated memory simply extend
+	// the previous one (which is going to be "this" one) (see above)
+	if (Current != NULL && ((unsigned char*) Current) == MemorySlotEnd)
+	{
+		Previous->m_Size += Current->m_Size;
+		Previous->m_pNext = Current->m_pNext;
+	}
+
+#ifdef _DEBUG
+	--m_NumAllocations;
+	m_UsedMemory -= SlotSize;
+#endif
 }
 
 GameMemoryManager::GameMemoryManager()

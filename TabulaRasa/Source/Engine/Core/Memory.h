@@ -66,7 +66,7 @@ struct FreeList
 
 	unsigned char* Allocate(size_t Size, size_t Alignment);
 	
-	void Free(unsigned char* Pointer, size_t Size);
+	void Free(unsigned char* Pointer);
 
 	struct AllocationHeader
 	{
@@ -80,10 +80,13 @@ struct FreeList
 		MemorySlot* m_pNext;
 	};
 
-	void MergeBlocks(MemorySlot* First, MemorySlot* Second);
-
 	unsigned char* m_pStartAddress;
 	size_t m_MaxByteSize;
+
+#ifdef _DEBUG
+	size_t m_UsedMemory; /* Total amount of bytes used */
+	size_t m_NumAllocations; /* Total number of allocations made */
+#endif
 
 	MemorySlot* m_pNextFree;
 };
