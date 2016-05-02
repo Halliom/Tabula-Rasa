@@ -21,8 +21,10 @@ function gen_world()
 
     c = c + 1
 
-    i = {a, b, c}
-    print(i)
+    --i = {a, b, c}
+    print(a)
+    print(b)
+    print(c)
 
   end
 end
