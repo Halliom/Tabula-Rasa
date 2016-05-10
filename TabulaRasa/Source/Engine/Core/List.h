@@ -12,19 +12,26 @@ public:
 
 	List();
 
+	~List();
+
 	void Reserve(int NumElements);
 
-	int Push(T& Element);
+	int Push(const T& Element);
 
 	T Pop();
 
 	T& operator[](int Index);
 
-	int IndexOf(T& Element);
+	int IndexOf(const T& Element);
 
 	void Remove(int Index);
 
-	void Remove(T& Element);
+	void Remove(const T& Element);
+
+	T* Data()
+	{
+		return m_pBuffer;
+	}
 
 	/**
 	 * Number of elements in the list
@@ -64,6 +71,19 @@ List<T>::List()	:
 }
 
 template<typename T>
+inline List<T>::~List()
+{
+	if (m_pBuffer != NULL)
+	{
+		m_pAllocator->Free(m_pBuffer);
+		m_pBuffer = NULL;
+		Size = 0;
+		m_BytesUsed = 0;
+		m_BytesAllocated = 0;
+	}
+}
+
+template<typename T>
 void List<T>::Reserve(int NumElements)
 {
 	size_t NewSize = NumElements * sizeof(T);
@@ -75,6 +95,7 @@ void List<T>::Reserve(int NumElements)
 	else
 	{
 		m_pBuffer = (T*) m_pAllocator->Allocate(NewSize, __alignof(T));
+		memset(m_pBuffer, 0, NewSize);
 	}
 
 	// If we wan't to expand the list, copy the number of bytes used and the rest will
@@ -96,7 +117,7 @@ void List<T>::Reserve(int NumElements)
 }
 
 template<typename T>
-int List<T>::Push(T& Element)
+int List<T>::Push(const T& Element)
 {
 	size_t NewSize = sizeof(T) + m_BytesUsed;
 	if (NewSize > m_BytesAllocated)
@@ -140,7 +161,7 @@ T& List<T>::operator[](int Index)
 }
 
 template<typename T>
-int List<T>::IndexOf(T& Element)
+int List<T>::IndexOf(const T& Element)
 {
 	for (int i = 0; i < Size; ++i)
 	{
@@ -166,7 +187,7 @@ void List<T>::Remove(int Index)
 }
 
 template<typename T>
-void List<T>::Remove(T& Element)
+void List<T>::Remove(const T& Element)
 {
 	int Index = IndexOf(Element);
 	Remove(Index);
