@@ -7,6 +7,7 @@
 #include "../Game/Player.h"
 #include "TextRenderer.h"
 #include "ChunkRenderer.h"
+#include "../Game/World.h"
 
 #include "../Engine/Console.h"
 
