@@ -2,6 +2,8 @@
 
 #include <Windows.h>
 
+#include "../Chunk.h"
+
 LinearAllocator::LinearAllocator(unsigned char* StartAddress, size_t MaxByteSize) :
 	m_pStartAddress(StartAddress),
 	m_MaxByteSize(MaxByteSize),

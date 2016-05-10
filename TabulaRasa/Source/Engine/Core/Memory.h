@@ -3,8 +3,6 @@
 #include <assert.h>
 #include <cstdint>
 
-#include "../Chunk.h"
-
 __forceinline unsigned char* AlignAddress(unsigned char* Address, size_t Alignment)
 {
 	return (unsigned char*) ((reinterpret_cast<unsigned char>(Address) + static_cast<unsigned char>(Alignment - 1)) & static_cast<unsigned char>(~(Alignment - 1)));
@@ -261,10 +259,10 @@ public:
 
 	void ClearTransientMemory();
 
-	LinearAllocator*	m_pTransientFrameMemory;
-	LinearAllocator*	m_pRenderingMemory;
-	MemoryPool<Chunk>*	m_pChunkAllocator;
-	FreeList*			m_pGameMemory;
+	LinearAllocator*			m_pTransientFrameMemory;
+	LinearAllocator*			m_pRenderingMemory;
+	MemoryPool<class Chunk>*	m_pChunkAllocator;
+	FreeList*					m_pGameMemory;
 
 private:
 
