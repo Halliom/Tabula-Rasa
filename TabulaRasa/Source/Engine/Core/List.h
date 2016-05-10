@@ -1,11 +1,173 @@
 #pragma once
 
+#include <cstdint>
 #include "Memory.h"
 
-class TransientList
+template <typename T>
+class List
 {
 public:
 
-	TransientList(FreeList* Memory)
+	List(FreeList* Memory);
+
+	List();
+
+	void Reserve(int NumElements);
+
+	int Push(T& Element);
+
+	T Pop();
+
+	T& operator[](int Index);
+
+	int IndexOf(T& Element);
+
+	void Remove(int Index);
+
+	void Remove(T& Element);
+
+	/**
+	 * Number of elements in the list
+	 */
+	size_t Size;
+
+private:
+
+	FreeList* m_pAllocator;
+
+	T* m_pBuffer;
+
+	size_t m_BytesUsed;
+
+	size_t m_BytesAllocated;
 
 };
+
+template<typename T>
+List<T>::List(FreeList* Memory) : 
+	m_pAllocator(Memory),
+	Size(0),
+	m_pBuffer(NULL),
+	m_BytesUsed(0),
+	m_BytesAllocated(0)
+{
+}
+
+template<typename T>
+List<T>::List()	: 
+	Size(0),
+	m_pBuffer(NULL),
+	m_BytesUsed(0),
+	m_BytesAllocated(0)
+{
+	m_pAllocator = NULL;
+}
+
+template<typename T>
+void List<T>::Reserve(int NumElements)
+{
+	size_t NewSize = NumElements * sizeof(T);
+	T* OldBuffer = m_pBuffer;
+	if (NewSize == 0)
+	{
+		m_pBuffer = NULL;
+	}
+	else
+	{
+		m_pBuffer = (T*) m_pAllocator->Allocate(NewSize, __alignof(T));
+	}
+
+	// If we wan't to expand the list, copy the number of bytes used and the rest will
+	// be blank. If we want to shrink the list then we can only copy as many bytes as we
+	// currently use, otherwise we would go "out of bounds"
+	int CopyBytes = NumElements <= Size ? NewSize : m_BytesUsed;
+	memcpy(m_pBuffer, OldBuffer, CopyBytes);
+	if (OldBuffer)
+	{
+		m_pAllocator->Free(OldBuffer);
+	}
+
+	m_BytesAllocated = NewSize;
+	m_BytesUsed = CopyBytes;
+	if (NumElements <= Size) // If we're shrinking the size of the list
+	{
+		Size = NumElements;
+	}
+}
+
+template<typename T>
+int List<T>::Push(T& Element)
+{
+	size_t NewSize = sizeof(T) + m_BytesUsed;
+	if (NewSize > m_BytesAllocated)
+	{
+		// Save a pointer to the old buffer and allocate new byffer
+		T* OldBuffer = m_pBuffer;
+		m_pBuffer = (T*) m_pAllocator->Allocate(NewSize, __alignof(T));
+
+		// Copy over the bytes from the old buffer to the new one and
+		// free the old buffer
+		memcpy(m_pBuffer, OldBuffer, m_BytesUsed);
+		if (OldBuffer)
+		{
+			m_pAllocator->Free(OldBuffer);
+		}
+		m_BytesAllocated = NewSize;
+	}
+	
+	m_pBuffer[Size] = Element;
+	m_BytesUsed = NewSize;
+
+	return Size++;
+}
+
+template<typename T>
+T List<T>::Pop()
+{
+	m_BytesUsed -= sizeof(T);
+	return m_pBuffer[--Size];
+}
+
+template<typename T>
+T& List<T>::operator[](int Index)
+{
+	if (Index >= Size)
+	{
+		assert(false);
+		Index = 0;
+	}
+	return m_pBuffer[Index];
+}
+
+template<typename T>
+int List<T>::IndexOf(T& Element)
+{
+	for (int i = 0; i < Size; ++i)
+	{
+		if (memcmp(&m_pBuffer[i], &Element, sizeof(T)) == 0)
+		{
+			return i;
+		}
+	}
+	return -1;
+}
+
+template<typename T>
+void List<T>::Remove(int Index)
+{
+	// TODO: Fix this cause it aint working
+
+	assert(Index >= 0 && Index < Size);
+
+	int LowerSideElements = Index;
+	int HigerSideElements = Size - Index - 1;
+
+	memcpy(m_pBuffer + (LowerSideElements * sizeof(T)), m_pBuffer + Index, HigerSideElements * sizeof(T));
+}
+
+template<typename T>
+void List<T>::Remove(T& Element)
+{
+	int Index = IndexOf(Element);
+	Remove(Index);
+}
