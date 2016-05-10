@@ -6,8 +6,6 @@ class Chunk
 {
 public:
 
-	Voxel m_pVoxels[32][32][32];
-
 	__forceinline Voxel* GetVoxel(unsigned int X, unsigned int Y, unsigned int Z)
 	{
 		Voxel *Result = &m_pVoxels[X][Y][Z];
@@ -62,6 +60,8 @@ public:
 			m_bIsRenderStateDirty = true;
 		}
 	}
+
+	Voxel m_pVoxels[32][32][32];
 
 	int m_ChunkX;
 	int m_ChunkY;
