@@ -49,18 +49,18 @@ int main(int argc, char* argv[])
 	WindowParams.Fullscreen = false;
 	WindowParams.StartMaximized = false;
 #endif
+	g_MemoryManager = new GameMemoryManager();
+	if (!g_MemoryManager->Initialize())
+	{
+		assert(false, "Failure to load memory");
+	}
+
 	PlatformWindow Window = PlatformWindow(WindowParams);
 	bool Success = Window.SetupWindowAndRenderContext();
 	if (!Success)
 	{
 		//TODO: Do something with this
 		Window.GetErrorMessage();
-	}
-
-	g_MemoryManager = new GameMemoryManager();
-	if (!g_MemoryManager->Initialize())
-	{
-		assert(false, "Failure to load memory");
 	}
 
 	// Loads the font library
