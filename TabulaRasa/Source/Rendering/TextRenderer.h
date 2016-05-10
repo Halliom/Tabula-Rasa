@@ -1,13 +1,14 @@
 #pragma once
 
 #include <string>
-#include <vector>
 
 #include "GL\glew.h"
 #include "glm\glm.hpp"
 #include "glm\gtc\matrix_transform.hpp"
 
 #include "Fonts.h"
+
+#include "..\Engine\Core\List.h"
 
 #define PRINT_DEBUG_STRING(str, x, y) \
 static TextRenderData2D* DebugText; \
@@ -114,9 +115,9 @@ public:
 
 	static void Render();
 
-	static std::vector<TextRenderData2D*> g_TextRenderObjects[NUM_LAYERS];
+	static List<TextRenderData2D> g_TextRenderObjects[NUM_LAYERS];
 
-	static std::vector<RectRenderData2D*> g_RectRenderObjects[NUM_LAYERS];
+	static List<RectRenderData2D> g_RectRenderObjects[NUM_LAYERS];
 
 private:
 
