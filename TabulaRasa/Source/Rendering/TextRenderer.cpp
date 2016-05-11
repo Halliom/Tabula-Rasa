@@ -83,7 +83,7 @@ struct GlyphVertex
 	glm::vec2 Tex;
 };
 
-TextRenderData2D* TextRenderer::AddTextToRenderWithColor(const char* Text, const float& X, const float& Y, glm::vec4& Color, unsigned int Layer, TrueTypeFont* Font)
+TextRenderData2D* TextRenderer::AddTextToRenderWithColorAndLength(const char* Text, size_t StringLength, const float& X, const float& Y, glm::vec4& Color, unsigned int Layer, TrueTypeFont* Font)
 {
 	TextRenderData2D* NewTextRenderObject = g_TextRenderDataMemoryPool->Allocate();
 	memset(NewTextRenderObject, NULL, sizeof(TextRenderData2D));
@@ -103,8 +103,6 @@ TextRenderData2D* TextRenderer::AddTextToRenderWithColor(const char* Text, const
 
 	glGenBuffers(1, &NewTextRenderObject->VBO);
 	glGenBuffers(1, &NewTextRenderObject->IBO);
-
-	int StringLength = strlen(Text);
 
 	float* Vertices = AllocateTransient<float>(20 * StringLength);
 	unsigned short* Indices = AllocateTransient<unsigned short>(6 * StringLength);
@@ -198,6 +196,8 @@ void TextRenderer::RemoveText(TextRenderData2D* TextToRemove)
 
 	glDeleteBuffers(1, &TextToRemove->VBO);
 	glDeleteBuffers(1, &TextToRemove->IBO);
+	glDeleteVertexArrays(1, &TextToRemove->VAO);
+
 	g_TextRenderObjects[TextToRemove->Layer].Remove(*TextToRemove);
 	g_TextRenderDataMemoryPool->Deallocate(TextToRemove);
 }

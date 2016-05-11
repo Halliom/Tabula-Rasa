@@ -5,6 +5,8 @@
 #include "SDL2\SDL.h"
 
 #define MAX_INPUT_LENGTH 128
+#define MAX_TEXT_BUFFER_LENGTH 1024
+#define BUFFER_CLEANUP 64
 
 class Console
 {

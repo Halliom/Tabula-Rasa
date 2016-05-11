@@ -100,7 +100,13 @@ public:
 
 	static void Destroy2DTextRendering();
 
-	static TextRenderData2D* AddTextToRenderWithColor(const char* Text, const float& X = 0.0f, const float& Y = 0.0f, glm::vec4& Color = glm::vec4(1.0f), unsigned int Layer = 0, TrueTypeFont* Font = NULL);
+	static TextRenderData2D* AddTextToRenderWithColorAndLength(const char* Text, size_t StringLength, const float& X = 0.0f, const float& Y = 0.0f, glm::vec4& Color = glm::vec4(1.0f), unsigned int Layer = 0, TrueTypeFont* Font = NULL);
+
+	static __forceinline TextRenderData2D* AddTextToRenderWithColor(const char* Text, const float& X = 0.0f, const float& Y = 0.0f, glm::vec4& Color = glm::vec4(1.0f), unsigned int Layer = 0, TrueTypeFont* Font = NULL)
+	{
+		size_t StringLength = strlen(Text);
+		return AddTextToRenderWithColorAndLength(Text, StringLength, X, Y, Color, Layer, Font);
+	}
 
 	static __forceinline TextRenderData2D* AddTextToRender(const char* Text, const float& X = 0.0f, const float& Y = 0.0f, unsigned int Layer = 0, TrueTypeFont* Font = NULL)
 	{

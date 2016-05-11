@@ -279,17 +279,28 @@ void Console::RedrawTextBuffer()
 	if (m_bIsActive)
 	{
 		TextRenderer::RemoveText(m_pTextBufferRenderData);
-		unsigned int NumLines = 0; // Always start with one line since we need to skip the input line
+		if (m_TextBuffer.length() > MAX_TEXT_BUFFER_LENGTH)
+		{
+			size_t Overload = m_TextBuffer.length() - MAX_TEXT_BUFFER_LENGTH + BUFFER_CLEANUP;
+			m_TextBuffer = m_TextBuffer.substr(Overload, MAX_TEXT_BUFFER_LENGTH - BUFFER_CLEANUP);
+			m_TextBuffer.append("");
+		}
+
+		unsigned int NumLines = 0;
 		for (char c : m_TextBuffer)
 		{
 			if (c == '\n')
 				++NumLines;
 		}
 
-		m_pTextBufferRenderData = TextRenderer::AddTextToRender(
+
+
+		m_pTextBufferRenderData = TextRenderer::AddTextToRenderWithColorAndLength(
 			m_TextBuffer.c_str(),
+			m_TextBuffer.length(),
 			0.0f,
 			(g_RenderingEngine->m_ScreenHeight / 2.0f) - (m_ConsoleFont.Size * NumLines) - ((float) m_ConsoleFont.Size * 1.5f),
+			glm::vec4(1.0f),
 			1,
 			&m_ConsoleFont);
 	}
