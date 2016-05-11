@@ -180,11 +180,10 @@ void List<T>::Remove(int Index)
 
 	assert(Index >= 0 && Index < Size);
 
-	int LowerSideElements = Index;
 	int HigerSideElements = Size - Index - 1;
 
 	memcpy(
-		m_pBuffer + (LowerSideElements * sizeof(T)), 
+		m_pBuffer + Index, 
 		m_pBuffer + Index + 1, 
 		HigerSideElements * sizeof(T));
 
