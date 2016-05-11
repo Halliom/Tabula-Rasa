@@ -183,7 +183,13 @@ void List<T>::Remove(int Index)
 	int LowerSideElements = Index;
 	int HigerSideElements = Size - Index - 1;
 
-	memcpy(m_pBuffer + (LowerSideElements * sizeof(T)), m_pBuffer + Index, HigerSideElements * sizeof(T));
+	memcpy(
+		m_pBuffer + (LowerSideElements * sizeof(T)), 
+		m_pBuffer + Index + 1, 
+		HigerSideElements * sizeof(T));
+
+	--Size;
+	m_BytesUsed -= sizeof(T);
 }
 
 template<typename T>
