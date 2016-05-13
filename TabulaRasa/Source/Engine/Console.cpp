@@ -293,8 +293,6 @@ void Console::RedrawTextBuffer()
 				++NumLines;
 		}
 
-
-
 		m_pTextBufferRenderData = TextRenderer::AddTextToRenderWithColorAndLength(
 			m_TextBuffer.c_str(),
 			m_TextBuffer.length(),
