@@ -107,7 +107,7 @@ unsigned char* FreeList::Allocate(size_t Size, size_t Alignment)
 			}
 			else
 			{
-				Current = Current->m_pNext;
+				m_pNextFree = Current->m_pNext;
 			}
 		}
 		else
