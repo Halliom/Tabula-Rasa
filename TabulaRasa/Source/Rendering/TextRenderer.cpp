@@ -104,8 +104,11 @@ TextRenderData2D* TextRenderer::AddTextToRenderWithColorAndLength(const char* Te
 	glGenBuffers(1, &NewTextRenderObject->VBO);
 	glGenBuffers(1, &NewTextRenderObject->IBO);
 
-	float* Vertices = AllocateTransient<float>(20 * StringLength);
-	unsigned short* Indices = AllocateTransient<unsigned short>(6 * StringLength);
+	List<float> Vertices = List<float>(g_MemoryManager->m_pGameMemory);
+	Vertices.Reserve(StringLength * 20);
+	List<unsigned short> Indices = List<unsigned short>(g_MemoryManager->m_pGameMemory);
+	Indices.Reserve(StringLength * 6);
+	unsigned int NumGlyphs = 0;
 
 	float OffsetX = 0.0f;
 	float OffsetY = FontToUse.Size;
@@ -122,55 +125,59 @@ TextRenderData2D* TextRenderer::AddTextToRenderWithColorAndLength(const char* Te
 		float BaseX = OffsetX + CurrentGlyph.BearingX;
 		float BaseY = OffsetY + (CurrentGlyph.Height - CurrentGlyph.BearingY);
 
-		int BaseIndex = CurrentChar * 20;
+		// What index (of vertex) we are at right now
+		// There are 5 floats per vertex so to get the index
+		// of the entire vertex we divide the total number of
+		// floats by 5.
+		int BaseIndex = Vertices.Size / 5;
 
 		// (0, 0)
-		Vertices[BaseIndex] =		BaseX;
-		Vertices[BaseIndex + 1] =	BaseY;
-		Vertices[BaseIndex + 2] =	1.0f;
-		Vertices[BaseIndex + 3] =	CurrentGlyph.TexCoordBottomX;
-		Vertices[BaseIndex + 4] =	CurrentGlyph.TexCoordTopY;
+		Vertices.Push(BaseX);
+		Vertices.Push(BaseY);
+		Vertices.Push(1.0f);
+		Vertices.Push(CurrentGlyph.TexCoordBottomX);
+		Vertices.Push(CurrentGlyph.TexCoordTopY);
 
 		// (0, 1)
-		Vertices[BaseIndex + 5] =	BaseX;
-		Vertices[BaseIndex + 6] =	BaseY - CurrentGlyph.Height;
-		Vertices[BaseIndex + 7] =	1.0f;
-		Vertices[BaseIndex + 8] =	CurrentGlyph.TexCoordBottomX;
-		Vertices[BaseIndex + 9] =	CurrentGlyph.TexCoordBottomY;
+		Vertices.Push(BaseX);
+		Vertices.Push(BaseY - CurrentGlyph.Height);
+		Vertices.Push(1.0f);
+		Vertices.Push(CurrentGlyph.TexCoordBottomX);
+		Vertices.Push(CurrentGlyph.TexCoordBottomY);
 		
 		// (1, 1)
-		Vertices[BaseIndex + 10] =	BaseX + CurrentGlyph.Width;
-		Vertices[BaseIndex + 11] =	BaseY - CurrentGlyph.Height;
-		Vertices[BaseIndex + 12] =	1.0f;
-		Vertices[BaseIndex + 13] =	CurrentGlyph.TexCoordTopX;
-		Vertices[BaseIndex + 14] =	CurrentGlyph.TexCoordBottomY;
+		Vertices.Push(BaseX + CurrentGlyph.Width);
+		Vertices.Push(BaseY - CurrentGlyph.Height);
+		Vertices.Push(1.0f);
+		Vertices.Push(CurrentGlyph.TexCoordTopX);
+		Vertices.Push(CurrentGlyph.TexCoordBottomY);
 		
 		// (1, 0)
-		Vertices[BaseIndex + 15] =	BaseX + CurrentGlyph.Width;
-		Vertices[BaseIndex + 16] =	BaseY;
-		Vertices[BaseIndex + 17] =	1.0f;
-		Vertices[BaseIndex + 18] =	CurrentGlyph.TexCoordTopX;
-		Vertices[BaseIndex + 19] =	CurrentGlyph.TexCoordTopY;
+		Vertices.Push(BaseX + CurrentGlyph.Width);
+		Vertices.Push(BaseY);
+		Vertices.Push(1.0f);
+		Vertices.Push(CurrentGlyph.TexCoordTopX);
+		Vertices.Push(CurrentGlyph.TexCoordTopY);
 
-		int IndicesBaseIndex = CurrentChar * 6;
 		int IndexBase = CurrentChar * 4; // What index we currently are at
-		Indices[IndicesBaseIndex] =		IndexBase + 0; //3
-		Indices[IndicesBaseIndex + 1] = IndexBase + 1; //2
-		Indices[IndicesBaseIndex + 2] = IndexBase + 2; //0
-		Indices[IndicesBaseIndex + 3] = IndexBase + 0; //2
-		Indices[IndicesBaseIndex + 4] = IndexBase + 2; //1
-		Indices[IndicesBaseIndex + 5] = IndexBase + 3; //0
+		Indices.Push(BaseIndex + 0); //3
+		Indices.Push(BaseIndex + 1); //2
+		Indices.Push(BaseIndex + 2); //0
+		Indices.Push(BaseIndex + 0); //2
+		Indices.Push(BaseIndex + 2); //1
+		Indices.Push(BaseIndex + 3); //0
 
 		OffsetX += CurrentGlyph.Advance;
+		++NumGlyphs;
 	}
 
 	NewTextRenderObject->Position = glm::vec3(X, Y, 0.0f);
 
 	glBindBuffer(GL_ARRAY_BUFFER, NewTextRenderObject->VBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 20 * StringLength, Vertices, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * Vertices.Size, Vertices.Data(), GL_STATIC_DRAW);
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, NewTextRenderObject->IBO);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned short) * 6 * StringLength, Indices, GL_STATIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned short) * Indices.Size, Indices.Data(), GL_STATIC_DRAW);
 
 	glEnableVertexAttribArray(0); // Vertex position
 	glEnableVertexAttribArray(1); // Vertex texture coordinate
@@ -179,7 +186,7 @@ TextRenderData2D* TextRenderer::AddTextToRenderWithColorAndLength(const char* Te
 	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 5, (void*) (sizeof(float) * 3));
 
 	// 6 vertices per glyph
-	NewTextRenderObject->VertexCount = 6 * StringLength;
+	NewTextRenderObject->VertexCount = Indices.Size;
 	NewTextRenderObject->Layer = Layer;
 	NewTextRenderObject->TextureID = FontToUse.TextureObject;
 	NewTextRenderObject->Color = Color;
