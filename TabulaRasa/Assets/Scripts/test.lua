@@ -3,9 +3,9 @@ function gen_world()
   local a = 1
   local c = 0
 
-  while b < 65 do
+  while a < 65 do
 
-    if c = 64 then
+    if c == 64 then
       a = a + 1
       c = 1
     end
@@ -21,8 +21,10 @@ function gen_world()
 
     c = c + 1
 
-    i = list(a, b, c)
-    print(i)
+    --i = {a, b, c}
+    print(a)
+    print(b)
+    print(c)
 
   end
 end

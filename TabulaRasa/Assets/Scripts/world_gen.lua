@@ -1,30 +1,30 @@
+function print_two(a, b)
+
+  print(a.." "..b)
+
+end
+
 function gen_world()
 
-  local a = 1
-  local c = 0
+  local r = 8
+  local i = 1
+  local j = 1
+  local y = 1
+  local x = 1
 
-  while a < 65 do
+  while i <= 2*r do
 
-    if c == 64 then
-      a = a + 1
-      c = 1
+    while j <= 2*r do
+      print_two(j, i)
+
+      if r*r == (i - y)*(i - y) + (j - x)*(j - x) then
+        world.add_block(j, 1, i, 1)
+        print_two(j, i)
+      end
+
+      j = j + 1
     end
 
-    local b = math.random(0, 64)
-
-    local i = 1
-
-    while i <= a do
-      world.add_block(a, i, c, 1)
-      i = i + 1
-    end
-
-    c = c + 1
-
-    --i = {a, b, c}
-    print(a)
-    print(b)
-    print(c)
-
+    i = i + 1
   end
 end
