@@ -1,18 +1,18 @@
 --Preferences
 
 --screen sizes
-local widths = 1920
-local height = 1080
+widths = 1920
+height = 1080
 
 --vsync
- local vsync = True
+vsync = True
 
 --FOV
-local fov = 60    -- 0-100
+fov = 60    -- 0-100
 
 --sound level
-local sound_level = 100   -- 0-100
+sound_level = 100   -- 0-100
 
 --graphics settings??
 
---inputs??
+--inpu
