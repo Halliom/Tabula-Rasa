@@ -1,10 +1,19 @@
 #pragma once
 
 #include "../Game/World.h"
+#include "Octree.h"
 
 class Chunk
 {
 public:
+
+	Chunk();
+
+	~Chunk();
+
+	void Initialize();
+
+	void Tick(float DeltaTime);
 
 	__forceinline Voxel* GetVoxel(unsigned int X, unsigned int Y, unsigned int Z)
 	{
@@ -12,7 +21,7 @@ public:
 		return Result->BlockID > 0 ? Result : NULL; // Only return a value if the block id is not 0
 	}
 
-	__forceinline void RemoveVoxel(World *WorldObject, unsigned int X, unsigned int Y, unsigned int Z)
+	__forceinline void RemoveVoxel(World* WorldObject, unsigned int X, unsigned int Y, unsigned int Z)
 	{
 		m_pVoxels[X][Y][Z].BlockID = 0;
 		m_pVoxels[X][Y][Z].Parent = NULL;
