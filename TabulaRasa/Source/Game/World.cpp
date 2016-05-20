@@ -29,6 +29,7 @@ World::~World()
 	{
 		delete m_pCurrentPlayer;
 	}
+	delete m_pChunkManager;
 }
 
 void World::Initialize()
@@ -49,10 +50,14 @@ void World::Initialize()
 void World::Update(float DeltaTime)
 {
 	glm::ivec3 PlayerChunkPosition = m_pCurrentPlayer->m_pPlayerCamera->Position / glm::vec3(Chunk::SIZE);
+	glm::ivec3 OldPlayerChunkPosition = m_pCurrentPlayer->m_pPlayerCamera->OldPosition / glm::vec3(Chunk::SIZE);
 
-	// Unload/load chunks
-	m_pChunkManager->LoadNewChunks(PlayerChunkPosition);
-	m_pChunkManager->UnloadChunks(PlayerChunkPosition);
+	if (PlayerChunkPosition != OldPlayerChunkPosition)
+	{
+		// Unload/load chunks
+		m_pChunkManager->LoadNewChunks(PlayerChunkPosition);
+		m_pChunkManager->UnloadChunks(PlayerChunkPosition);
+	}
 
 	// Tick the chunks
 	m_pChunkManager->Tick(DeltaTime);

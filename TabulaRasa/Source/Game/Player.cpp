@@ -34,6 +34,7 @@ Player::~Player()
 
 void Player::Update(float DeltaTime)
 {
+	m_pPlayerCamera->OldPosition = m_pPlayerCamera->Position;
 	bool UpdatedMovement = false;
 	if (Input::Keys[SDL_SCANCODE_W])
 	{
