@@ -9,7 +9,7 @@ class List
 public:
 
 	List(FreeList* Memory);
-
+	
 	List();
 
 	~List();
@@ -67,7 +67,8 @@ List<T>::List()	:
 	m_BytesUsed(0),
 	m_BytesAllocated(0)
 {
-	m_pAllocator = NULL;
+	if (g_MemoryManager)
+		m_pAllocator = g_MemoryManager->m_pGameMemory;
 }
 
 template<typename T>
@@ -154,7 +155,7 @@ T& List<T>::operator[](int Index)
 {
 	if (Index >= Size)
 	{
-		assert(false);
+		//assert(false);
 		Index = 0;
 	}
 	return m_pBuffer[Index];
@@ -176,8 +177,6 @@ int List<T>::IndexOf(const T& Element)
 template<typename T>
 void List<T>::Remove(int Index)
 {
-	// TODO: Fix this cause it aint working
-
 	assert(Index >= 0 && Index < Size);
 
 	int HigerSideElements = Size - Index - 1;
