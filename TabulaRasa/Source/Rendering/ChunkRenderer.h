@@ -1,9 +1,9 @@
 #pragma once
 
 #include "glm\common.hpp"
-#include "DynamicArray.cpp"
 
 #include "../Engine/Core/Memory.h"
+#include "../Engine/Core/List.h"
 
 #include "GL_shader.h"
 #include "../Game/Player.h"
@@ -65,7 +65,7 @@ public:
 
 	static void UpdateRenderData(ChunkRenderData* RenderData, Chunk* Voxels);
 
-	static DynamicArray<ChunkRenderData*> g_ChunksToRender;
+	static List<ChunkRenderData*> g_ChunksToRender;
 
 	static GLuint g_TextureAtlas;
 

@@ -9,6 +9,7 @@
 #include "assimp/postprocess.h"
 
 #include "../Engine/Core/Memory.h"
+#include "../Engine/Core/List.h"
 
 #define MAX_FILE_READ_SIZE 8192
 
@@ -101,10 +102,10 @@ GLuint PlatformFileSystem::LoadImageFromFile(const std::string& FileName, unsign
 	size_t Size = File.tellg();
 	File.seekg(0, std::ios::beg);
 
-	std::vector<unsigned char> Data;
+	List<unsigned char> Data = List<unsigned char>(g_MemoryManager->m_pGameMemory);
 	//Reduce the file size by any header bytes that might be present
 	Size -= File.tellg();
-	Data.resize(Size);
+	Data.Reserve(Size);
 	File.read((char*) &(Data[0]), Size);
 	File.close();
 
@@ -174,38 +175,38 @@ void PlatformFileSystem::LoadModel(LoadedModel *Model, const char *FileName)
 		return;
 	}
 
-	std::vector<float> Vertices;
-	std::vector<unsigned short> Indices;
+	List<float> Vertices;
+	List<unsigned short> Indices;
 	unsigned short Offset = 0;
 	for (unsigned int i = 0; i < ImportedScene->mNumMeshes; ++i)
 	{
-		Vertices.reserve(Vertices.size() + 6 * ImportedScene->mMeshes[i]->mNumVertices);
+		Vertices.Reserve(Vertices.Size + 6 * ImportedScene->mMeshes[i]->mNumVertices);
 		for (unsigned int VertexID = 0; VertexID < ImportedScene->mMeshes[i]->mNumVertices; ++VertexID)
 		{
-			Vertices.push_back(ImportedScene->mMeshes[i]->mVertices[VertexID].x);
-			Vertices.push_back(ImportedScene->mMeshes[i]->mVertices[VertexID].y);
-			Vertices.push_back(ImportedScene->mMeshes[i]->mVertices[VertexID].z);
-			Vertices.push_back(ImportedScene->mMeshes[i]->mNormals[VertexID].x);
-			Vertices.push_back(ImportedScene->mMeshes[i]->mNormals[VertexID].y);
-			Vertices.push_back(ImportedScene->mMeshes[i]->mNormals[VertexID].z);
+			Vertices.Push(ImportedScene->mMeshes[i]->mVertices[VertexID].x);
+			Vertices.Push(ImportedScene->mMeshes[i]->mVertices[VertexID].y);
+			Vertices.Push(ImportedScene->mMeshes[i]->mVertices[VertexID].z);
+			Vertices.Push(ImportedScene->mMeshes[i]->mNormals[VertexID].x);
+			Vertices.Push(ImportedScene->mMeshes[i]->mNormals[VertexID].y);
+			Vertices.Push(ImportedScene->mMeshes[i]->mNormals[VertexID].z);
 		}
-		Indices.reserve(Indices.size() + 3 * ImportedScene->mMeshes[i]->mNumFaces);
+		Indices.Reserve(Indices.Size + 3 * ImportedScene->mMeshes[i]->mNumFaces);
 		for (unsigned int FaceID = 0; FaceID < ImportedScene->mMeshes[i]->mNumFaces; ++FaceID)
 		{
 			// Since all faces are triangles due to aiProcess_Triangulate there will only be
 			// 3 indices per face
-			Indices.push_back(Offset + (unsigned short) ImportedScene->mMeshes[i]->mFaces[FaceID].mIndices[2]);
-			Indices.push_back(Offset + (unsigned short) ImportedScene->mMeshes[i]->mFaces[FaceID].mIndices[1]);
-			Indices.push_back(Offset + (unsigned short) ImportedScene->mMeshes[i]->mFaces[FaceID].mIndices[0]);
+			Indices.Push(Offset + (unsigned short) ImportedScene->mMeshes[i]->mFaces[FaceID].mIndices[2]);
+			Indices.Push(Offset + (unsigned short) ImportedScene->mMeshes[i]->mFaces[FaceID].mIndices[1]);
+			Indices.Push(Offset + (unsigned short) ImportedScene->mMeshes[i]->mFaces[FaceID].mIndices[0]);
 		}
-		Offset = Vertices.size() / 6;
+		Offset = Vertices.Size / 6;
 	}
 
 	glBindBuffer(GL_ARRAY_BUFFER, Model->m_AssetVBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * Vertices.size(), Vertices.data(), GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * Vertices.Size, Vertices.Data(), GL_STATIC_DRAW);
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, Model->m_AssetIBO);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned short) * Indices.size(), Indices.data(), GL_STATIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned short) * Indices.Size, Indices.Data(), GL_STATIC_DRAW);
 
 	glEnableVertexAttribArray(0); // Position
 	glEnableVertexAttribArray(1); // Normal
@@ -213,7 +214,7 @@ void PlatformFileSystem::LoadModel(LoadedModel *Model, const char *FileName)
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 6, 0);
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 6, (void *) (sizeof(float) * 3));
 
-	Model->m_NumVertices = Indices.size();
+	Model->m_NumVertices = Indices.Size;
 
 	glBindVertexArray(0);
 }

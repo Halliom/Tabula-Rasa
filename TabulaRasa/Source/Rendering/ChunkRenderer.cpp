@@ -13,7 +13,7 @@
 #include "SDL2\SDL.h"
 
 // Init the chunk list
-DynamicArray<ChunkRenderData*> ChunkRenderer::g_ChunksToRender;
+List<ChunkRenderData*> ChunkRenderer::g_ChunksToRender;
 
 GLShaderProgram* ChunkRenderer::g_ChunkRenderShader = NULL;
 
@@ -26,6 +26,7 @@ extern GameMemoryManager* g_MemoryManager;
 
 void ChunkRenderer::SetupChunkRenderer()
 {
+	g_ChunksToRender = List<ChunkRenderData*>(g_MemoryManager->m_pGameMemory);
 	// Allocate a memory pool from the rendering memory to hold 512 ChunkRenderDatas
 	g_RenderDataMemoryPool = new MemoryPool<ChunkRenderData>(
 		Allocate<ChunkRenderData>(g_MemoryManager->m_pRenderingMemory, 512), 
@@ -41,7 +42,7 @@ void ChunkRenderer::SetupChunkRenderer()
 
 void ChunkRenderer::DestroyChunkRenderer()
 {
-	for (int Index = 0; Index < g_ChunksToRender.GetNum(); ++Index)
+	for (int Index = 0; Index < g_ChunksToRender.Size; ++Index)
 	{
 		g_RenderDataMemoryPool->Deallocate(g_ChunksToRender[Index]);
 	}
@@ -65,7 +66,9 @@ void ChunkRenderer::RenderAllChunks(Player* CurrentPlayer)
 	g_ChunkRenderShader->SetProjectionMatrix(Projection);
 	g_ChunkRenderShader->SetViewMatrix(View);
 
-	for (int Index = 0; Index < g_ChunksToRender.GetNum(); ++Index)
+	//List<ChunkRenderData> ChunksToRender = CurrentPlayer->m_pWorldObject->m_pChunkManager->GetVisibleChunks();
+
+	for (int Index = 0; Index < g_ChunksToRender.Size; ++Index)
 	{
 		if (!g_ChunksToRender[Index])
 			continue;
@@ -94,7 +97,7 @@ void ChunkRenderer::RenderAllChunks(Player* CurrentPlayer)
 	glBindVertexArray(0);
 }
 
-__forceinline int GetVoxelSide(Chunk *Voxels, DynamicArray<MultiblockRenderData> *AdditionalRenderData,  const int& X, const int& Y, const int& Z, const VoxelSide& Side)
+__forceinline int GetVoxelSide(Chunk* Voxels, List<MultiblockRenderData>* AdditionalRenderData, const int& X, const int& Y, const int& Z, const VoxelSide& Side)
 {
 	Voxel* Node = Voxels->GetVoxel(X, Y, Z);
 	if (Node && ((Node->SidesToRender & Side) == Side))
@@ -130,7 +133,7 @@ static void GreedyMesh(Chunk* Voxels, ChunkRenderData* RenderData)
 	List<unsigned short> Indices = List<unsigned short>(g_MemoryManager->m_pGameMemory);
 	Indices.Reserve(32 * 32 * 32);
 
-	DynamicArray<MultiblockRenderData> AdditionalRenderData;
+	List<MultiblockRenderData> AdditionalRenderData = List<MultiblockRenderData>(g_MemoryManager->m_pGameMemory);
 	bool Counter = false;
 
 	int ChunkSize = Octree<Voxel>::SIZE;
@@ -376,11 +379,11 @@ static void GreedyMesh(Chunk* Voxels, ChunkRenderData* RenderData)
 	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(TexturedQuadVertex), (void*) offsetof(TexturedQuadVertex, Dimension));
 	glVertexAttribIPointer(3, 1, GL_UNSIGNED_BYTE, sizeof(TexturedQuadVertex),  (void*) offsetof(TexturedQuadVertex, TextureCoord));
 
-	if (AdditionalRenderData.GetNum() > 0)
+	if (AdditionalRenderData.Size > 0)
 	{
-		RenderData->MultiblocksToRender = new MultiblockRenderData[AdditionalRenderData.GetNum()];
-		memcpy(RenderData->MultiblocksToRender, &AdditionalRenderData[0], sizeof(MultiblockRenderData) * AdditionalRenderData.GetNum());
-		RenderData->NumMultiblocksToRender = AdditionalRenderData.GetNum();
+		RenderData->MultiblocksToRender = new MultiblockRenderData[AdditionalRenderData.Size];
+		memcpy(RenderData->MultiblocksToRender, &AdditionalRenderData[0], sizeof(MultiblockRenderData) * AdditionalRenderData.Size);
+		RenderData->NumMultiblocksToRender = AdditionalRenderData.Size;
 	}
 	else
 	{

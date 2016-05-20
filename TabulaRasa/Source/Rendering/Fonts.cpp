@@ -129,6 +129,8 @@ void FontLibrary::Initialize(std::string& FontLibraryLocation)
 
 	m_FontLibraryLocation = FontLibraryLocation.append("\\");
 
+	m_LoadedFonts = List<TrueTypeFont>(g_MemoryManager->m_pGameMemory);
+
 #if 0
 	HANDLE FileHandle;
 	WIN32_FIND_DATAA FindData;
@@ -169,9 +171,9 @@ void FontLibrary::Initialize(std::string& FontLibraryLocation)
 
 void FontLibrary::Destroy()
 {
-	for (int i = 0; i < m_LoadedFonts.GetNum(); ++i)
+	for (int i = 0; i < m_LoadedFonts.Size; ++i)
 	{
-		;
+		glDeleteTextures(1, &m_LoadedFonts[i].TextureObject);
 	}
 	FT_Done_FreeType(m_pFreeTypeLibrary);
 }

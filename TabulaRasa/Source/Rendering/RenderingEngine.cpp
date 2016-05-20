@@ -260,7 +260,7 @@ void RenderingEngine::RenderFrame(World* RenderWorld, const float& DeltaTime)
 {
 	// Renders all the chunks in the geometry pass
 	StartGeometryPass();
-	ChunkRenderer::RenderAllChunks(RenderWorld->CurrentPlayer);
+	ChunkRenderer::RenderAllChunks(RenderWorld->m_pCurrentPlayer);
 
 	SSAOPass();
 

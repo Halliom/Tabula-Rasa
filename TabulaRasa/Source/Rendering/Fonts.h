@@ -7,7 +7,8 @@
 #include <ft2build.h>
 #include FT_FREETYPE_H
 
-#include "DynamicArray.cpp"
+#include "../Engine/Core/Memory.h"
+#include "../Engine/Core/List.h"
 
 struct TrueTypeGlyph
 {
@@ -52,7 +53,7 @@ public:
 
 	static FontLibrary* g_FontLibrary;
 	
-	DynamicArray<TrueTypeFont> m_LoadedFonts;
+	List<TrueTypeFont> m_LoadedFonts;
 
 private:
 
