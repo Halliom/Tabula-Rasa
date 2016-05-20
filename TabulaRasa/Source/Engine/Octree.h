@@ -130,10 +130,16 @@ public:
 		return Node ? Node->m_pNodeData : NULL;
 	}
 
-	// TODO: Remove this aswell as DEPTH and update all the places where its referenced
-	static constexpr uint32_t SIZE = 32; // Related to DEPTH below
+	__forceinline T* GetNodeData(const glm::ivec3& Position)
+	{
+		OctreeNode<T>* Node = Get(glm::uvec3(Position.x, Position.y, Position.z), m_pRootNode);
+		return Node ? Node->m_pNodeData : NULL;
+	}
 
-private:
+	// TODO: Remove this aswell as DEPTH and update all the places where its referenced
+	static constexpr int SIZE = 32; // Related to DEPTH below
+
+public:
 
 	static constexpr uint32_t DEPTH = 5; // Chunk size is 2^5=32
 
