@@ -2,8 +2,8 @@
 
 Window = {
   title = "Tabula Rasa"
-  widths = 1920
-  height = 1080
+  widths = 1280
+  height = 720
 }
 --vsync
 vsync = true
