@@ -19,6 +19,10 @@ public:
 
 	void CallFunction(char* FunctionName);
 
+	int GetVariableI32(char* VariableName);
+
+	int GetVariableI32FromTable(char* TableName, char* VariableName);
+
 	void LogFunctionErrors(char* FunctionName);
 
 	char* m_pScriptName;

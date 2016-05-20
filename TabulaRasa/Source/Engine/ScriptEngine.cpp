@@ -60,7 +60,7 @@ Script::Script(char* Filename)
 	int Error = luaL_dostring(g_State, ScriptSource);
 	if (Error != 0)
 	{
-		LogToConsole("Failed to load script");
+		LogLn("Failed to load script");
 	}
 }
 
@@ -75,6 +75,47 @@ void Script::CallFunction(char* FunctionName)
 	{
 		LogFunctionErrors(FunctionName);
 	}
+}
+
+int Script::GetVariableI32(char* VariableName)
+{
+	try
+	{
+		luabridge::LuaRef Variable = luabridge::getGlobal(g_State, VariableName);
+		if (Variable.isNumber())
+		{
+			return Variable.cast<int>();
+		}
+	}
+	catch (std::exception e)
+	{
+		// Do nothing let it be handled by the next lines
+	}
+
+	// Something went wrong
+	LogLn("Error getting variable")
+	return 0;
+}
+
+int Script::GetVariableI32FromTable(char* TableName, char* VariableName)
+{
+	try
+	{
+		luabridge::LuaRef Table = luabridge::getGlobal(g_State, TableName);
+		luabridge::LuaRef Variable = Table[VariableName];
+
+		if (Variable.isNumber())
+		{
+			return Variable.cast<int>();
+		}
+	}
+	catch (std::exception e)
+	{
+		// Do nothing let it be handled by the next lines
+	}
+
+	LogLn("Error getting variable from table");
+	return 0;
 }
 
 void Script::LogFunctionErrors(char* FunctionName)
