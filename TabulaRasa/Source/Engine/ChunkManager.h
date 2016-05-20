@@ -15,10 +15,20 @@ namespace std
 	{
 		size_t operator()(const glm::ivec3& val) const noexcept
 		{
-			return ((
-				IVEC_HASH_PRIME + std::hash<int>()(val.x)) * 
-				IVEC_HASH_PRIME + std::hash<int>()(val.y)) * 
-				IVEC_HASH_PRIME + std::hash<int>()(val.z);
+			return (
+				(IVEC_HASH_PRIME + std::hash<int>()(val.x)) *
+				(IVEC_HASH_PRIME + std::hash<int>()(val.y)) *
+				(IVEC_HASH_PRIME + std::hash<int>()(val.z))
+				);
+		}
+	};
+
+	template<>
+	struct equal_to<glm::ivec3>
+	{
+		bool operator()(const glm::ivec3& val0, const glm::ivec3& val1) const
+		{
+			return val0 == val1;
 		}
 	};
 }

@@ -12,9 +12,9 @@ ChunkManager::ChunkManager(World* WorldObject, int ChunkLoadingRadius) :
 
 ChunkManager::~ChunkManager()
 {
-	for (auto& KVPair : m_LoadedChunks)
+	for (auto It = m_LoadedChunks.begin(); It != m_LoadedChunks.end(); ++It)
 	{
-		Chunk* Chunk = KVPair.second;
+		Chunk* Chunk = (*It).second;
 		if (Chunk != NULL)
 		{
 			// TODO: Free the Chunk->m_pChunkRenderData back aswell
@@ -25,12 +25,12 @@ ChunkManager::~ChunkManager()
 
 void ChunkManager::Tick(float DeltaTime)
 {
-	for (auto& It : m_LoadedChunks)
+	for (auto It = m_LoadedChunks.begin(); It != m_LoadedChunks.end(); ++It)
 	{
-		if (It.second == NULL)
+		if ((*It).second == NULL)
 			continue;
 
-		It.second->Tick(DeltaTime);
+		(*It).second->Tick(DeltaTime);
 	}
 }
 
@@ -47,22 +47,28 @@ Chunk* ChunkManager::LoadChunk(glm::ivec3 ChunkPosition)
 
 void ChunkManager::UnloadChunks(glm::ivec3 PlayerChunkPosition)
 {
-	for (auto& KVPair : m_LoadedChunks)
+	auto It = m_LoadedChunks.begin();
+	while (It != m_LoadedChunks.end())
 	{
-		Chunk* Chunk = KVPair.second;
-		if (Chunk != NULL)
+		if ((*It).second == NULL)
+			continue;
+
+		Chunk* CurrentChunk = (*It).second;
+		if (CurrentChunk != NULL)
 		{
-			glm::ivec3 ChunkPosition = KVPair.first;
+			glm::ivec3 ChunkPosition = (*It).first;
 			float DistanceFromPlayer = glm::length(glm::vec3(ChunkPosition - PlayerChunkPosition));
 			if (DistanceFromPlayer > m_ChunkLoadingRadius)
 			{
 				// The chunk is outside the radius and needs to be removed
-				m_LoadedChunks.erase(ChunkPosition);
+				It = m_LoadedChunks.erase(It);
 
 				// TODO: Free the Chunk->m_pChunkRenderData back aswell
-				g_MemoryManager->m_pChunkAllocator->Deallocate(Chunk);
+				g_MemoryManager->m_pChunkAllocator->Deallocate(CurrentChunk);
+				continue;
 			}
 		}
+		It++;
 	}
 }
 
@@ -112,9 +118,9 @@ List<Chunk*> ChunkManager::GetVisibleChunks(glm::ivec3 PlayerChunkPosition)
 {
 	List<Chunk*> Result;
 
-	for (auto& KVPair : m_LoadedChunks)
+	for (auto It = m_LoadedChunks.begin(); It != m_LoadedChunks.end(); ++It)
 	{
-		Chunk* Chunk = KVPair.second;
+		Chunk* Chunk = (*It).second;
 		if (Chunk != NULL)
 		{
 			Result.Push(Chunk);
