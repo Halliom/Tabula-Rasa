@@ -8,12 +8,12 @@
 #include "../Engine/PerlinNoise.h"
 
 #include "../Engine/ScriptEngine.h"
-#include "../Rendering/ChunkRenderer.h"
+#include "../Engine/ChunkManager.h"
 #include "../Platform/Platform.h"
 
 #include "../Engine/Core/Memory.h"
 
-#define CHUNK_LOADING_RADIUS 4
+#define CHUNK_LOADING_RADIUS 2
 
 #define TOCHUNK_COORD(X, Y, Z) X / (int) Octree<Voxel>::SIZE, Y / (int) Octree<Voxel>::SIZE, Z / (int) Octree<Voxel>::SIZE
 
@@ -21,15 +21,15 @@ extern GameMemoryManager* g_MemoryManager;
 
 World::World()
 {
-	CurrentPlayer = NULL;
+	m_pCurrentPlayer = NULL;
 	CachedChunk = NULL;
 }
 
 World::~World()
 {
-	if (CurrentPlayer)
+	if (m_pCurrentPlayer)
 	{
-		delete CurrentPlayer;
+		delete m_pCurrentPlayer;
 	}
 }
 
@@ -37,30 +37,12 @@ void World::Initialize()
 {
 	BlockManager::SetupBlocks();
 
-	CurrentPlayer = new Player();
-	CurrentPlayer->BeginPlay();
+	m_pCurrentPlayer = new Player();
+	m_pCurrentPlayer->BeginPlay();
+	m_pCurrentPlayer->m_pWorldObject = this;
 
-	ChunkLoadingCenterX = 0;
-	ChunkLoadingCenterY = 0;
-	ChunkLoadingCenterZ = 0;
-
-	for (int i = 0; i < CHUNK_LOADING_RADIUS; ++i)
-	{
-		for (int j = 0; j < CHUNK_LOADING_RADIUS; ++j)
-		{
-			for (int k = 0; k < CHUNK_LOADING_RADIUS; ++k)
-			{
-				//TODO: This might be thrashing the cache a bit
-				int Index = i + CHUNK_LOADING_RADIUS * (j + CHUNK_LOADING_RADIUS * k);
-				int HalfChunkRadius = CHUNK_LOADING_RADIUS / 2;
-				Chunk* ChunkToInsert = LoadChunk(
-					ChunkLoadingCenterX + i - HalfChunkRadius,
-					ChunkLoadingCenterY + j - HalfChunkRadius,
-					ChunkLoadingCenterZ + k - HalfChunkRadius);
-				m_LoadedChunks.InsertNode(glm::vec3(i, j, k), ChunkToInsert);
-			}
-		}
-	}
+	m_pChunkManager = new ChunkManager(this, 2);
+	m_pChunkManager->LoadNewChunks(glm::ivec3(0, 0, 0));
 
 	Script WorldGen = Script("world_gen.lua");
 	WorldGen.CallFunction("gen_world");
@@ -68,22 +50,17 @@ void World::Initialize()
 
 void World::Update(float DeltaTime)
 {
-	CurrentPlayer->Update(DeltaTime);
+	glm::ivec3 PlayerChunkPosition = m_pCurrentPlayer->m_pPlayerCamera->Position / glm::vec3(Octree<Voxel>::SIZE);
 
-	// TODO: Update all the chunks
-	for (auto& It : m_LoadedChunks.Nodes)
-	{
-		if (It.second->m_pNodeData == NULL)
-			continue;
+	// Unload/load chunks
+	m_pChunkManager->LoadNewChunks(PlayerChunkPosition);
+	m_pChunkManager->UnloadChunks(PlayerChunkPosition);
 
-		// If the NodeData's render state is dirty
-		if (It.second->m_pNodeData->m_bIsRenderStateDirty)
-		{
-			ChunkRenderData* RenderData = It.second->m_pNodeData->m_pChunkRenderData;
-			ChunkRenderer::UpdateRenderData(RenderData, It.second->m_pNodeData);
-			It.second->m_pNodeData->m_bIsRenderStateDirty = false;
-		}
-	}
+	// Tick the chunks
+	m_pChunkManager->Tick(DeltaTime);
+
+	// Update the player last as chunk updates should take precedence
+	m_pCurrentPlayer->Update(DeltaTime);
 }
 
 Chunk* World::GetLoadedChunk(const int& ChunkX, const int& ChunkY, const int& ChunkZ)
@@ -97,20 +74,8 @@ Chunk* World::GetLoadedChunk(const int& ChunkX, const int& ChunkY, const int& Ch
 	}
 	else
 	{
-		int HalfChunkRadius = CHUNK_LOADING_RADIUS / 2;
-		if ((ChunkX >= ChunkLoadingCenterX - HalfChunkRadius && ChunkX < ChunkLoadingCenterX + HalfChunkRadius) &&
-			(ChunkY >= ChunkLoadingCenterY - HalfChunkRadius && ChunkY < ChunkLoadingCenterY + HalfChunkRadius) &&
-			(ChunkZ >= ChunkLoadingCenterZ - HalfChunkRadius && ChunkZ < ChunkLoadingCenterZ + HalfChunkRadius))
-		{
-			// Do the inverse of what we do when adding/creating chunks
-			int RelativeX = ChunkX - ChunkLoadingCenterX + HalfChunkRadius;
-			int RelativeY = ChunkY - ChunkLoadingCenterY + HalfChunkRadius;
-			int RelativeZ = ChunkZ - ChunkLoadingCenterZ + HalfChunkRadius;
-
-			CachedChunk = m_LoadedChunks.GetNodeData(glm::uvec3(RelativeX, RelativeY, RelativeZ));
-			return CachedChunk;
-		}
-		return NULL;
+		CachedChunk = m_pChunkManager->GetChunkAt(ChunkX, ChunkY, ChunkZ);
+		return CachedChunk;
 	}
 }
 
@@ -315,23 +280,4 @@ void World::RemoveMultiblock(const int& X, const int& Y, const int& Z)
 			}
 		}
 	}
-}
-
-Chunk* World::LoadChunk(const int ChunkX, const int ChunkY, const int ChunkZ)
-{
-	Chunk* Result = g_MemoryManager->m_pChunkAllocator->Allocate();
-	Result->m_ChunkX = ChunkX;
-	Result->m_ChunkY = ChunkY;
-	Result->m_ChunkZ = ChunkZ;
-	Result->m_bIsRenderStateDirty = false;
-
-	// Make sure that everything is initialized to zero
-	memset(Result->m_pVoxels, NULL, 32 * 32 * 32 * sizeof(Voxel));
-
-	// Create render data for the chunk
-	Result->m_pChunkRenderData = ChunkRenderer::CreateRenderData(
-		glm::vec3(ChunkX * Octree<Voxel>::SIZE, ChunkX * Octree<Voxel>::SIZE, ChunkX * Octree<Voxel>::SIZE),
-		Result);
-
-	return Result;
 }

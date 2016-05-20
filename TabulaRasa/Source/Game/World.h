@@ -3,7 +3,6 @@
 #include "../Rendering/GL_shader.h"
 #include "../Rendering/TextRenderer.h"
 #include "Player.h"
-#include "../Engine/Octree.h"
 
 class World
 {
@@ -18,31 +17,23 @@ public:
 
 	class Chunk* GetLoadedChunk(const int &ChunkX, const int &ChunkY, const int &ChunkZ);
 
-	Voxel* GetBlock(const int& X, const int& Y, const int& Z);
+	class Voxel* GetBlock(const int& X, const int& Y, const int& Z);
 
 	void AddBlock(const int& X, const int& Y, const int& Z, const unsigned int& BlockID);
 
 	void RemoveBlock(const int& X, const int& Y, const int& Z);
 
-	Voxel* GetMultiblock(const int& X, const int& Y, const int& Z);
+	class Voxel* GetMultiblock(const int& X, const int& Y, const int& Z);
 
 	void AddMultiblock(const int& X, const int& Y, const int& Z, const unsigned int& BlockID);
 
 	void RemoveMultiblock(const int& X, const int& Y, const int& Z);
 
-	class Chunk* LoadChunk(const int ChunkX, const int ChunkY, const int ChunkZ);
+	Player* m_pCurrentPlayer;
 
-	Player* CurrentPlayer;
+	class ChunkManager* m_pChunkManager;
 
 private:
 
-	Octree<class Chunk> m_LoadedChunks;
-
-	Chunk* CachedChunk;
-
-	int ChunkLoadingCenterX;
-	int ChunkLoadingCenterY;
-	int ChunkLoadingCenterZ;
-
-	GLShaderProgram* Shader;
+	class Chunk* CachedChunk;
 };
