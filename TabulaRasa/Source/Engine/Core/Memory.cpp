@@ -87,7 +87,7 @@ unsigned char* FreeList::Allocate(size_t Size, size_t Alignment)
 
 	while (Current != NULL)
 	{
-		uint8_t Adjustment = AlignForwardAdjustmentWithHeader((unsigned char*)Current, Alignment, sizeof(AllocationHeader));
+		uint8_t Adjustment = AlignForwardAdjustmentWithHeader((unsigned char*) Current, Alignment, sizeof(AllocationHeader));
 		size_t TotalSize = Size + Adjustment;
 		if (Current->m_Size < TotalSize) // No space here, move on:(
 		{
@@ -97,7 +97,10 @@ unsigned char* FreeList::Allocate(size_t Size, size_t Alignment)
 			continue;
 		}
 
-		if (Current->m_Size - TotalSize <= sizeof(AllocationHeader)) // We can't fit an allocation here
+		// We can't fit an allocation here after the one we're currently trying to allocate
+		// so then we just increase the size of this one so that we don't get tiny little
+		// 'holes' everywhere which we can't fill.
+		if (Current->m_Size - TotalSize <= sizeof(AllocationHeader))
 		{
 			// Increase the size
 			TotalSize = Current->m_Size;
