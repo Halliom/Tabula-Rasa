@@ -20,7 +20,7 @@ void Chunk::Initialize()
 {
 	// Create render data for the chunk
 	m_pChunkRenderData = ChunkRenderer::CreateRenderData(
-		glm::vec3(m_ChunkX * Octree<Voxel>::SIZE, m_ChunkY * Octree<Voxel>::SIZE, m_ChunkZ * Octree<Voxel>::SIZE),
+		glm::vec3(m_ChunkX * SIZE, m_ChunkY * SIZE, m_ChunkZ * SIZE),
 		this);
 }
 

@@ -136,7 +136,7 @@ static void GreedyMesh(Chunk* Voxels, ChunkRenderData* RenderData)
 	List<MultiblockRenderData> AdditionalRenderData = List<MultiblockRenderData>(g_MemoryManager->m_pGameMemory);
 	bool Counter = false;
 
-	int ChunkSize = Octree<Voxel>::SIZE;
+	int ChunkSize = Chunk::SIZE;
 	for (bool BackFace = true; Counter != BackFace; BackFace = BackFace && Counter, Counter = !Counter)
 	{
 		for (int d = 0; d < 3; ++d)
@@ -154,7 +154,7 @@ static void GreedyMesh(Chunk* Voxels, ChunkRenderData* RenderData)
 									// A mask of a "slice" of the cube, since we're going through
 									// the chunk depth first, this contains the groups of matching
 									// voxel faces in 6 directinos
-			int mask[Octree<Voxel>::SIZE * Octree<Voxel>::SIZE];
+			int mask[Chunk::SIZE * Chunk::SIZE];
 
 			q[d] = 1;
 

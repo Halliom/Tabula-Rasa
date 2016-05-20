@@ -136,9 +136,6 @@ public:
 		return Node ? Node->m_pNodeData : NULL;
 	}
 
-	// TODO: Remove this aswell as DEPTH and update all the places where its referenced
-	static constexpr int SIZE = 32; // Related to DEPTH below
-
 public:
 
 	static constexpr uint32_t DEPTH = 5; // Chunk size is 2^5=32

@@ -13,9 +13,7 @@
 
 #include "../Engine/Core/Memory.h"
 
-#define CHUNK_LOADING_RADIUS 2
-
-#define TOCHUNK_COORD(X, Y, Z) X / (int) Octree<Voxel>::SIZE, Y / (int) Octree<Voxel>::SIZE, Z / (int) Octree<Voxel>::SIZE
+#define TOCHUNK_COORD(X, Y, Z) X / Chunk::SIZE, Y / Chunk::SIZE, Z / Chunk::SIZE
 
 extern GameMemoryManager* g_MemoryManager;
 
@@ -50,7 +48,7 @@ void World::Initialize()
 
 void World::Update(float DeltaTime)
 {
-	glm::ivec3 PlayerChunkPosition = m_pCurrentPlayer->m_pPlayerCamera->Position / glm::vec3(Octree<Voxel>::SIZE);
+	glm::ivec3 PlayerChunkPosition = m_pCurrentPlayer->m_pPlayerCamera->Position / glm::vec3(Chunk::SIZE);
 
 	// Unload/load chunks
 	m_pChunkManager->LoadNewChunks(PlayerChunkPosition);
@@ -81,8 +79,8 @@ Chunk* World::GetLoadedChunk(const int& ChunkX, const int& ChunkY, const int& Ch
 
 Voxel* World::GetBlock(const int& X, const int& Y, const int& Z)
 {
-	Chunk* QueriedChunk = GetLoadedChunk(X / (int) Octree<Voxel>::SIZE, Y / (int) Octree<Voxel>::SIZE, Z / (int) Octree<Voxel>::SIZE);
-	return QueriedChunk != NULL ? QueriedChunk->GetVoxel(X % Octree<Voxel>::SIZE, Y % Octree<Voxel>::SIZE, Z % Octree<Voxel>::SIZE) : NULL;;
+	Chunk* QueriedChunk = GetLoadedChunk(X / Chunk::SIZE, Y / Chunk::SIZE, Z / Chunk::SIZE);
+	return QueriedChunk != NULL ? QueriedChunk->GetVoxel(X % Chunk::SIZE, Y % Chunk::SIZE, Z % Chunk::SIZE) : NULL;;
 }
 
 void World::AddBlock(const int& X, const int& Y, const int& Z, const unsigned int& BlockID)
@@ -94,9 +92,9 @@ void World::AddBlock(const int& X, const int& Y, const int& Z, const unsigned in
 	{
 		// This gets the local coordinate in the chunks local coordinate
 		// system, which ranges from 0 to 31
-		int LocalX = abs(X) % Octree<Voxel>::SIZE;
-		int LocalY = abs(Y) % Octree<Voxel>::SIZE;
-		int LocalZ = abs(Z) % Octree<Voxel>::SIZE;
+		int LocalX = abs(X) % Chunk::SIZE;
+		int LocalY = abs(Y) % Chunk::SIZE;
+		int LocalZ = abs(Z) % Chunk::SIZE;
 
 		ChunkToAddTo->SetVoxel(this, LocalX, LocalY, LocalZ, BlockID);
 	}
@@ -109,9 +107,9 @@ void World::RemoveBlock(const int & X, const int & Y, const int & Z)
 	{
 		// This gets the local coordinate in the chunks local coordinate
 		// system, which ranges from 0 to 31
-		int LocalX = X % Octree<Voxel>::SIZE;
-		int LocalY = Y % Octree<Voxel>::SIZE;
-		int LocalZ = Z % Octree<Voxel>::SIZE;
+		int LocalX = X % Chunk::SIZE;
+		int LocalY = Y % Chunk::SIZE;
+		int LocalZ = Z % Chunk::SIZE;
 
 		QueriedChunk->RemoveVoxel(this, LocalX, LocalY, LocalZ);
 	}
@@ -119,18 +117,18 @@ void World::RemoveBlock(const int & X, const int & Y, const int & Z)
 
 Voxel* World::GetMultiblock(const int &X, const int &Y, const int &Z)
 {
-	int ChunkX = X / (int) Octree<Voxel>::SIZE;
-	int ChunkY = Y / (int) Octree<Voxel>::SIZE;
-	int ChunkZ = Z / (int) Octree<Voxel>::SIZE;
+	int ChunkX = X / Chunk::SIZE;
+	int ChunkY = Y / Chunk::SIZE;
+	int ChunkZ = Z / Chunk::SIZE;
 
 	Chunk* QueriedChunk = GetLoadedChunk(ChunkX, ChunkY, ChunkZ);
 	if (QueriedChunk)
 	{
 		// This gets the local coordinate in the chunks local coordinate
 		// system, which ranges from 0 to 31
-		int LocalX = X % Octree<Voxel>::SIZE;
-		int LocalY = Y % Octree<Voxel>::SIZE;
-		int LocalZ = Z % Octree<Voxel>::SIZE;
+		int LocalX = X % Chunk::SIZE;
+		int LocalY = Y % Chunk::SIZE;
+		int LocalZ = Z % Chunk::SIZE;
 
 		Voxel* QueriedVoxel = QueriedChunk->GetVoxel(LocalX, LocalY, LocalZ);
 		// If we got the child node, set the block operated upon to be the parent (master)
@@ -169,18 +167,18 @@ void World::AddMultiblock(const int &X, const int &Y, const int &Z, const unsign
 		}
 	}
 
-	int ChunkX = X / (int) Octree<Voxel>::SIZE;
-	int ChunkY = Y / (int) Octree<Voxel>::SIZE;
-	int ChunkZ = Z / (int) Octree<Voxel>::SIZE;
+	int ChunkX = X / Chunk::SIZE;
+	int ChunkY = Y / Chunk::SIZE;
+	int ChunkZ = Z / Chunk::SIZE;
 
 	Chunk *QueriedChunk = GetLoadedChunk(ChunkX, ChunkY, ChunkZ);
 	if (QueriedChunk)
 	{
 		// This gets the local coordinate in the chunks local coordinate
 		// system, which ranges from 0 to 31
-		int LocalX = X % Octree<Voxel>::SIZE;
-		int LocalY = Y % Octree<Voxel>::SIZE;
-		int LocalZ = Z % Octree<Voxel>::SIZE;
+		int LocalX = X % Chunk::SIZE;
+		int LocalY = Y % Chunk::SIZE;
+		int LocalZ = Z % Chunk::SIZE;
 
 		Voxel *Parent = NULL;
 		for (unsigned int XCoord = 0; XCoord < MultiblockWidth; ++XCoord)
@@ -229,9 +227,9 @@ void World::RemoveMultiblock(const int& X, const int& Y, const int& Z)
 
 	if (Parent)
 	{
-		int ChunkX = X / (int) Octree<Voxel>::SIZE;
-		int ChunkY = Y / (int) Octree<Voxel>::SIZE;
-		int ChunkZ = Z / (int) Octree<Voxel>::SIZE;
+		int ChunkX = X / Chunk::SIZE;
+		int ChunkY = Y / Chunk::SIZE;
+		int ChunkZ = Z / Chunk::SIZE;
 
 		Chunk *QueriedChunk = GetLoadedChunk(ChunkX, ChunkY, ChunkZ);
 		if (QueriedChunk)

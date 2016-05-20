@@ -7,6 +7,8 @@ class Chunk
 {
 public:
 
+	static constexpr int SIZE = 32;
+
 	Chunk();
 
 	~Chunk();
@@ -70,7 +72,7 @@ public:
 		}
 	}
 
-	Voxel m_pVoxels[32][32][32];
+	Voxel m_pVoxels[SIZE][SIZE][SIZE];
 
 	int m_ChunkX;
 	int m_ChunkY;
