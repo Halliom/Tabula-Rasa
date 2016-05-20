@@ -17,6 +17,8 @@ public:
 
 	Camera* m_pPlayerCamera;
 
+	class World* m_pWorldObject;
+
 private:
 
 	float m_Sensitivity;
