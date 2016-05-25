@@ -92,6 +92,106 @@ struct RectRenderData2D
 	unsigned int Layer;
 };
 
+// TODO: Change the vertex array, vertex buffer, index buffer and texture object to be classes so they can be rendering-backend agnostic
+struct GUIRenderable
+{
+	GLuint VAO;
+
+	GLuint VBO;
+
+	GLuint IBO;
+
+	GLuint Texture;
+
+	unsigned short NumIndices;
+
+	glm::vec4 Color;
+};
+
+class IGUIElement
+{
+public:
+
+	IGUIElement() {}
+
+	virtual void Initialize() {}
+
+	virtual void OnHover() {}
+
+	virtual void OnBeginClick(int MouseButton) {}
+	virtual void OnEndClick(int MouseButton) {}
+
+	virtual void Render() {}
+
+	glm::ivec2 GetPosition()
+	{
+		return m_pParent->GetPosition() + m_Position;
+	}
+
+	IGUIElement* m_pParent;
+
+	/**
+	 * The position, in screen coordinates that the element is at,
+	 * this is the lower left corner of the element
+	 */
+	glm::ivec2 m_Position;
+
+	/**
+	 * The width and height, which together with the m_PosX and m_PosY
+	 * make up the entire bounding box of the element where
+	 * (m_Position.x + m_Dimensions.x, m_Position.y + m_Dimensions.y) 
+	 * would be the top right corner
+	 */
+	glm::ivec2 m_Dimensions;
+};
+
+class GUIRenderer
+{
+public:
+
+	static GUIRenderable CreateText(const char* Text, size_t StringLength, glm::vec4 Color = glm::vec4(1.0f), unsigned int Layer = 0, TrueTypeFont* Font = NULL);
+
+	static GUIRenderable CreateSprite(const char* TextureName, glm::ivec2 SpriteUV1, glm::ivec2 SpriteUV2, glm::vec2 Size = glm::vec2(10.0f, 10.0f));
+
+	static GUIRenderable CreateRect(glm::vec2 Size, glm::vec4 Color = glm::vec4(1.0f));
+
+	void RenderAtPosition(GUIRenderable Renderable, glm::vec2 Position);
+
+public:
+
+	GUIRenderer(int ScreenWidth, int ScreenHeight);
+
+	~GUIRenderer();
+
+	void UpdateScreenDimensions(int NewWidth, int NewHeight);
+
+	void Render();
+
+	void UpdateMousePositionAndState(glm::ivec2 MousePosition, bool LMouseDown, bool RMouseDown, bool MMouseDown);
+
+	bool m_bIsMouseActivated;
+
+private:
+
+	List<IGUIElement> m_Elements;
+
+	GLShaderProgram* m_pTextureShader;
+
+	GLShaderProgram* m_pNoTextureShader;
+
+	glm::ivec2 m_ScreenDimensions;
+
+	glm::ivec2 m_MousePosition;
+
+	glm::mat4 m_ProjectionMatrix;
+
+	bool m_PrevLMouseDown;
+
+	bool m_PrevRMouseDown;
+
+	bool m_PrevMMouseDown;
+};
+
 class TextRenderer
 {
 public:

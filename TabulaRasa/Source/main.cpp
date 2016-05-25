@@ -9,10 +9,13 @@
 #include "Engine\ScriptEngine.h"
 #include "Engine\Core\Memory.h"
 
+#include "Engine/Core/Random.h"
+
 #define SAFE_DELETE(ptr) if (ptr) { delete ptr; }
 
 World* g_World = NULL;
 RenderingEngine* g_RenderingEngine = NULL;
+GUIRenderer* g_GUIRenderer = NULL;
 Console* g_Console = NULL;
 GameMemoryManager* g_MemoryManager = NULL;
 
@@ -55,6 +58,15 @@ int main(int argc, char* argv[])
 		assert(false, "Failure to load memory");
 	}
 
+	// TODO: Create Settings class
+	Script Preferences = Script("preferences.lua");
+	WindowParams.Title = Preferences.GetStringFromTable("Window", "title").c_str();
+	WindowParams.Width = Preferences.GetIntFromTable("Window", "width");
+	WindowParams.Height = Preferences.GetIntFromTable("Window", "height");
+	WindowParams.UseVSync = Preferences.GetBoolFromTable("Window", "vsync");
+	//WindowParams.Fullscreen = Preferences.GetBoolFromTable("Window", "full_screen");
+	//WindowParams.StartMaximized = Preferences.GetBoolFromTable("Window", "start_maximized");
+
 	PlatformWindow Window = PlatformWindow(WindowParams);
 	bool Success = Window.SetupWindowAndRenderContext();
 	if (!Success)
@@ -77,6 +89,8 @@ int main(int argc, char* argv[])
 	g_RenderingEngine->Initialize(WindowParams.Width, WindowParams.Height);
 	g_RenderingEngine->AddRendererForBlock(3, "Chest_Model.obj");
 
+	g_GUIRenderer = new GUIRenderer(WindowParams.Width, WindowParams.Height);
+
 	// Loads the world and initializes subobjects
 	g_World = new World();
 	g_World->Initialize();
@@ -96,6 +110,9 @@ int main(int argc, char* argv[])
 
 		// Render the world
 		g_RenderingEngine->RenderFrame(g_World, DeltaTime);
+
+		// Render all GUI elements
+		g_GUIRenderer->Render();
 
 		// Swap the buffers
 		Window.PostRender();

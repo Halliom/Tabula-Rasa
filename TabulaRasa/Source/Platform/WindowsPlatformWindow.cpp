@@ -12,6 +12,7 @@
 PlatformWindow* PlatformWindow::GlobalWindow = NULL;
 
 extern RenderingEngine* g_RenderingEngine;
+extern GUIRenderer* g_GUIRenderer;
 extern Console* g_Console;
 
 PlatformWindow::PlatformWindow(const WindowParameters& WindowParams) : 
@@ -131,6 +132,7 @@ bool PlatformWindow::PrepareForRender()
 							Camera::ActiveCamera->IsProjectionMatrixDirty = true;
 
 							g_RenderingEngine->ScreenDimensionsChanged(Event.window.data1, Event.window.data2);
+							g_GUIRenderer->UpdateScreenDimensions(Event.window.data1, Event.window.data2);
 						}
 
 						WindowParams.Width = Event.window.data1;
