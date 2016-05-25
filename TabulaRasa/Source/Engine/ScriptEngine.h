@@ -19,9 +19,19 @@ public:
 
 	void CallFunction(char* FunctionName);
 
-	int GetVariableI32(char* VariableName);
+	bool GetBool(char* VariableName);
 
-	int GetVariableI32FromTable(char* TableName, char* VariableName);
+	bool GetBoolFromTable(char* TableName, char* VariableName);
+
+	int GetInt(char* VariableName);
+
+	int GetIntFromTable(char* TableName, char* VariableName);
+
+	std::string GetString(char* VariableName);
+
+	std::string GetStringFromTable(char* TableName, char* VariableName);
+
+	luabridge::LuaRef GetReference(char* VariableName);
 
 	void LogFunctionErrors(char* FunctionName);
 

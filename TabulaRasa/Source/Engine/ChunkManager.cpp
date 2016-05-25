@@ -3,6 +3,8 @@
 #include "Core\Memory.h"
 #include "../Rendering/ChunkRenderer.h"
 
+#include "ScriptEngine.h"
+
 ChunkManager::ChunkManager(World* WorldObject, int ChunkLoadingRadius) : 
 	m_ChunkLoadingRadius(ChunkLoadingRadius),
 	m_pWorldObject(WorldObject)
