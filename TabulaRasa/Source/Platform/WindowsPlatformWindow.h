@@ -37,6 +37,8 @@ public:
 
 	void PostRender();
 
+	SDL_Window* GetWindow();
+
 	inline static LRESULT CALLBACK WindowProcessMessages(HWND Window, UINT Message, WPARAM wParam, LPARAM lParam);
 
 	WindowParameters WindowParams;

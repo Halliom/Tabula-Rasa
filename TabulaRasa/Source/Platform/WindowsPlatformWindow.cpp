@@ -9,10 +9,12 @@
 #include "../Rendering/RenderingEngine.h"
 #include "../Engine/Console.h"
 
+#include "..\Rendering\GUI\imgui\imgui.h"
+
 PlatformWindow* PlatformWindow::GlobalWindow = NULL;
 
 extern RenderingEngine* g_RenderingEngine;
-extern GUIRenderer* g_GUIRenderer;
+extern DebugGUIRenderer* g_GUIRenderer;
 extern Console* g_Console;
 
 PlatformWindow::PlatformWindow(const WindowParameters& WindowParams) : 
@@ -180,11 +182,20 @@ bool PlatformWindow::PrepareForRender()
 					// TODO: Remove in build perhaps?
 					case SDL_SCANCODE_GRAVE:
 					{
-						g_Console->m_bIsActive = !g_Console->m_bIsActive;
-						g_Console->OnUpdateInputMode();
+						SDL_SetRelativeMouseMode((SDL_bool)(!((bool)SDL_GetRelativeMouseMode())));
+						//g_Console->m_bIsActive = !g_Console->m_bIsActive;
+						//g_Console->OnUpdateInputMode();
 						continue;
 					}
 				}
+
+				int Key = Event.key.keysym.sym & ~SDLK_SCANCODE_MASK;
+				ImGuiIO& IO = ImGui::GetIO();
+				IO.KeysDown[Key] = true;
+				IO.KeyShift = ((SDL_GetModState() & KMOD_SHIFT) != 0);
+				IO.KeyCtrl = ((SDL_GetModState() & KMOD_CTRL) != 0);
+				IO.KeyAlt = ((SDL_GetModState() & KMOD_ALT) != 0);
+				IO.KeySuper = ((SDL_GetModState() & KMOD_GUI) != 0);
 
 				if (g_Console->m_bIsActive)
 				{
@@ -200,6 +211,9 @@ bool PlatformWindow::PrepareForRender()
 			}
 			case SDL_KEYUP:
 			{
+				int Key = Event.key.keysym.sym & ~SDLK_SCANCODE_MASK;
+				ImGuiIO& IO = ImGui::GetIO();
+				IO.KeysDown[Key] = false;
 
 				if (!g_Console->m_bIsActive)
 				{
@@ -231,6 +245,13 @@ bool PlatformWindow::PrepareForRender()
 void PlatformWindow::PostRender()
 {
 	SDL_GL_SwapWindow(MainWindow);
+}
+
+SDL_Window* PlatformWindow::GetWindow()
+{
+	assert(MainWindow != NULL);
+
+	return MainWindow;
 }
 
 LRESULT PlatformWindow::WindowProcessMessages(HWND Window, UINT Message, WPARAM wParam, LPARAM lParam)
