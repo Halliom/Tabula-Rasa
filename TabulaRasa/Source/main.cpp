@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <bitset>
 
+#define IMGUI_DISABLE_OBSOLETE_FUNCTIONS 1
+
 #include "Platform/Platform.h"
 #include "Game/World.h"
 #include "Engine\Console.h"
@@ -15,7 +17,7 @@
 
 World* g_World = NULL;
 RenderingEngine* g_RenderingEngine = NULL;
-GUIRenderer* g_GUIRenderer = NULL;
+DebugGUIRenderer* g_GUIRenderer = NULL;
 Console* g_Console = NULL;
 GameMemoryManager* g_MemoryManager = NULL;
 
@@ -89,7 +91,7 @@ int main(int argc, char* argv[])
 	g_RenderingEngine->Initialize(WindowParams.Width, WindowParams.Height);
 	g_RenderingEngine->AddRendererForBlock(3, "Chest_Model.obj");
 
-	g_GUIRenderer = new GUIRenderer(WindowParams.Width, WindowParams.Height);
+	g_GUIRenderer = new DebugGUIRenderer(WindowParams.Width, WindowParams.Height);
 
 	// Loads the world and initializes subobjects
 	g_World = new World();
@@ -97,14 +99,14 @@ int main(int argc, char* argv[])
 
 	g_RenderingEngine->PostInitialize();
 
-	TextRenderData2D* FPSCounter = TextRenderer::AddTextToRenderWithColor("FPS: 0", 8.0f, 8.0f, glm::vec4(1.0f, 1.0f, 0.0f, 1.0f));
-
 	double LastFrameTime = SDL_GetTicks() / 1000.0;
 	double DeltaTime = 0.0;
 	double CumulativeFrameTime = 0.0;
 	uint16_t FramesPerSecond = 0;
 	while (Window.PrepareForRender())
 	{
+		g_GUIRenderer->BeginFrame();
+
 		// Update the world with the last frames delta time
 		g_World->Update(DeltaTime);
 
@@ -112,7 +114,7 @@ int main(int argc, char* argv[])
 		g_RenderingEngine->RenderFrame(g_World, DeltaTime);
 
 		// Render all GUI elements
-		g_GUIRenderer->Render();
+		g_GUIRenderer->RenderFrame();
 
 		// Swap the buffers
 		Window.PostRender();
@@ -125,10 +127,9 @@ int main(int argc, char* argv[])
 		++FramesPerSecond;
 		if (CumulativeFrameTime >= 1.0f)
 		{
-			TextRenderer::RemoveText(FPSCounter);
 			char Buffer[48];
 			sprintf(Buffer, "FPS: %d", FramesPerSecond);
-			FPSCounter = TextRenderer::AddTextToRenderWithColor(Buffer, 8.0f, 8.0f, glm::vec4(1.0f, 1.0f, 0.0f, 1.0f));
+			//FPSCounter = TextRenderer::AddTextToRenderWithColor(Buffer, 8.0f, 8.0f, glm::vec4(1.0f, 1.0f, 0.0f, 1.0f));
 			CumulativeFrameTime = 0;
 			FramesPerSecond = 0;
 		}
