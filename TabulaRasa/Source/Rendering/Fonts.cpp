@@ -64,7 +64,7 @@ TrueTypeFont FontLibrary::LoadFontFromFile(char* FontFileName, int Size)
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
 
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, TextureWidth, TextureHeight, 0, GL_RED, GL_UNSIGNED_BYTE, NULL);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, TextureWidth, TextureHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
 
 	for (char c = 0; c < 127; ++c)
 	{
@@ -95,6 +95,18 @@ TrueTypeFont FontLibrary::LoadFontFromFile(char* FontFileName, int Size)
 		NewFont.Glyphs[c].BearingX = LoadedChar->bitmap_left;
 		NewFont.Glyphs[c].BearingY = LoadedChar->bitmap_top;
 
+		char* Buffer = AllocateTransient<char>(BitmapWidth * BitmapHeight * 3);
+		for (unsigned int i = 0; i < BitmapHeight; ++i)
+		{
+			for (unsigned int j = 0; j < BitmapHeight; ++j)
+			{
+				unsigned int BaseIndex = ((j * BitmapWidth) + i);
+				Buffer[BaseIndex * 3]		= LoadedChar->bitmap.buffer[BaseIndex];
+				Buffer[(BaseIndex * 3) + 1] = LoadedChar->bitmap.buffer[BaseIndex];
+				Buffer[(BaseIndex * 3) + 2] = LoadedChar->bitmap.buffer[BaseIndex];
+			}
+		}
+
 		glTexSubImage2D(
 			GL_TEXTURE_2D, 
 			0, 
@@ -102,9 +114,9 @@ TrueTypeFont FontLibrary::LoadFontFromFile(char* FontFileName, int Size)
 			TexPositionY, 
 			BitmapWidth,
 			BitmapHeight,
-			GL_RED,
+			GL_RGB,
 			GL_UNSIGNED_BYTE,
-			LoadedChar->bitmap.buffer);
+			Buffer);
 	}
 
 	NewFont.Size = Size;
