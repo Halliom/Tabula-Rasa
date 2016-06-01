@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../Rendering/TextRenderer.h"
+#include "../Rendering/GuiSystem.h"
 
 #include "SDL2\SDL.h"
 
@@ -27,8 +27,6 @@ public:
 	void ReceiveTextInput(SDL_Keycode* KeyCode, bool IsShiftDown, bool IsAltDown);
 
 	void OnUpdateInputMode();
-
-	void RedrawTextBuffer();
 
 	char *ExecuteCommand(char *Command);
 

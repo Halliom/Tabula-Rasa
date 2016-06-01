@@ -30,27 +30,23 @@ void Console::Print(char* Message)
 {
 	char a = 'a';
 	m_TextBuffer.append(Message);
-	RedrawTextBuffer();
 }
 
 void Console::Print(std::string& Message)
 {
 	m_TextBuffer.append(Message);
-	RedrawTextBuffer();
 }
 
 void Console::PrintLine(char* Message)
 {
 	m_TextBuffer.append(Message);
 	m_TextBuffer.append("\n");
-	RedrawTextBuffer();
 }
 
 void Console::PrintLine(std::string& Message)
 {
 	m_TextBuffer.append(Message);
 	m_TextBuffer.append("\n");
-	RedrawTextBuffer();
 }
 
 void Console::ReceiveTextInput(SDL_Keycode* KeyCode, bool IsShiftDown, bool IsAltDown)
@@ -111,7 +107,6 @@ void Console::ReceiveTextInput(SDL_Keycode* KeyCode, bool IsShiftDown, bool IsAl
 				if (strcmp(Command, "clear") == 0)
 				{
 					m_TextBuffer.clear();
-					RedrawTextBuffer();
 					m_CurrentlyTyping.clear();
 					m_CurrentlyTyping.append(">");
 					break;
@@ -149,7 +144,6 @@ void Console::ReceiveTextInput(SDL_Keycode* KeyCode, bool IsShiftDown, bool IsAl
 				m_CurrentlyTyping.clear();
 				m_CurrentlyTyping.append(">");
 
-				RedrawTextBuffer();
 				break;
 			}
 			default:
@@ -242,10 +236,6 @@ void Console::OnUpdateInputMode()
 			m_TextBuffer.append("");
 		}
 	}
-}
-
-void Console::RedrawTextBuffer()
-{
 }
 
 bool IsSingleWord(char* String)
