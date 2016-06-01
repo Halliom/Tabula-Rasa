@@ -17,7 +17,7 @@ elseif (${CMAKE_CXX_COMPILER_ID} STREQUAL GNU)
 elseif (${CMAKE_CXX_COMPILER_ID} STREQUAL Intel)
   # using Intel C++
 elseif (${CMAKE_CXX_COMPILER_ID} STREQUAL MSVC)
-    add_definitions("/W2")
+    add_definitions("/W0") #disables all warnings
     add_definitions("/Oi")
     add_definitions("/Ob1")
     add_definitions("/arch:SSE2")
