@@ -6,6 +6,7 @@
 #include "GL\glew.h"
 #include "glm\common.hpp"
 #include "glm\gtc\type_ptr.hpp"
+#include "TextRenderer.h"
 
 enum ShaderType
 {
@@ -59,6 +60,11 @@ public:
 	__forceinline void SetColor(const glm::vec4& Color)
 	{
 		glUniform4fv(ColorVectorLocation, 1, glm::value_ptr(Color));
+	}
+
+	__forceinline void SetColor(const Color& Color)
+	{
+		glUniform4fv(ColorVectorLocation, 1, &Color.R);
 	}
 
 	__forceinline void SetProjectionMatrix(const glm::mat4& ProjectionMatrix)
