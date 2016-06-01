@@ -15,10 +15,6 @@ Console::Console() :
 	m_CurrentlyTyping(">"),
 	m_LastTyped("")
 {
-	m_pTextBufferRenderData = NULL;
-	m_pActiveLineText = NULL;
-	m_pBackgroundRect = NULL;
-
 	m_ConsoleFont = FontLibrary::g_FontLibrary->GetFont(1);
 }
 
@@ -229,15 +225,6 @@ void Console::ReceiveTextInput(SDL_Keycode* KeyCode, bool IsShiftDown, bool IsAl
 				}
 			}
 		}
-
-		TextRenderer::RemoveText(m_pActiveLineText);
-
-		m_pActiveLineText = TextRenderer::AddTextToRender(
-			m_CurrentlyTyping.c_str(), 
-			0.0f, 
-			g_RenderingEngine->m_ScreenHeight / 2.0f - ((float) m_ConsoleFont.Size * 1.5f), 
-			1,
-			&m_ConsoleFont);
 	}
 }
 
@@ -245,63 +232,20 @@ void Console::OnUpdateInputMode()
 {
 	if (!m_bIsActive)
 	{
-		TextRenderer::RemoveText(m_pActiveLineText);
-		TextRenderer::RemoveText(m_pTextBufferRenderData);
-		m_pTextBufferRenderData = NULL;
-		m_pActiveLineText = NULL;
-
-		if (m_pBackgroundRect)
-			TextRenderer::RemoveRect(m_pBackgroundRect);
 	}
 	else
 	{
-		m_pActiveLineText = TextRenderer::AddTextToRender(
-			m_CurrentlyTyping.c_str(), 
-			0.0f, 
-			g_RenderingEngine->m_ScreenHeight / 2.0f - ((float) m_ConsoleFont.Size * 1.5f), 
-			1,
-			&m_ConsoleFont);
-
-		m_pBackgroundRect = TextRenderer::AddRectToRender(
-			0.0f, 
-			0.0f, 
-			(float) g_RenderingEngine->m_ScreenWidth, 
-			(float) g_RenderingEngine->m_ScreenHeight / 2.0f, 
-			glm::vec4(1.0f / 255.0f, 25.0f / 255.0f, 0.0f, 0.65f), 
-			1);
-
-		RedrawTextBuffer();
-	}
-}
-
-void Console::RedrawTextBuffer()
-{
-	if (m_bIsActive)
-	{
-		TextRenderer::RemoveText(m_pTextBufferRenderData);
 		if (m_TextBuffer.length() > MAX_TEXT_BUFFER_LENGTH)
 		{
 			size_t Overload = m_TextBuffer.length() - MAX_TEXT_BUFFER_LENGTH + BUFFER_CLEANUP;
 			m_TextBuffer = m_TextBuffer.substr(Overload, MAX_TEXT_BUFFER_LENGTH - BUFFER_CLEANUP);
 			m_TextBuffer.append("");
 		}
-
-		unsigned int NumLines = 0;
-		for (char c : m_TextBuffer)
-		{
-			if (c == '\n')
-				++NumLines;
-		}
-
-		m_pTextBufferRenderData = TextRenderer::AddTextToRenderWithColorAndLength(
-			m_TextBuffer.c_str(),
-			m_TextBuffer.length(),
-			0.0f,
-			(g_RenderingEngine->m_ScreenHeight / 2.0f) - (m_ConsoleFont.Size * NumLines) - ((float) m_ConsoleFont.Size * 1.5f),
-			glm::vec4(1.0f),
-			1,
-			&m_ConsoleFont);
 	}
+}
+
+void Console::RedrawTextBuffer()
+{
 }
 
 bool IsSingleWord(char* String)

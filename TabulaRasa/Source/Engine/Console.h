@@ -37,19 +37,10 @@ public:
 private:
 
 	std::string m_CurrentlyTyping;
-
 	std::string m_TextBuffer;
-
 	std::string m_LastTyped;
 
 	TrueTypeFont m_ConsoleFont;
-
-	TextRenderData2D* m_pTextBufferRenderData;
-
-	TextRenderData2D* m_pActiveLineText;
-
-	RectRenderData2D* m_pBackgroundRect;
-
 };
 
 extern Console* g_Console;
