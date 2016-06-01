@@ -6,7 +6,7 @@
 #include "GL\glew.h"
 #include "glm\common.hpp"
 #include "glm\gtc\type_ptr.hpp"
-#include "TextRenderer.h"
+#include "GuiSystem.h"
 
 enum ShaderType
 {

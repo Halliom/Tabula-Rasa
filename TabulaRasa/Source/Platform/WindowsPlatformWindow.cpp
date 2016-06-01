@@ -65,7 +65,7 @@ bool PlatformWindow::SetupWindowAndRenderContext()
 		return false;
 	}
 
-	SDL_StopTextInput();
+	SDL_StartTextInput();
 
 	SDL_SetRelativeMouseMode(SDL_TRUE);
 
@@ -144,6 +144,20 @@ bool PlatformWindow::PrepareForRender()
 				}
 				break;
 			}
+			case SDL_TEXTINPUT:
+			{
+				ImGuiIO& IO = ImGui::GetIO();
+				IO.AddInputCharactersUTF8(Event.text.text);
+				break;
+			}
+			case SDL_MOUSEWHEEL:
+			{
+				if (Event.wheel.y > 0)
+					Input::MouseWheel = 1.0f;
+				else if (Event.wheel.y < 0)
+					Input::MouseWheel = -1.0f;
+				break;
+			}
 			case SDL_KEYDOWN:
 			{
 				if (Event.key.keysym.scancode >= 512)
@@ -153,15 +167,7 @@ bool PlatformWindow::PrepareForRender()
 #ifdef _DEBUG
 					case SDL_SCANCODE_ESCAPE:
 					{
-						if (g_Console->m_bIsActive)
-						{
-							g_Console->m_bIsActive = false;
-							g_Console->OnUpdateInputMode();
-						}
-						else
-						{
-							return false;
-						}
+						return false;
 						break;
 					}
 					case SDL_SCANCODE_F11:
@@ -182,9 +188,9 @@ bool PlatformWindow::PrepareForRender()
 					// TODO: Remove in build perhaps?
 					case SDL_SCANCODE_GRAVE:
 					{
-						SDL_SetRelativeMouseMode((SDL_bool)(!((bool)SDL_GetRelativeMouseMode())));
-						//g_Console->m_bIsActive = !g_Console->m_bIsActive;
-						//g_Console->OnUpdateInputMode();
+						bool NewMode = !(bool)SDL_GetRelativeMouseMode();
+						Input::IsGameFrozen = !NewMode;
+						SDL_SetRelativeMouseMode((SDL_bool)NewMode);
 						continue;
 					}
 				}

@@ -1,4 +1,4 @@
-#include "TextRenderer.h"
+#include "GuiSystem.h"
 
 #include <algorithm>
 
@@ -360,12 +360,15 @@ void GUIRenderer::UpdateMousePositionAndState(glm::ivec2 MousePosition, bool LMo
 	}
 }
 
-static GLShaderProgram* DebugGUIShader = NULL;
-static GLuint DebugGUIVAO = 0;
-static GLuint DebugGUIVBO = 0;
-static GLuint DebugGUIIBO = 0;
-static GLuint DebugGUITexture = 0;
-static glm::mat4 DebugGUIProjectionMatrix;
+static struct
+{
+	GLShaderProgram* Shader = NULL;
+	GLuint VAO = 0;
+	GLuint VBO = 0;
+	GLuint IBO = 0;
+	GLuint Texture = 0;
+	glm::mat4 ProjectionMatrix;
+} DebugGui;
 
 void RenderDrawLists(ImDrawData* DrawData)
 {
@@ -384,9 +387,9 @@ void RenderDrawLists(ImDrawData* DrawData)
 	glEnable(GL_SCISSOR_TEST);
 	glActiveTexture(GL_TEXTURE0);
 
-	glBindVertexArray(DebugGUIVAO);
+	glBindVertexArray(DebugGui.VAO);
 
-	DebugGUIShader->Bind();
+	DebugGui.Shader->Bind();
 
 	const float ortho_projection[4][4] =
 	{
@@ -396,7 +399,7 @@ void RenderDrawLists(ImDrawData* DrawData)
 		{ -1.0f,                  1.0f,                   0.0f, 1.0f },
 	};
 
-	DebugGUIShader->SetProjectionMatrix(DebugGUIProjectionMatrix);
+	DebugGui.Shader->SetProjectionMatrix(DebugGui.ProjectionMatrix);
 
 	for (int i = 0; i < DrawData->CmdListsCount; ++i)
 	{
@@ -405,11 +408,11 @@ void RenderDrawLists(ImDrawData* DrawData)
 		const ImDrawIdx* IndexBufferOffset = 0;
 
 		// Send all the vertices of this command buffer to the graphics card
-		glBindBuffer(GL_ARRAY_BUFFER, DebugGUIVBO);
+		glBindBuffer(GL_ARRAY_BUFFER, DebugGui.VBO);
 		glBufferData(GL_ARRAY_BUFFER, (GLsizeiptr)CommandList->VtxBuffer.size() * sizeof(ImDrawVert), (GLvoid*)&CommandList->VtxBuffer.front(), GL_STREAM_DRAW);
 
 		// Send all the indices of this command buffer to the graphics card
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, DebugGUIIBO);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, DebugGui.IBO);
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, (GLsizeiptr)CommandList->IdxBuffer.size() * sizeof(ImDrawIdx), (GLvoid*)&CommandList->IdxBuffer.front(), GL_STREAM_DRAW);
 
 		// TODO: Maybe move this into the constructor?
@@ -467,18 +470,72 @@ const char* GetClipboardText()
 	return SDL_GetClipboardText();
 }
 
+#define IMCOLOR(r, g, b) ImVec4(r.0f / 255.0f, g.0f / 255.0f, b.0f / 255.0f, 1.0f)
+#define IMCOLOR_A(r, g, b, a) ImVec4(r.0f / 255.0f, g.0f / 255.0f, b.0f / 255.0f, a.0f / 255.0f)
+
 DebugGUIRenderer::DebugGUIRenderer(int ScreenWidth, int ScreenHeight)
 {
 	ImGuiIO& IO = ImGui::GetIO();
 
 	IO.DisplaySize = ImVec2((float)ScreenWidth, (float)ScreenHeight);
-	DebugGUIProjectionMatrix = glm::ortho(0.0f, (float)ScreenWidth, (float)ScreenHeight, 0.0f);
+	DebugGui.ProjectionMatrix = glm::ortho(0.0f, (float)ScreenWidth, (float)ScreenHeight, 0.0f);
+
+	// The padding (space between the window and the elements) and rounding (corners)
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(10, 10));
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 2.0f);
+
+	// The space between each item
+	ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(10, 10));
+
+	// The padding (distance inside a slider for example) and the rounding on the slider background
+	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(8, 8));
+	ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 3.0f);
+
+	ImGui::PushStyleColor(ImGuiCol_Border, IMCOLOR(255, 255, 255));
+
+	ImGui::PushStyleColor(ImGuiCol_TitleBg, IMCOLOR(88, 100, 29));
+	ImGui::PushStyleColor(ImGuiCol_TitleBgActive, IMCOLOR(88, 100, 29));
+	ImGui::PushStyleColor(ImGuiCol_TitleBgCollapsed, IMCOLOR(88, 100, 29));
+
+	ImGui::PushStyleColor(ImGuiCol_WindowBg, IMCOLOR_A(250, 250, 250, 128));
+
+	ImGui::PushStyleColor(ImGuiCol_FrameBg, IMCOLOR(123, 144, 75));
+	ImGui::PushStyleColor(ImGuiCol_FrameBgActive, IMCOLOR(123, 144, 75));
+	ImGui::PushStyleColor(ImGuiCol_FrameBgHovered, IMCOLOR(123, 144, 75));
+
+	ImGui::PushStyleColor(ImGuiCol_Button, IMCOLOR(88, 100, 29));
+	ImGui::PushStyleColor(ImGuiCol_SliderGrab, IMCOLOR(88, 100, 29));
+
+	ImGui::PushStyleColor(ImGuiCol_ButtonActive, IMCOLOR(59, 67, 20));
+	ImGui::PushStyleColor(ImGuiCol_SliderGrabActive, IMCOLOR(59, 67, 20));
+
+	ImGui::PushStyleColor(ImGuiCol_ButtonHovered, IMCOLOR(98, 110, 42));
+
+	IO.KeyMap[ImGuiKey_Tab] = SDLK_TAB;
+	IO.KeyMap[ImGuiKey_LeftArrow] = SDL_SCANCODE_LEFT;
+	IO.KeyMap[ImGuiKey_RightArrow] = SDL_SCANCODE_RIGHT;
+	IO.KeyMap[ImGuiKey_UpArrow] = SDL_SCANCODE_UP;
+	IO.KeyMap[ImGuiKey_DownArrow] = SDL_SCANCODE_DOWN;
+	IO.KeyMap[ImGuiKey_PageUp] = SDL_SCANCODE_PAGEUP;
+	IO.KeyMap[ImGuiKey_PageDown] = SDL_SCANCODE_PAGEDOWN;
+	IO.KeyMap[ImGuiKey_Home] = SDL_SCANCODE_HOME;
+	IO.KeyMap[ImGuiKey_End] = SDL_SCANCODE_END;
+	IO.KeyMap[ImGuiKey_Delete] = SDLK_DELETE;
+	IO.KeyMap[ImGuiKey_Backspace] = SDLK_BACKSPACE;
+	IO.KeyMap[ImGuiKey_Enter] = SDLK_RETURN;
+	IO.KeyMap[ImGuiKey_Escape] = SDLK_ESCAPE;
+	IO.KeyMap[ImGuiKey_A] = SDLK_a;
+	IO.KeyMap[ImGuiKey_C] = SDLK_c;
+	IO.KeyMap[ImGuiKey_V] = SDLK_v;
+	IO.KeyMap[ImGuiKey_X] = SDLK_x;
+	IO.KeyMap[ImGuiKey_Y] = SDLK_y;
+	IO.KeyMap[ImGuiKey_Z] = SDLK_z;
 
 	// Generate the vertexarrays, vertexbuffers index buffers and texture objects to be used each frame
-	glGenVertexArrays(1, &DebugGUIVAO);
-	glGenBuffers(1, &DebugGUIVBO);
-	glGenBuffers(1, &DebugGUIIBO);
-	glGenTextures(1, &DebugGUITexture);
+	glGenVertexArrays(1, &DebugGui.VAO);
+	glGenBuffers(1, &DebugGui.VBO);
+	glGenBuffers(1, &DebugGui.IBO);
+	glGenTextures(1, &DebugGui.Texture);
 
 	unsigned char* pixels;
 	int Width;
@@ -486,12 +543,12 @@ DebugGUIRenderer::DebugGUIRenderer(int ScreenWidth, int ScreenHeight)
 	IO.Fonts->GetTexDataAsRGBA32(&pixels, &Width, &Height);
 
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, DebugGUITexture);
+	glBindTexture(GL_TEXTURE_2D, DebugGui.Texture);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, Width, Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
 
-	IO.Fonts->TexID = (void *)(intptr_t)DebugGUITexture;
+	IO.Fonts->TexID = (void *)(intptr_t)DebugGui.Texture;
 
 
 	// This tells it to send all the draw calls to RenderDrawLists
@@ -510,33 +567,33 @@ DebugGUIRenderer::DebugGUIRenderer(int ScreenWidth, int ScreenHeight)
 	IO.ImeWindowHandle = wmInfo.info.win.window;*/
 #endif
 
-	if (DebugGUIShader == NULL)
+	if (DebugGui.Shader == NULL)
 	{
-		DebugGUIShader = GLShaderProgram::CreateVertexFragmentShaderFromFile(std::string("VertexDebugGUI.glsl"), std::string("FragmentDebugGUI.glsl"));
+		DebugGui.Shader = GLShaderProgram::CreateVertexFragmentShaderFromFile(std::string("VertexDebugGUI.glsl"), std::string("FragmentDebugGUI.glsl"));
 	}
 }
 
 DebugGUIRenderer::~DebugGUIRenderer()
 {
-	if (DebugGUIShader)
+	if (DebugGui.Shader)
 	{
-		delete DebugGUIShader;
+		delete DebugGui.Shader;
 	}
-	if (DebugGUIVAO)
+	if (DebugGui.VAO)
 	{
-		glDeleteVertexArrays(1, &DebugGUIVAO);
+		glDeleteVertexArrays(1, &DebugGui.VAO);
 	}
-	if (DebugGUIVBO)
+	if (DebugGui.VBO)
 	{
-		glDeleteBuffers(1, &DebugGUIVBO);
+		glDeleteBuffers(1, &DebugGui.VBO);
 	}
-	if (DebugGUIIBO)
+	if (DebugGui.IBO)
 	{
-		glDeleteBuffers(1, &DebugGUIIBO);
+		glDeleteBuffers(1, &DebugGui.IBO);
 	}
-	if (DebugGUITexture)
+	if (DebugGui.Texture)
 	{
-		glDeleteTextures(1, &DebugGUITexture);
+		glDeleteTextures(1, &DebugGui.Texture);
 	}
 
 	ImGui::Shutdown();
@@ -548,7 +605,7 @@ void DebugGUIRenderer::UpdateScreenDimensions(int NewWidth, int NewHeight)
 	IO.DisplaySize = ImVec2(NewWidth, NewHeight);
 	IO.DisplayFramebufferScale = ImVec2(1.0f, 1.0f);
 
-	DebugGUIProjectionMatrix = glm::ortho(0.0f, (float)NewWidth, (float)NewHeight, 0.0f);
+	DebugGui.ProjectionMatrix = glm::ortho(0.0f, (float)NewWidth, (float)NewHeight, 0.0f);
 }
 
 void DebugGUIRenderer::BeginFrame()
@@ -571,10 +628,8 @@ void DebugGUIRenderer::BeginFrame()
 	IO.MouseDown[0] = Input::MouseButtons[0] || (MouseState & SDL_BUTTON(SDL_BUTTON_LEFT)) != 0;
 	IO.MouseDown[1] = Input::MouseButtons[1] || (MouseState & SDL_BUTTON(SDL_BUTTON_RIGHT)) != 0;
 	IO.MouseDown[2] = Input::MouseButtons[2] || (MouseState & SDL_BUTTON(SDL_BUTTON_MIDDLE)) != 0;
-	//Input::MouseButtons[0] = Input::MouseButtons[1] = Input::MouseButtons[2] = false;
 
-	/*io.MouseWheel = g_MouseWheel;
-	g_MouseWheel = 0.0f;*/
+	IO.MouseWheel = Input::MouseWheel;
 
 	// Hide OS mouse cursor if ImGui is drawing it
 	SDL_ShowCursor(IO.MouseDrawCursor ? 0 : 1);
@@ -584,8 +639,8 @@ void DebugGUIRenderer::BeginFrame()
 
 void DebugGUIRenderer::RenderFrame()
 {
-	bool ShowTestWindow = true;
-	ImGui::ShowTestWindow(&ShowTestWindow);
+	bool Yes = true;
+	ImGui::ShowTestWindow(&Yes);
 
 	ImGui::Render();
 }

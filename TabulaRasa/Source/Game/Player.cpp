@@ -3,6 +3,7 @@
 #include "glm\gtc\matrix_transform.hpp"
 
 #include "../Engine/Input.h"
+#include "../Rendering/GuiSystem.h"
 
 #define KEY_W 0x57
 #define KEY_S 0x53
@@ -30,46 +31,47 @@ Player::~Player()
 	delete m_pPlayerCamera;
 }
 
-#include "../Rendering/TextRenderer.h"
-
 void Player::Update(float DeltaTime)
 {
-	m_pPlayerCamera->OldPosition = m_pPlayerCamera->Position;
-	bool UpdatedMovement = false;
-	if (Input::Keys[SDL_SCANCODE_W])
+	if (!Input::IsGameFrozen)
 	{
-		m_pPlayerCamera->Position += m_MovementSpeed * m_pPlayerCamera->Front * DeltaTime;
-		UpdatedMovement = true;
+		m_pPlayerCamera->OldPosition = m_pPlayerCamera->Position;
+		bool UpdatedMovement = false;
+		if (Input::Keys[SDL_SCANCODE_W])
+		{
+			m_pPlayerCamera->Position += m_MovementSpeed * m_pPlayerCamera->Front * DeltaTime;
+			UpdatedMovement = true;
+		}
+		if (Input::Keys[SDL_SCANCODE_S])
+		{
+			m_pPlayerCamera->Position -= m_MovementSpeed * m_pPlayerCamera->Front * DeltaTime;
+			UpdatedMovement = true;
+		}
+		if (Input::Keys[SDL_SCANCODE_D])
+		{
+			m_pPlayerCamera->Position += m_MovementSpeed * m_pPlayerCamera->Right * DeltaTime;
+			UpdatedMovement = true;
+		}
+		if (Input::Keys[SDL_SCANCODE_A])
+		{
+			m_pPlayerCamera->Position -= m_MovementSpeed * m_pPlayerCamera->Right * DeltaTime;
+			UpdatedMovement = true;
+		}
+
+		m_pPlayerCamera->IsViewMatrixDirty = UpdatedMovement;
+
+		int DeltaMouseX = Input::MouseX - m_LastMouseX;
+		int DeltaMouseY = Input::MouseY - m_LastMouseY;
+
+		m_Yaw += (float)DeltaMouseX * m_Sensitivity * DeltaTime;
+		m_Pitch += (float)DeltaMouseY * -m_Sensitivity * DeltaTime;
+
+		m_LastMouseX = Input::MouseX;
+		m_LastMouseY = Input::MouseY;
+
+		if (DeltaMouseX != 0.0f || DeltaMouseY != 0.0f)
+			m_pPlayerCamera->UpdateCameraRotation(m_Yaw, m_Pitch);
 	}
-	if (Input::Keys[SDL_SCANCODE_S])
-	{
-		m_pPlayerCamera->Position -= m_MovementSpeed * m_pPlayerCamera->Front * DeltaTime;
-		UpdatedMovement = true;
-	}
-	if (Input::Keys[SDL_SCANCODE_D])
-	{
-		m_pPlayerCamera->Position += m_MovementSpeed * m_pPlayerCamera->Right * DeltaTime;
-		UpdatedMovement = true;
-	}
-	if (Input::Keys[SDL_SCANCODE_A])
-	{
-		m_pPlayerCamera->Position -= m_MovementSpeed * m_pPlayerCamera->Right * DeltaTime;
-		UpdatedMovement = true;
-	}
-
-	m_pPlayerCamera->IsViewMatrixDirty = UpdatedMovement;
-
-	int DeltaMouseX = Input::MouseX - m_LastMouseX;
-	int DeltaMouseY = Input::MouseY - m_LastMouseY;
-
-	m_Yaw += (float) DeltaMouseX * m_Sensitivity * DeltaTime;
-	m_Pitch += (float) DeltaMouseY * -m_Sensitivity * DeltaTime;
-
-	m_LastMouseX = Input::MouseX;
-	m_LastMouseY = Input::MouseY;
-
-	if (DeltaMouseX != 0.0f || DeltaMouseY != 0.0f)
-		m_pPlayerCamera->UpdateCameraRotation(m_Yaw, m_Pitch);
 }
 
 void Player::BeginPlay()

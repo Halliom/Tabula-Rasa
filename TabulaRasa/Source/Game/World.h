@@ -1,7 +1,7 @@
 #pragma once
 
 #include "../Rendering/GL_shader.h"
-#include "../Rendering/TextRenderer.h"
+#include "../Rendering/GuiSystem.h"
 #include "Player.h"
 
 class World

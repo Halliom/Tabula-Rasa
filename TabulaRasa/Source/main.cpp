@@ -6,7 +6,7 @@
 #include "Platform/Platform.h"
 #include "Game/World.h"
 #include "Engine\Console.h"
-#include "Rendering\TextRenderer.h"
+#include "Rendering\GuiSystem.h"
 #include "Rendering\RenderingEngine.h"
 #include "Engine\ScriptEngine.h"
 #include "Engine\Core\Memory.h"
