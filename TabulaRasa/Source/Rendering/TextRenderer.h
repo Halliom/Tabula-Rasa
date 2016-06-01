@@ -10,111 +10,76 @@
 
 #include "..\Engine\Core\List.h"
 
-#define PRINT_DEBUG_STRING(str, x, y) \
-static TextRenderData2D* DebugText; \
-if (DebugText)\
-	TextRenderer::RemoveText(DebugText);\
-DebugText = TextRenderer::AddTextToRender(Buffer, x, y);\
-
-#define NUM_LAYERS 4
-
 template<typename T>
 struct MemoryPool;
-
 class GLShaderProgram;
 
-struct TextRenderData2D
+struct Color
 {
-	/**
-	 * Stores all the vertex attribute pointers state
-	 */
-	GLuint VAO;
+	static const Color BLACK;
+	static const Color WHITE;
+	static const Color GRAY;
 
-	/**
-	 * Vertex buffer object containing the vertex position data
-	 * gathered from the font .fnt file
-	 */
-	GLuint VBO;
+	static const Color RED;
+	static const Color GREEN;
+	static const Color BLUE;
+	static const Color YELLOW;
+	static const Color PINK;
+	static const Color ORANGE;
+	static const Color PURPLE;
+	static const Color CYAN;
+	static const Color BROWN;
 
-	/**
-	 * Index buffer object containing the vertex data for
-	 * rendering the font
-	 */
-	GLuint IBO;
+	Color() : R(0.0f), G(0.0f), B(0.0f), A(0.0f) {}
+	Color(float f) : R(f), G(f), B(f), A(f) {}
 
-	//TODO: move this into separate font class (with library)
-	GLuint TextureID;
+	Color(int AlphaHex)
+	{
+		R = (float)((AlphaHex & 0xFF0000) >> 16) / 255.0f;
+		G = (float)((AlphaHex & 0x00FF00) >> 8) / 255.0f;
+		B = (float)(AlphaHex & 0x0000FF) / 255.0f;
+		A = 1.0f;
+	}
 
-	/**
-	 * Screen coordínate to render to
-	 */
-	glm::vec3 Position;
+	Color(float r, float g, float b) : R(r), G(g), B(b), A(1.0f) {}
+	Color(float r, float g, float b, float a) : R(r), G(g), B(b), A(a) {}
 
-	/**
-	 * Number of vertices to render (amount of indices really)
-	 */
-	GLuint VertexCount;
+	Color(int r, int g, int b) : R((float)r / 255.0f), G((float)g / 255.0f), B((float)b / 255.0f), A(1.0f) {}
+	Color(int r, int g, int b, int a) : R((float)r / 255.0f), G((float)g / 255.0f), B((float)b / 255.0f), A(a) {}
 
-	/** 
-	 * The layer this is on, higher layer means it gets
-	 * rendered later
-	 */
-	unsigned int Layer;
-
-	/**
-	 * The color of the text
-	 */
-	glm::vec4 Color;
-};
-
-struct RectRenderData2D
-{
-	/**
-	* Stores all the vertex attribute pointers state
-	*/
-	GLuint VAO;
-
-	/**
-	* Vertex buffer object containing the vertex position data
-	* of the rect
-	*/
-	GLuint VBO;
-
-	/**
-	* Screen coordínate to render to
-	*/
-	glm::vec3 Position;
-
-	/**
-	* The layer this is on, higher layer means it gets
-	* rendered later
-	*/
-	unsigned int Layer;
+	Color(unsigned char r, unsigned char g, unsigned char b) : R((float)r / 255.0f), G((float)g / 255.0f), B((float)b / 255.0f), A(1.0f) {}
+	Color(unsigned char r, unsigned char g, unsigned char b, unsigned char a) : R((float)r / 255.0f), G((float)g / 255.0f), B((float)b / 255.0f), A((float)a / 255.0f) {}
+	
+	float R;
+	float G;
+	float B;
+	float A;
 };
 
 // TODO: Change the vertex array, vertex buffer, index buffer and texture object to be classes so they can be rendering-backend agnostic
 struct GUIRenderable
 {
 	GLuint VAO;
-
 	GLuint VBO;
-
 	GLuint IBO;
+	unsigned short NumIndices;
 
 	GLuint Texture;
 
-	unsigned short NumIndices;
-
-	glm::vec4 Color;
+	Color Color;
 };
 
 class IGUIElement
 {
 public:
 
-	IGUIElement() {}
+	IGUIElement(IGUIElement* Parent) :
+		m_Position(glm::ivec2(0)),
+		m_pParent(Parent),
+		m_Dimensions(glm::ivec2(0))
+	{}
 
-	virtual void Initialize() {}
+	virtual void Initialize(class GUIRenderer* Renderer) { m_pRenderer = Renderer; }
 
 	virtual void OnHover() {}
 
@@ -125,8 +90,13 @@ public:
 
 	glm::ivec2 GetPosition()
 	{
-		return m_pParent->GetPosition() + m_Position;
+		if (m_pParent != NULL)
+			return m_pParent->GetPosition() + m_Position;
+		else 
+			return m_Position;
 	}
+
+	class GUIRenderer* m_pRenderer;
 
 	IGUIElement* m_pParent;
 
@@ -149,31 +119,46 @@ class GUIRenderer
 {
 public:
 
-	static GUIRenderable CreateText(const char* Text, size_t StringLength, glm::vec4 Color = glm::vec4(1.0f), unsigned int Layer = 0, TrueTypeFont* Font = NULL);
+	static GUIRenderable CreateText(const char* Text, size_t StringLength, glm::ivec2& OutDimensions, Color Color = Color::WHITE, unsigned int Layer = 0, TrueTypeFont* Font = NULL);
 
 	static GUIRenderable CreateSprite(const char* TextureName, glm::ivec2 SpriteUV1, glm::ivec2 SpriteUV2, glm::vec2 Size = glm::vec2(10.0f, 10.0f));
 
-	static GUIRenderable CreateRect(glm::vec2 Size, glm::vec4 Color = glm::vec4(1.0f));
-
-	void RenderAtPosition(GUIRenderable Renderable, glm::vec2 Position);
+	static GUIRenderable CreateRect(glm::vec2 Size, Color Color = Color::WHITE);
 
 public:
 
 	GUIRenderer(int ScreenWidth, int ScreenHeight);
 
-	~GUIRenderer();
+	virtual ~GUIRenderer();
 
+	template<typename T>
+	T* AddGUIElement(IGUIElement* Parent);
+
+	/**
+	 * Called when the screen changes size (resized or fullscreened")
+	 */
 	void UpdateScreenDimensions(int NewWidth, int NewHeight);
 
+	/**
+	 * Renders all GUI elements currently active
+	 */
 	void Render();
 
+	/**
+	 * Updates the mouse and its state
+	 */
 	void UpdateMousePositionAndState(glm::ivec2 MousePosition, bool LMouseDown, bool RMouseDown, bool MMouseDown);
+
+	/**
+	 * Renders a GUIRenderable at the specified screen coordinate
+	 */
+	void RenderAtPosition(GUIRenderable Renderable, glm::vec2 Position);
 
 	bool m_bIsMouseActivated;
 
 private:
 
-	List<IGUIElement> m_Elements;
+	List<IGUIElement*> m_Elements;
 
 	GLShaderProgram* m_pTextureShader;
 
@@ -192,48 +177,43 @@ private:
 	bool m_PrevMMouseDown;
 };
 
-class TextRenderer
+void RenderDrawLists(struct ImDrawData* DrawData);
+
+void SetClipboardText(const char* Text);
+
+const char* GetClipboardText();
+
+class DebugGUIRenderer
 {
 public:
 
-	static void Initialize2DTextRendering();
+	DebugGUIRenderer(int ScreenWidth, int ScreenHeight);
 
-	static void Destroy2DTextRendering();
+	~DebugGUIRenderer();
 
-	static TextRenderData2D* AddTextToRenderWithColorAndLength(const char* Text, size_t StringLength, const float& X = 0.0f, const float& Y = 0.0f, glm::vec4& Color = glm::vec4(1.0f), unsigned int Layer = 0, TrueTypeFont* Font = NULL);
+	/**
+	* Called when the screen changes size (resized or fullscreened")
+	*/
+	void UpdateScreenDimensions(int NewWidth, int NewHeight);
 
-	static __forceinline TextRenderData2D* AddTextToRenderWithColor(const char* Text, const float& X = 0.0f, const float& Y = 0.0f, glm::vec4& Color = glm::vec4(1.0f), unsigned int Layer = 0, TrueTypeFont* Font = NULL)
-	{
-		size_t StringLength = strlen(Text);
-		return AddTextToRenderWithColorAndLength(Text, StringLength, X, Y, Color, Layer, Font);
-	}
+	/**
+	 * Sets up the screen for rendering with ImGui
+	 */	
+	void BeginFrame();
 
-	static __forceinline TextRenderData2D* AddTextToRender(const char* Text, const float& X = 0.0f, const float& Y = 0.0f, unsigned int Layer = 0, TrueTypeFont* Font = NULL)
-	{
-		return AddTextToRenderWithColor(Text, X, Y, glm::vec4(1.0f), Layer, Font);
-	}
-
-	static void RemoveText(TextRenderData2D* TextToRemove);
-
-	static RectRenderData2D* AddRectToRender(float MinX, float MinY, float MaxX, float MaxY, glm::vec4 Color, unsigned int Layer = 0);
-
-	static void RemoveRect(RectRenderData2D* RectToRemove);
-
-	static void Render();
-
-	static List<TextRenderData2D> g_TextRenderObjects[NUM_LAYERS];
-
-	static List<RectRenderData2D> g_RectRenderObjects[NUM_LAYERS];
-
-private:
-
-	static GLShaderProgram* g_TextRenderShader;
-
-	static GLShaderProgram* g_RectRenderShader;
-
-	static glm::mat4 g_TextRenderProjectionMatrix;
-
-	static MemoryPool<TextRenderData2D>* g_TextRenderDataMemoryPool;
-
-	static MemoryPool<RectRenderData2D>* g_RectRenderDataMemoryPool;
+	/**
+	* Renders a frame of ImGui elements to the screen
+	*/
+	void RenderFrame();
 };
+
+template<typename T>
+T* GUIRenderer::AddGUIElement(IGUIElement* Parent)
+{
+	// TODO: This should be done by custom allocator
+	T* Element = new T(Parent);
+
+	m_Elements.Push(Element);
+	Element->Initialize(this);
+	return (T*)Element;
+}

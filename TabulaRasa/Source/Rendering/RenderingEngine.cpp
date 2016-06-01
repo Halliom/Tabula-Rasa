@@ -18,7 +18,6 @@ extern Player* g_Player;
 RenderingEngine::~RenderingEngine()
 {
 	ChunkRenderer::DestroyChunkRenderer();
-	TextRenderer::Destroy2DTextRendering();
 
 	glDeleteFramebuffers(1, &m_GeometryFBO);
 	glDeleteTextures(GBUFFER_LAYER_GEOMETRY_NUM, m_GeometryGBufferTextures);
@@ -48,7 +47,6 @@ void RenderingEngine::Initialize(const unsigned int& ScreenWidth, const unsigned
 
 	glEnable(GL_DEPTH_TEST);
 
-	TextRenderer::Initialize2DTextRendering();
 	ChunkRenderer::SetupChunkRenderer();
 
 	SetupQuad();
@@ -265,9 +263,6 @@ void RenderingEngine::RenderFrame(World* RenderWorld, const float& DeltaTime)
 	SSAOPass();
 
 	LightPass();
-
-	// To text rendering last so it is on top of everything else
-	TextRenderer::Render();
 }
 
 void RenderingEngine::SSAOPass()

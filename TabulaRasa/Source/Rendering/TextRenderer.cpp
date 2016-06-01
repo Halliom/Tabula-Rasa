@@ -2,311 +2,35 @@
 
 #include <algorithm>
 
+#include "SDL2\SDL.h"
+#include "SDL2\SDL_syswm.h"
+#include "GUI\imgui\imgui.h"
+
 #include "../Platform/Platform.h"
+#include "..\Engine\Input.h"
 #include "GL_shader.h"
 #include "../Engine/Core/Memory.h"
 
-#ifdef _WIN32
-#include <intrin.h>
-#endif
-
-// Init the static shader to be NULL
-GLShaderProgram* TextRenderer::g_TextRenderShader = NULL;
-GLShaderProgram* TextRenderer::g_RectRenderShader = NULL;
-
-// Init the static projection matrix to be the size of the screen
-glm::mat4 TextRenderer::g_TextRenderProjectionMatrix = glm::ortho(0.0f, 1280.0f, 720.0f, 0.0f); //TODO: Update this and be watchful of ints (use floats)
-
-// Init the RenderObjects
-List<TextRenderData2D> TextRenderer::g_TextRenderObjects[NUM_LAYERS];
-List<RectRenderData2D> TextRenderer::g_RectRenderObjects[NUM_LAYERS];
-
-MemoryPool<TextRenderData2D>* TextRenderer::g_TextRenderDataMemoryPool = NULL;
-MemoryPool<RectRenderData2D>* TextRenderer::g_RectRenderDataMemoryPool = NULL;
-
 extern GameMemoryManager* g_MemoryManager;
 
-bool SortRenderObjectsText(TextRenderData2D* FirstObject, TextRenderData2D* SecondObject)
-{
-	return FirstObject->Layer < SecondObject->Layer;
-}
+/**
+ * Predefined color values
+ */
+const Color Color::BLACK	= Color(0x000000);
+const Color Color::WHITE	= Color(0xFFFFFF);
+const Color Color::GRAY		= Color(0xD3D3D3);
 
-bool SortRenderObjectsRect(RectRenderData2D* FirstObject, RectRenderData2D* SecondObject)
-{
-	return FirstObject->Layer < SecondObject->Layer;
-}
+const Color Color::RED		= Color(0xFF0000);
+const Color Color::GREEN	= Color(0x008000);
+const Color Color::BLUE		= Color(0x3232FF);
+const Color Color::YELLOW	= Color(0xFFFF00);
+const Color Color::PINK		= Color(0xFFC0CB);
+const Color Color::ORANGE	= Color(0xFFA500);
+const Color Color::PURPLE	= Color(0x800080);
+const Color Color::CYAN		= Color(0x00FFFF);
+const Color Color::BROWN	= Color(0x87421F);
 
-void TextRenderer::Initialize2DTextRendering()
-{
-	g_TextRenderShader = GLShaderProgram::CreateVertexFragmentShaderFromFile(std::string("vertex_font_render.glsl"), std::string("fragment_font_render.glsl"));
-
-	g_TextRenderDataMemoryPool = new MemoryPool<TextRenderData2D>(
-		Allocate<TextRenderData2D>(g_MemoryManager->m_pRenderingMemory, 256),
-		sizeof(TextRenderData2D) * 256);
-	g_RectRenderDataMemoryPool = new MemoryPool<RectRenderData2D>(
-		Allocate<RectRenderData2D>(g_MemoryManager->m_pRenderingMemory, 64),
-		sizeof(RectRenderData2D) * 64);
-
-	// Init the RenderObjects to hold 64 text objects by default (since it's a vector
-	// it will grow automatically if it needs to
-	for (unsigned int LayerID = 0; LayerID < NUM_LAYERS; ++LayerID)
-	{
-		g_TextRenderObjects[LayerID] = List<TextRenderData2D>(g_MemoryManager->m_pGameMemory);
-		g_RectRenderObjects[LayerID] = List<RectRenderData2D>(g_MemoryManager->m_pGameMemory);
-
-		g_TextRenderObjects[LayerID].Reserve(32);
-		g_RectRenderObjects[LayerID].Reserve(32);
-	}
-}
-
-void TextRenderer::Destroy2DTextRendering()
-{
-	for (unsigned int LayerID = 0; LayerID < NUM_LAYERS; ++LayerID)
-	{
-		for (int Index = 0; Index < g_TextRenderObjects[LayerID].Size; ++Index)
-		{
-			g_TextRenderDataMemoryPool->DeallocateDelete(&g_TextRenderObjects[LayerID][Index]);
-		}
-		g_TextRenderObjects[LayerID].Reserve(0);
-
-		for (int Index = 0; Index < g_RectRenderObjects[LayerID].Size; ++Index)
-		{
-			g_RectRenderDataMemoryPool->DeallocateDelete(&g_RectRenderObjects[LayerID][Index]);
-		}
-		g_RectRenderObjects[LayerID].Reserve(0);
-	}
-}
-
-struct GlyphVertex
-{
-	glm::vec3 Pos;
-	glm::vec2 Tex;
-};
-
-TextRenderData2D* TextRenderer::AddTextToRenderWithColorAndLength(const char* Text, size_t StringLength, const float& X, const float& Y, glm::vec4& Color, unsigned int Layer, TrueTypeFont* Font)
-{
-	TextRenderData2D* NewTextRenderObject = g_TextRenderDataMemoryPool->Allocate();
-	memset(NewTextRenderObject, NULL, sizeof(TextRenderData2D));
-
-	TrueTypeFont FontToUse;
-	if (Font == NULL)
-	{
-		FontToUse = FontLibrary::g_FontLibrary->GetFont(0);
-	}
-	else
-	{
-		FontToUse = *Font;
-	}
-
-	glGenVertexArrays(1, &NewTextRenderObject->VAO);
-	glBindVertexArray(NewTextRenderObject->VAO);
-
-	glGenBuffers(1, &NewTextRenderObject->VBO);
-	glGenBuffers(1, &NewTextRenderObject->IBO);
-
-	List<float> Vertices = List<float>(g_MemoryManager->m_pGameMemory);
-	Vertices.Reserve(StringLength * 20);
-	List<unsigned short> Indices = List<unsigned short>(g_MemoryManager->m_pGameMemory);
-	Indices.Reserve(StringLength * 6);
-	unsigned int NumGlyphs = 0;
-
-	float OffsetX = 0.0f;
-	float OffsetY = FontToUse.Size;
-	for (unsigned int CurrentChar = 0; CurrentChar < StringLength; ++CurrentChar)
-	{
-		if (Text[CurrentChar] == '\n')
-		{
-			OffsetY += FontToUse.Size;
-			OffsetX = 0.0f;
-			continue;
-		}
-
-		TrueTypeGlyph CurrentGlyph = FontToUse.Glyphs[Text[CurrentChar]];
-		float BaseX = OffsetX + CurrentGlyph.BearingX;
-		float BaseY = OffsetY + (CurrentGlyph.Height - CurrentGlyph.BearingY);
-
-		// What index (of vertex) we are at right now
-		// There are 5 floats per vertex so to get the index
-		// of the entire vertex we divide the total number of
-		// floats by 5.
-		int BaseIndex = Vertices.Size / 5;
-
-		// (0, 0)
-		Vertices.Push(BaseX);
-		Vertices.Push(BaseY);
-		Vertices.Push(1.0f);
-		Vertices.Push(CurrentGlyph.TexCoordBottomX);
-		Vertices.Push(CurrentGlyph.TexCoordTopY);
-
-		// (0, 1)
-		Vertices.Push(BaseX);
-		Vertices.Push(BaseY - CurrentGlyph.Height);
-		Vertices.Push(1.0f);
-		Vertices.Push(CurrentGlyph.TexCoordBottomX);
-		Vertices.Push(CurrentGlyph.TexCoordBottomY);
-		
-		// (1, 1)
-		Vertices.Push(BaseX + CurrentGlyph.Width);
-		Vertices.Push(BaseY - CurrentGlyph.Height);
-		Vertices.Push(1.0f);
-		Vertices.Push(CurrentGlyph.TexCoordTopX);
-		Vertices.Push(CurrentGlyph.TexCoordBottomY);
-		
-		// (1, 0)
-		Vertices.Push(BaseX + CurrentGlyph.Width);
-		Vertices.Push(BaseY);
-		Vertices.Push(1.0f);
-		Vertices.Push(CurrentGlyph.TexCoordTopX);
-		Vertices.Push(CurrentGlyph.TexCoordTopY);
-
-		int IndexBase = CurrentChar * 4; // What index we currently are at
-		Indices.Push(BaseIndex + 0); //3
-		Indices.Push(BaseIndex + 1); //2
-		Indices.Push(BaseIndex + 2); //0
-		Indices.Push(BaseIndex + 0); //2
-		Indices.Push(BaseIndex + 2); //1
-		Indices.Push(BaseIndex + 3); //0
-
-		OffsetX += CurrentGlyph.Advance;
-		++NumGlyphs;
-	}
-
-	NewTextRenderObject->Position = glm::vec3(X, Y, 0.0f);
-
-	glBindBuffer(GL_ARRAY_BUFFER, NewTextRenderObject->VBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * Vertices.Size, Vertices.Data(), GL_STATIC_DRAW);
-
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, NewTextRenderObject->IBO);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned short) * Indices.Size, Indices.Data(), GL_STATIC_DRAW);
-
-	glEnableVertexAttribArray(0); // Vertex position
-	glEnableVertexAttribArray(1); // Vertex texture coordinate
-
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 5, (void*) 0);
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 5, (void*) (sizeof(float) * 3));
-
-	// 6 vertices per glyph
-	NewTextRenderObject->VertexCount = Indices.Size;
-	NewTextRenderObject->Layer = Layer;
-	NewTextRenderObject->TextureID = FontToUse.TextureObject;
-	NewTextRenderObject->Color = Color;
-	g_TextRenderObjects[Layer].Push(*NewTextRenderObject);
-	glBindVertexArray(0);
-
-	return NewTextRenderObject;
-}
-
-void TextRenderer::RemoveText(TextRenderData2D* TextToRemove)
-{
-	if (TextToRemove == NULL)
-		return;
-
-	glDeleteBuffers(1, &TextToRemove->VBO);
-	glDeleteBuffers(1, &TextToRemove->IBO);
-	glDeleteVertexArrays(1, &TextToRemove->VAO);
-
-	g_TextRenderObjects[TextToRemove->Layer].Remove(*TextToRemove);
-	g_TextRenderDataMemoryPool->Deallocate(TextToRemove);
-}
-
-RectRenderData2D* TextRenderer::AddRectToRender(float MinX, float MinY, float MaxX, float MaxY, glm::vec4 Color, unsigned int Layer)
-{
-	if (g_RectRenderShader == NULL)
-		g_RectRenderShader = GLShaderProgram::CreateVertexFragmentShaderFromFile(std::string("vertex_rect_render.glsl"), std::string("fragment_rect_render.glsl"));
-
-	RectRenderData2D* RenderData = g_RectRenderDataMemoryPool->Allocate();
-	memset(RenderData, NULL, sizeof(RectRenderData2D));
-
-	glGenVertexArrays(1, &RenderData->VAO);
-	glBindVertexArray(RenderData->VAO);
-
-	glGenBuffers(1, &RenderData->VBO);
-
-	float Vertices[24] = { 
-		MinX, MinY, Color.r, Color.g, Color.b, Color.a,
-		MinX, MaxY, Color.r, Color.g, Color.b, Color.a,
-		MaxX, MaxY, Color.r, Color.g, Color.b, Color.a,
-		MaxX, MinY, Color.r, Color.g, Color.b, Color.a };
-
-	glBindBuffer(GL_ARRAY_BUFFER, RenderData->VBO);
-	glBufferData(GL_ARRAY_BUFFER, 24 * sizeof(float), Vertices, GL_STATIC_DRAW);
-	
-	glEnableVertexAttribArray(0);
-	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 6, 0);
-	glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(float) * 6, (void*) (sizeof(float) * 2));
-
-	glBindVertexArray(0);
-
-	RenderData->Layer = Layer;
-	g_RectRenderObjects[Layer].Push(*RenderData);
-	return RenderData;
-}
-
-void TextRenderer::RemoveRect(RectRenderData2D* RectToRemove)
-{
-	if (RectToRemove == NULL)
-		return;
-
-	glDeleteBuffers(1, &RectToRemove->VBO);
-	g_RectRenderObjects[RectToRemove->Layer].Remove(*RectToRemove);
-
-	// This needs to be done since std::vector does not automatically
-	// destruct the object (if it's a pointer, which it is) when calling erase
-	g_RectRenderDataMemoryPool->Deallocate(RectToRemove);
-}
-
-void TextRenderer::Render()
-{
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-	for (unsigned int LayerID = 0; LayerID < NUM_LAYERS; ++LayerID)
-	{
-		if (g_RectRenderShader)
-		{
-			g_RectRenderShader->Bind();
-			g_RectRenderShader->SetProjectionMatrix(g_TextRenderProjectionMatrix);
-
-			for (int i = 0; i < g_RectRenderObjects[LayerID].Size; ++i)
-			{
-				//if (!&g_RectRenderObjects[LayerID][i])
-				//	continue;
-
-				static GLubyte QUAD_INDICES[6] = { 3, 2, 0, 2, 1, 0 };
-
-				glBindVertexArray(g_RectRenderObjects[LayerID][i].VAO);
-				glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, QUAD_INDICES);
-			}
-		}
-
-		if (g_TextRenderShader)
-		{
-			g_TextRenderShader->Bind();
-			g_TextRenderShader->SetProjectionMatrix(g_TextRenderProjectionMatrix); //TODO: Do we need to update this every frame?
-
-			for (int i = 0; i < g_TextRenderObjects[LayerID].Size; ++i)
-			{
-				//if (!It)
-				//	continue;
-
-				g_TextRenderShader->SetPositionOffset(g_TextRenderObjects[LayerID][i].Position);
-				g_TextRenderShader->SetColor(g_TextRenderObjects[LayerID][i].Color);
-
-				glBindVertexArray(g_TextRenderObjects[LayerID][i].VAO);
-				glActiveTexture(GL_TEXTURE0);
-				glBindTexture(GL_TEXTURE_2D, g_TextRenderObjects[LayerID][i].TextureID);
-
-				glDrawElements(GL_TRIANGLES, g_TextRenderObjects[LayerID][i].VertexCount, GL_UNSIGNED_SHORT, (void*) 0);
-			}
-		}
-	}
-
-	glBindVertexArray(0);
-	glDisable(GL_BLEND);
-}
-
-GUIRenderable GUIRenderer::CreateText(const char * Text, size_t StringLength, glm::vec4 Color, unsigned int Layer, TrueTypeFont * Font)
+GUIRenderable GUIRenderer::CreateText(const char* Text, size_t StringLength, glm::ivec2& OutDimensions, Color Color, unsigned int Layer, TrueTypeFont* Font)
 {
 	GUIRenderable Result;
 
@@ -332,6 +56,9 @@ GUIRenderable GUIRenderer::CreateText(const char * Text, size_t StringLength, gl
 	Indices.Reserve(StringLength * 6);
 	unsigned int NumGlyphs = 0;
 
+	int MaxWidth = 0;
+	int MaxHeight = 0;
+
 	float OffsetX = 0.0f;
 	float OffsetY = FontToUse.Size;
 	for (unsigned int CurrentChar = 0; CurrentChar < StringLength; ++CurrentChar)
@@ -339,6 +66,8 @@ GUIRenderable GUIRenderer::CreateText(const char * Text, size_t StringLength, gl
 		if (Text[CurrentChar] == '\n')
 		{
 			OffsetY += FontToUse.Size;
+
+			MaxWidth = max(MaxWidth, (int)OffsetX);
 			OffsetX = 0.0f;
 			continue;
 		}
@@ -393,6 +122,9 @@ GUIRenderable GUIRenderer::CreateText(const char * Text, size_t StringLength, gl
 		++NumGlyphs;
 	}
 
+	MaxWidth = max(MaxWidth, (int)OffsetX);
+	MaxHeight = -(int)OffsetY;
+
 	glBindBuffer(GL_ARRAY_BUFFER, Result.VBO);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * Vertices.Size, Vertices.Data(), GL_STATIC_DRAW);
 
@@ -411,6 +143,9 @@ GUIRenderable GUIRenderer::CreateText(const char * Text, size_t StringLength, gl
 	Result.Color = Color;
 	glBindVertexArray(0);
 
+	OutDimensions.x = MaxWidth;
+	OutDimensions.y = MaxHeight;
+
 	return Result;
 }
 
@@ -422,7 +157,7 @@ GUIRenderable GUIRenderer::CreateSprite(const char* TextureName, glm::ivec2 Spri
 	unsigned int Width;
 	unsigned int Height;
 	Result.Texture = PlatformFileSystem::LoadImageFromFile(std::string(TextureName), Width, Height);
-	Result.Color = glm::vec4(1.0f);
+	Result.Color = Color::WHITE;
 
 	glGenVertexArrays(1, &Result.VAO);
 	glBindVertexArray(Result.VAO);
@@ -451,8 +186,11 @@ GUIRenderable GUIRenderer::CreateSprite(const char* TextureName, glm::ivec2 Spri
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, Result.IBO);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned short) * 6, Indices, GL_STATIC_DRAW);
 
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 5, (void*) 0);
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 5, (void*) (sizeof(float) * 3));
+	glEnableVertexAttribArray(0); // Vertex position
+	glEnableVertexAttribArray(1); // Vertex texture coordinate
+
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 5, (void*)0);
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 5, (void*)(sizeof(float) * 3));
 
 	Result.NumIndices = 6;
 	glBindVertexArray(0);
@@ -460,13 +198,12 @@ GUIRenderable GUIRenderer::CreateSprite(const char* TextureName, glm::ivec2 Spri
 	return Result;
 }
 
-GUIRenderable GUIRenderer::CreateRect(glm::vec2 Size, glm::vec4 Color)
+GUIRenderable GUIRenderer::CreateRect(glm::vec2 Size, Color Color)
 {
 	GUIRenderable Result;
 
 	Result.Texture = 0;
-
-	Result.Color = glm::vec4(1.0f);
+	Result.Color = Color;
 
 	glGenVertexArrays(1, &Result.VAO);
 	glBindVertexArray(Result.VAO);
@@ -474,14 +211,15 @@ GUIRenderable GUIRenderer::CreateRect(glm::vec2 Size, glm::vec4 Color)
 	glGenBuffers(1, &Result.VBO);
 	glGenBuffers(1, &Result.IBO);
 
-	float Vertices[] = {
+	float Vertices[12] = {
 		0.0f,		0.0f,		1.0f,
 		0.0f,		Size.y,		1.0f,
 		Size.x,		Size.y,		1.0f,
 		Size.x,		0.0f,		1.0f
 	};
 
-	unsigned short Indices[] = { 0, 1, 2, 0, 2, 3 };
+	//unsigned short Indices[6] = { 0, 1, 2, 0, 2, 3 };
+	unsigned short Indices[6] = { 3, 2, 0, 2, 1, 0 };
 
 	glBindBuffer(GL_ARRAY_BUFFER, Result.VBO);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 12, Vertices, GL_STATIC_DRAW);
@@ -489,6 +227,7 @@ GUIRenderable GUIRenderer::CreateRect(glm::vec2 Size, glm::vec4 Color)
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, Result.IBO);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned short) * 6, Indices, GL_STATIC_DRAW);
 
+	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
 	Result.NumIndices = 6;
@@ -502,26 +241,26 @@ void GUIRenderer::RenderAtPosition(GUIRenderable Renderable, glm::vec2 Position)
 	if (Renderable.Texture != 0)
 	{
 		m_pTextureShader->Bind();
+		glBindVertexArray(Renderable.VAO);
 
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, Renderable.Texture);
 
 		m_pTextureShader->SetColor(Renderable.Color);
 		m_pTextureShader->SetProjectionMatrix(m_ProjectionMatrix);
-		m_pTextureShader->SetPositionOffset(glm::vec3(Position, 1.0f));
+		m_pTextureShader->SetPositionOffset(glm::vec3(Position, 0.0f));
 
-		glBindVertexArray(Renderable.VAO);
 		glDrawElements(GL_TRIANGLES, Renderable.NumIndices, GL_UNSIGNED_SHORT, (void*)0);
 	}
 	else
 	{
 		m_pNoTextureShader->Bind();
-
-		m_pTextureShader->SetColor(Renderable.Color);
-		m_pTextureShader->SetProjectionMatrix(m_ProjectionMatrix);
-		m_pTextureShader->SetPositionOffset(glm::vec3(Position, 1.0f));
-
 		glBindVertexArray(Renderable.VAO);
+
+		m_pNoTextureShader->SetColor(Renderable.Color);
+		m_pNoTextureShader->SetProjectionMatrix(m_ProjectionMatrix);
+		m_pNoTextureShader->SetPositionOffset(glm::vec3(Position, 1.0f));
+
 		glDrawElements(GL_TRIANGLES, Renderable.NumIndices, GL_UNSIGNED_SHORT, (void*)0);
 	}
 }
@@ -530,9 +269,9 @@ GUIRenderer::GUIRenderer(int ScreenWidth, int ScreenHeight) :
 	m_ScreenDimensions(glm::ivec2(ScreenWidth, ScreenHeight)),
 	m_MousePosition(glm::ivec2(0, 0)),
 	m_bIsMouseActivated(false),
-	m_Elements(List<IGUIElement>(g_MemoryManager->m_pGameMemory)) // TODO: Should this be moved to the rendering memory?
+	m_Elements(List<IGUIElement*>(g_MemoryManager->m_pGameMemory)) // TODO: Should this be moved to the rendering memory?
 {
-	m_ProjectionMatrix = glm::ortho(0.0f, (float) ScreenWidth, (float) ScreenHeight, 0.0f);
+	m_ProjectionMatrix = glm::ortho(0.0f, (float)ScreenWidth, (float)ScreenHeight, 0.0f);
 
 	m_pTextureShader = GLShaderProgram::CreateVertexFragmentShaderFromFile(std::string("VertexTextured2D.glsl"), std::string("FragmentTextured2D.glsl"));
 	m_pNoTextureShader = GLShaderProgram::CreateVertexFragmentShaderFromFile(std::string("Vertex2D.glsl"), std::string("Fragment2D.glsl"));
@@ -550,23 +289,29 @@ void GUIRenderer::UpdateScreenDimensions(int NewWidth, int NewHeight)
 	m_ScreenDimensions = glm::ivec2(NewWidth, NewHeight);
 
 	// Update the projection matrix so that everything renders correctly
-	m_ProjectionMatrix = glm::ortho(0.0f, (float) NewWidth, (float) NewHeight, 0.0f);
+	m_ProjectionMatrix = glm::ortho(0.0f, (float)NewWidth, (float)NewHeight, 0.0f);
 }
 
 void GUIRenderer::Render()
 {
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
 	for (int i = 0; i < m_Elements.Size; ++i)
 	{
-		m_Elements[i].Render();
+		m_Elements[i]->Render();
 	}
+
+	glBindVertexArray(0);
+	glDisable(GL_BLEND);
 }
 
 void GUIRenderer::UpdateMousePositionAndState(glm::ivec2 MousePosition, bool LMouseDown, bool RMouseDown, bool MMouseDown)
 {
 	for (int i = 0; i < m_Elements.Size; ++i)
 	{
-		glm::ivec2 ElementPosition = m_Elements[i].GetPosition();
-		glm::ivec2 FarthestCorner = ElementPosition + m_Elements[i].m_Dimensions;
+		glm::ivec2 ElementPosition = m_Elements[i]->GetPosition();
+		glm::ivec2 FarthestCorner = ElementPosition + m_Elements[i]->m_Dimensions;
 
 		if (MousePosition.x >= ElementPosition.x && MousePosition.x <= FarthestCorner.x &&
 			MousePosition.y >= ElementPosition.y && MousePosition.y <= FarthestCorner.y)
@@ -574,43 +319,273 @@ void GUIRenderer::UpdateMousePositionAndState(glm::ivec2 MousePosition, bool LMo
 			// If we just started a left mouse button click
 			if (LMouseDown && !m_PrevLMouseDown)
 			{
-				m_Elements[i].OnBeginClick(0);
+				m_Elements[i]->OnBeginClick(0);
 				continue;
 			}
 			else if (!LMouseDown && m_PrevLMouseDown)
 			{
-				m_Elements[i].OnEndClick(0);
+				m_Elements[i]->OnEndClick(0);
 				continue;
 			}
 
 			// If we just started a left mouse button click
 			if (RMouseDown && !m_PrevRMouseDown)
 			{
-				m_Elements[i].OnBeginClick(1);
+				m_Elements[i]->OnBeginClick(1);
 				continue;
 			}
 			else if (!RMouseDown && m_PrevRMouseDown)
 			{
-				m_Elements[i].OnEndClick(1);
+				m_Elements[i]->OnEndClick(1);
 				continue;
 			}
 
 			// If we just started a middle mouse button click
 			if (MMouseDown && !m_PrevMMouseDown)
 			{
-				m_Elements[i].OnBeginClick(2);
+				m_Elements[i]->OnBeginClick(2);
 				continue;
 			}
 			else if (!MMouseDown && m_PrevMMouseDown)
 			{
-				m_Elements[i].OnEndClick(2);
+				m_Elements[i]->OnEndClick(2);
 				continue;
 			}
 
 			if (!LMouseDown && !RMouseDown && !MMouseDown)
 			{
-				m_Elements[i].OnHover();
+				m_Elements[i]->OnHover();
 			}
 		}
 	}
+}
+
+static GLShaderProgram* DebugGUIShader = NULL;
+static GLuint DebugGUIVAO = 0;
+static GLuint DebugGUIVBO = 0;
+static GLuint DebugGUIIBO = 0;
+static GLuint DebugGUITexture = 0;
+static glm::mat4 DebugGUIProjectionMatrix;
+
+void RenderDrawLists(ImDrawData* DrawData)
+{
+	ImGuiIO& IO = ImGui::GetIO();
+
+	int Width = (int)(IO.DisplaySize.x * IO.DisplayFramebufferScale.x);
+	int Height = (int)(IO.DisplaySize.y * IO.DisplayFramebufferScale.y);
+	DrawData->ScaleClipRects(IO.DisplayFramebufferScale);
+
+	// Enable blending, disable culling and depth test, enable scissor test
+	glEnable(GL_BLEND);
+	glBlendEquation(GL_FUNC_ADD);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glDisable(GL_CULL_FACE);
+	glDisable(GL_DEPTH_TEST);
+	glEnable(GL_SCISSOR_TEST);
+	glActiveTexture(GL_TEXTURE0);
+
+	glBindVertexArray(DebugGUIVAO);
+
+	DebugGUIShader->Bind();
+
+	const float ortho_projection[4][4] =
+	{
+		{ 2.0f / IO.DisplaySize.x, 0.0f,                   0.0f, 0.0f },
+		{ 0.0f,                  2.0f / -IO.DisplaySize.y, 0.0f, 0.0f },
+		{ 0.0f,                  0.0f,                  -1.0f, 0.0f },
+		{ -1.0f,                  1.0f,                   0.0f, 1.0f },
+	};
+
+	DebugGUIShader->SetProjectionMatrix(DebugGUIProjectionMatrix);
+
+	for (int i = 0; i < DrawData->CmdListsCount; ++i)
+	{
+		// Every CommandList has a few draw commands in a draw list
+		const ImDrawList* CommandList = DrawData->CmdLists[i];
+		const ImDrawIdx* IndexBufferOffset = 0;
+
+		// Send all the vertices of this command buffer to the graphics card
+		glBindBuffer(GL_ARRAY_BUFFER, DebugGUIVBO);
+		glBufferData(GL_ARRAY_BUFFER, (GLsizeiptr)CommandList->VtxBuffer.size() * sizeof(ImDrawVert), (GLvoid*)&CommandList->VtxBuffer.front(), GL_STREAM_DRAW);
+
+		// Send all the indices of this command buffer to the graphics card
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, DebugGUIIBO);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, (GLsizeiptr)CommandList->IdxBuffer.size() * sizeof(ImDrawIdx), (GLvoid*)&CommandList->IdxBuffer.front(), GL_STREAM_DRAW);
+
+		// TODO: Maybe move this into the constructor?
+		glEnableVertexAttribArray(0);
+		glEnableVertexAttribArray(1);
+		glEnableVertexAttribArray(2);
+		glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(ImDrawVert), (void*)offsetof(ImDrawVert, pos));
+		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(ImDrawVert), (void*)offsetof(ImDrawVert, uv));
+		glVertexAttribPointer(2, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(ImDrawVert), (void*)offsetof(ImDrawVert, col));
+
+		// Loop through the draw commands (which all render different sections of the vertices we just sent to the GPU
+		for (const ImDrawCmd* DrawCommand = CommandList->CmdBuffer.begin(); 
+			 DrawCommand != CommandList->CmdBuffer.end(); 
+			 ++DrawCommand)
+		{
+			if (DrawCommand->UserCallback)
+			{
+				DrawCommand->UserCallback(CommandList, DrawCommand);
+			}
+			else
+			{
+				// Bind the texture for the
+				glBindTexture(GL_TEXTURE_2D, (GLuint)(intptr_t)DrawCommand->TextureId);
+
+				// Define a scissor box defined by the ClipRect where anything outside does not get drawn
+				glScissor(
+					(int)DrawCommand->ClipRect.x, 
+					(int)(Height - DrawCommand->ClipRect.w), 
+					(int)(DrawCommand->ClipRect.z - DrawCommand->ClipRect.x), 
+					(int)(DrawCommand->ClipRect.w - DrawCommand->ClipRect.y));
+				// Draw the vertices of the current DrawCommand
+				glDrawElements(GL_TRIANGLES, (GLsizei)DrawCommand->ElemCount, sizeof(ImDrawIdx) == 2 ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT, IndexBufferOffset);
+			}
+			// Advance in the buffer offset by how many indices we just rendered
+			IndexBufferOffset += DrawCommand->ElemCount;
+		}
+	}
+
+	glBindVertexArray(0);
+
+	// Restore the state to what it was previously
+	glDisable(GL_BLEND);
+	glEnable(GL_CULL_FACE);
+	glEnable(GL_DEPTH_TEST);
+	glDisable(GL_SCISSOR_TEST);
+}
+
+void SetClipboardText(const char* Text)
+{
+	SDL_SetClipboardText(Text);
+}
+
+const char* GetClipboardText()
+{
+	return SDL_GetClipboardText();
+}
+
+DebugGUIRenderer::DebugGUIRenderer(int ScreenWidth, int ScreenHeight)
+{
+	ImGuiIO& IO = ImGui::GetIO();
+
+	IO.DisplaySize = ImVec2((float)ScreenWidth, (float)ScreenHeight);
+	DebugGUIProjectionMatrix = glm::ortho(0.0f, (float)ScreenWidth, (float)ScreenHeight, 0.0f);
+
+	// Generate the vertexarrays, vertexbuffers index buffers and texture objects to be used each frame
+	glGenVertexArrays(1, &DebugGUIVAO);
+	glGenBuffers(1, &DebugGUIVBO);
+	glGenBuffers(1, &DebugGUIIBO);
+	glGenTextures(1, &DebugGUITexture);
+
+	unsigned char* pixels;
+	int Width;
+	int Height;
+	IO.Fonts->GetTexDataAsRGBA32(&pixels, &Width, &Height);
+
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, DebugGUITexture);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, Width, Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+
+	IO.Fonts->TexID = (void *)(intptr_t)DebugGUITexture;
+
+
+	// This tells it to send all the draw calls to RenderDrawLists
+	// when ImGui::Render is called
+	IO.RenderDrawListsFn = &RenderDrawLists;
+
+	// Functions for manipulating the clipboard (when the user Ctrl+C's
+	// or Ctrl+V's)
+	IO.SetClipboardTextFn = &SetClipboardText;
+	IO.GetClipboardTextFn = &GetClipboardText;
+
+#ifdef _WIN32
+	/*SDL_SysWMinfo wmInfo;
+	SDL_VERSION(&wmInfo.version);
+	SDL_GetWindowWMInfo(SDLWindow, &wmInfo);
+	IO.ImeWindowHandle = wmInfo.info.win.window;*/
+#endif
+
+	if (DebugGUIShader == NULL)
+	{
+		DebugGUIShader = GLShaderProgram::CreateVertexFragmentShaderFromFile(std::string("VertexDebugGUI.glsl"), std::string("FragmentDebugGUI.glsl"));
+	}
+}
+
+DebugGUIRenderer::~DebugGUIRenderer()
+{
+	if (DebugGUIShader)
+	{
+		delete DebugGUIShader;
+	}
+	if (DebugGUIVAO)
+	{
+		glDeleteVertexArrays(1, &DebugGUIVAO);
+	}
+	if (DebugGUIVBO)
+	{
+		glDeleteBuffers(1, &DebugGUIVBO);
+	}
+	if (DebugGUIIBO)
+	{
+		glDeleteBuffers(1, &DebugGUIIBO);
+	}
+	if (DebugGUITexture)
+	{
+		glDeleteTextures(1, &DebugGUITexture);
+	}
+
+	ImGui::Shutdown();
+}
+
+void DebugGUIRenderer::UpdateScreenDimensions(int NewWidth, int NewHeight)
+{
+	ImGuiIO& IO = ImGui::GetIO();
+	IO.DisplaySize = ImVec2(NewWidth, NewHeight);
+	IO.DisplayFramebufferScale = ImVec2(1.0f, 1.0f);
+
+	DebugGUIProjectionMatrix = glm::ortho(0.0f, (float)NewWidth, (float)NewHeight, 0.0f);
+}
+
+void DebugGUIRenderer::BeginFrame()
+{
+	ImGuiIO& IO = ImGui::GetIO();
+
+	// TODO: This should not be gotten from SDL directly rather it should go through the input system
+
+	// Get the mouse state
+	int MouseX;
+	int MouseY;
+	Uint32 MouseState = SDL_GetMouseState(&MouseX, &MouseY);
+
+	// Only set the mouse position if the window/mouse is 'focused'
+	if (SDL_GetWindowFlags(PlatformWindow::GlobalWindow->GetWindow()) & SDL_WINDOW_MOUSE_FOCUS)
+		IO.MousePos = ImVec2((float)MouseX, (float)MouseY);   // Mouse position, in pixels (set to -1,-1 if no mouse / on another screen, etc.)
+	else
+		IO.MousePos = ImVec2(-1, -1);
+
+	IO.MouseDown[0] = Input::MouseButtons[0] || (MouseState & SDL_BUTTON(SDL_BUTTON_LEFT)) != 0;
+	IO.MouseDown[1] = Input::MouseButtons[1] || (MouseState & SDL_BUTTON(SDL_BUTTON_RIGHT)) != 0;
+	IO.MouseDown[2] = Input::MouseButtons[2] || (MouseState & SDL_BUTTON(SDL_BUTTON_MIDDLE)) != 0;
+	//Input::MouseButtons[0] = Input::MouseButtons[1] = Input::MouseButtons[2] = false;
+
+	/*io.MouseWheel = g_MouseWheel;
+	g_MouseWheel = 0.0f;*/
+
+	// Hide OS mouse cursor if ImGui is drawing it
+	SDL_ShowCursor(IO.MouseDrawCursor ? 0 : 1);
+
+	ImGui::NewFrame();
+}
+
+void DebugGUIRenderer::RenderFrame()
+{
+	bool ShowTestWindow = true;
+	ImGui::ShowTestWindow(&ShowTestWindow);
+
+	ImGui::Render();
 }
