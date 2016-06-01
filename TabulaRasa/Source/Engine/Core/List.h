@@ -18,6 +18,8 @@ public:
 
 	int Push(const T& Element);
 
+	T& PushEmpty();
+
 	T Pop();
 
 	T& operator[](int Index);
@@ -120,7 +122,7 @@ void List<T>::Reserve(int NumElements)
 template<typename T>
 int List<T>::Push(const T& Element)
 {
-	size_t NewSize = sizeof(T) + m_BytesUsed;
+	size_t NewSize = m_BytesUsed + sizeof(T);
 	if (NewSize > m_BytesAllocated)
 	{
 		// Save a pointer to the old buffer and allocate new byffer
@@ -141,6 +143,31 @@ int List<T>::Push(const T& Element)
 	m_BytesUsed = NewSize;
 
 	return Size++;
+}
+
+template<typename T>
+inline T& List<T>::PushEmpty()
+{
+	size_t NewSize = m_BytesUsed + sizeof(T);
+	if (NewSize > m_BytesAllocated)
+	{
+		// Save a pointer to the old buffer and allocate new byffer
+		T* OldBuffer = m_pBuffer;
+		m_pBuffer = (T*)m_pAllocator->Allocate(NewSize, __alignof(T));
+
+		// Copy over the bytes from the old buffer to the new one and
+		// free the old buffer
+		memcpy(m_pBuffer, OldBuffer, m_BytesUsed);
+		if (OldBuffer)
+		{
+			m_pAllocator->Free(OldBuffer);
+		}
+		m_BytesAllocated = NewSize;
+	}
+
+	m_BytesUsed = NewSize;
+
+	return *(m_pBuffer + Size++);
 }
 
 template<typename T>
