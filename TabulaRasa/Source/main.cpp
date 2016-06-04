@@ -103,6 +103,7 @@ int main(int argc, char* argv[])
 	double DeltaTime = 0.0;
 	double CumulativeFrameTime = 0.0;
 	uint16_t FramesPerSecond = 0;
+	int StaticFPS = 0.0f;
 	while (Window.PrepareForRender())
 	{
 		g_GUIRenderer->BeginFrame();
@@ -114,7 +115,7 @@ int main(int argc, char* argv[])
 		g_RenderingEngine->RenderFrame(g_World, DeltaTime);
 
 		// Render all GUI elements
-		g_GUIRenderer->RenderFrame();
+		g_GUIRenderer->RenderFrame(StaticFPS, DeltaTime);
 
 		// Swap the buffers
 		Window.PostRender();
@@ -127,10 +128,8 @@ int main(int argc, char* argv[])
 		++FramesPerSecond;
 		if (CumulativeFrameTime >= 1.0f)
 		{
-			char Buffer[48];
-			sprintf(Buffer, "FPS: %d", FramesPerSecond);
-			//FPSCounter = TextRenderer::AddTextToRenderWithColor(Buffer, 8.0f, 8.0f, glm::vec4(1.0f, 1.0f, 0.0f, 1.0f));
 			CumulativeFrameTime = 0;
+			StaticFPS = FramesPerSecond;
 			FramesPerSecond = 0;
 		}
 		g_MemoryManager->ClearTransientMemory();
