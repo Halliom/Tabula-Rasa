@@ -111,6 +111,7 @@ void PlatformWindow::GetErrorMessage()
 
 bool PlatformWindow::PrepareForRender()
 {	
+	Input::MouseWheel = 0.0f;
 	SDL_Event Event;
 	while (SDL_PollEvent(&Event))
 	{
