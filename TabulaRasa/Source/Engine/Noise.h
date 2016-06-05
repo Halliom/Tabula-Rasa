@@ -6,7 +6,9 @@ class SimplexNoise
 {
 public:
 	
-	SimplexNoise();
+	SimplexNoise(int Seed);
+
+	~SimplexNoise();
 
 	float DotGridGradient(int ix, int iy, float x, float y);
 
@@ -19,6 +21,7 @@ private:
 		return g[0] * x + g[1] * y;
 	}
 
+	class Random*		m_RandomSeries;
 	float				m_Gradient[16][16][2];
 	int					m_Permutations[512];
 

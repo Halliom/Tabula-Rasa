@@ -1,6 +1,6 @@
-#include "PerlinNoise.h"
+#include "Noise.h"
 
-#include <random>
+#include "Core\Random.h"
 #include <math.h>
 
 int SimplexNoise::p[] = { 151,160,137,91,90,15,
@@ -21,14 +21,15 @@ glm::ivec3 SimplexNoise::grad3[] = { { 1,1,0 }, { -1,1,0 }, { 1,-1,0 }, { -1,-1,
 { 1,0,1 },{ -1,0,1 },{ 1,0,-1 },{ -1,0,-1 },
 { 0,1,1 },{ 0,-1,1 },{ 0,1,-1 },{ 0,-1,-1 } };
 
-SimplexNoise::SimplexNoise()
+SimplexNoise::SimplexNoise(int Seed) : 
+	m_RandomSeries(new Random(Seed))
 {
 	for (int i = 0; i < 16; ++i)
 	{
 		for (int j = 0; j < 16; ++j)
 		{
-			m_Gradient[i][j][0] = float(rand() % 100) / 100.0f;
-			m_Gradient[i][j][1] = float(rand() % 100) / 100.0f;
+			m_Gradient[i][j][0] = (float)m_RandomSeries->NextFloat();
+			m_Gradient[i][j][1] = (float)m_RandomSeries->NextFloat();
 		}
 	}
 
@@ -36,6 +37,11 @@ SimplexNoise::SimplexNoise()
 	{
 		m_Permutations[i] = p[i & 255];
 	}
+}
+
+SimplexNoise::~SimplexNoise()
+{
+	delete m_RandomSeries;
 }
 
 float SimplexNoise::Noise(float x, float y)
