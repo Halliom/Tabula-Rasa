@@ -2,6 +2,8 @@
 
 #include "glm\common.hpp"
 
+#define ArrayCount(Array) sizeof(Array) / sizeof(Array[0])
+
 class IFeature
 {
 public:
@@ -10,7 +12,7 @@ public:
 
 	virtual ~IFeature() {}
 
-	virtual void GenerateToChunk(class SimplexNoise* NoiseGenerator) = 0;
+	virtual void GenerateToChunk(class SimplexNoise* NoiseGenerator, glm::ivec3 WorldPosition) = 0;
 
 };
 
@@ -20,26 +22,27 @@ public:
 
 	virtual ~BaseTerrain() override;
 
-	virtual void GenerateToChunk(class SimplexNoise* NoiseGenerator) override;
+	virtual void GenerateToChunk(class SimplexNoise* NoiseGenerator, glm::ivec3 WorldPosition) override;
 };
 
-class Biome
-{
-
-};
-
-class ChunkGenerator
+class IBiome
 {
 public:
 
-	ChunkGenerator();
+	IBiome();
 
-	~ChunkGenerator();
+	virtual ~IBiome();
 
-	void AddFeatureGenerator(IFeature* Generator);
+	void AddFeatureGenerator(int Order, IFeature* Generator);
+
+	void Generate(class SimplexNoise* NoiseGenerator, glm::ivec3 WorldPosition);
 
 	class IFeature*		m_Features[8];
-	int					m_NumFeatures;
+
+	int					m_MinHeatLevel;
+	int					m_MaxHeatLevel;
+	int					m_MinHeight;
+	int					m_MaxHeight;
 };
 
 class WorldGenerator
@@ -49,10 +52,18 @@ public:
 
 	~WorldGenerator();
 
-	void GenerateChunk(glm::ivec2 ChunkPosition);
+	void GenerateChunk(glm::ivec3 ChunkPosition, class Chunk* Result);
 
-	int					m_Seed;
-	class World*		m_WorldObject;
-	class SimplexNoise* m_NoiseGenerator;
-	class SimplexNoise* m_HeatmapGenerator;
+	void AddBiome(IBiome* Biome);
+
+	static float			g_ScaleFactor;
+	static int				g_MaxHeatTiers;
+	
+	int						m_Seed;
+	class World*			m_WorldObject;
+	class SimplexNoise*		m_NoiseGenerator;
+	class SimplexNoise*		m_HeatmapGenerator;
+
+	IBiome*					m_Biomes[16];
+	int						m_NumBiomes;
 };
