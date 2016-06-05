@@ -11,6 +11,8 @@
 #include "GL_shader.h"
 #include "../Engine/Core/Memory.h"
 
+#include "..\Engine\Noise.h"
+
 extern GameMemoryManager* g_MemoryManager;
 
 /**
@@ -424,8 +426,8 @@ void RenderDrawLists(ImDrawData* DrawData)
 		glVertexAttribPointer(2, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(ImDrawVert), (void*)offsetof(ImDrawVert, col));
 
 		// Loop through the draw commands (which all render different sections of the vertices we just sent to the GPU
-		for (const ImDrawCmd* DrawCommand = CommandList->CmdBuffer.begin(); 
-			 DrawCommand != CommandList->CmdBuffer.end(); 
+		for (const ImDrawCmd* DrawCommand = CommandList->CmdBuffer.begin();
+			 DrawCommand != CommandList->CmdBuffer.end();
 			 ++DrawCommand)
 		{
 			if (DrawCommand->UserCallback)
@@ -439,9 +441,9 @@ void RenderDrawLists(ImDrawData* DrawData)
 
 				// Define a scissor box defined by the ClipRect where anything outside does not get drawn
 				glScissor(
-					(int)DrawCommand->ClipRect.x, 
-					(int)(Height - DrawCommand->ClipRect.w), 
-					(int)(DrawCommand->ClipRect.z - DrawCommand->ClipRect.x), 
+					(int)DrawCommand->ClipRect.x,
+					(int)(Height - DrawCommand->ClipRect.w),
+					(int)(DrawCommand->ClipRect.z - DrawCommand->ClipRect.x),
 					(int)(DrawCommand->ClipRect.w - DrawCommand->ClipRect.y));
 				// Draw the vertices of the current DrawCommand
 				glDrawElements(GL_TRIANGLES, (GLsizei)DrawCommand->ElemCount, sizeof(ImDrawIdx) == 2 ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT, IndexBufferOffset);
@@ -472,6 +474,8 @@ const char* GetClipboardText()
 
 #define IMCOLOR(r, g, b) ImVec4(r.0f / 255.0f, g.0f / 255.0f, b.0f / 255.0f, 1.0f)
 #define IMCOLOR_A(r, g, b, a) ImVec4(r.0f / 255.0f, g.0f / 255.0f, b.0f / 255.0f, a.0f / 255.0f)
+
+static GLuint NoiseTexture = 0;
 
 DebugGUIRenderer::DebugGUIRenderer(int ScreenWidth, int ScreenHeight)
 {
@@ -571,6 +575,30 @@ DebugGUIRenderer::DebugGUIRenderer(int ScreenWidth, int ScreenHeight)
 	{
 		DebugGui.Shader = GLShaderProgram::CreateVertexFragmentShaderFromFile(std::string("VertexDebugGUI.glsl"), std::string("FragmentDebugGUI.glsl"));
 	}
+
+	glGenTextures(1, &NoiseTexture);
+	static SimplexNoise Noise(1231237);
+	GLubyte* PerlinImage = new GLubyte[512 * 512 * 4];
+	for (int i = 0; i < 512; ++i)
+	{
+		for (int j = 0; j < 512; ++j)
+		{
+			float x = (float)i / 512.0f;
+			float y = (float)j / 512.0f;
+			GLubyte Color = (GLubyte)((Noise.Noise(x * 2, y * 2) + 1.0f) * 127.5f);
+			unsigned int Index = ((i * 512) + j) * 4;
+			PerlinImage[Index] = Color;
+			PerlinImage[Index + 1] = Color;
+			PerlinImage[Index + 2] = Color;
+			PerlinImage[Index + 3] = 255;
+		}
+	}
+	glBindTexture(GL_TEXTURE_2D, NoiseTexture);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 512, 512, 0, GL_RGBA, GL_UNSIGNED_BYTE, PerlinImage);
+	
+	delete[] PerlinImage;
 }
 
 DebugGUIRenderer::~DebugGUIRenderer()
@@ -637,10 +665,21 @@ void DebugGUIRenderer::BeginFrame()
 	ImGui::NewFrame();
 }
 
-void DebugGUIRenderer::RenderFrame()
+void DebugGUIRenderer::RenderFrame(int FramesPerSecond, float FrameTime)
 {
-	bool Yes = true;
-	ImGui::ShowTestWindow(&Yes);
+	static bool ShowWindow = true;
+
+	ImGui::Begin("Perlin Noise");
+	ImGui::Image((void *)(intptr_t)NoiseTexture, ImVec2(400, 400));
+	ImGui::End();
+
+	// Display FPS
+	ImGui::SetNextWindowPos(ImVec2(10, 10));
+	ImGui::Begin("Debug info:", (bool*)0, ImVec2(0, 0), 0.3f, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings);
+	ImGui::Text("Last frame time: %.2f ms", FrameTime * 1000.0f);
+	ImGui::Separator();
+	ImGui::Text("Current FPS: %d", FramesPerSecond);
+	ImGui::End();
 
 	ImGui::Render();
 }

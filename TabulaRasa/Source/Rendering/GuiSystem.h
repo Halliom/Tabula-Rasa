@@ -204,7 +204,7 @@ public:
 	/**
 	* Renders a frame of ImGui elements to the screen
 	*/
-	void RenderFrame();
+	void RenderFrame(int FramesPerSecond, float FrameTime);
 };
 
 template<typename T>
