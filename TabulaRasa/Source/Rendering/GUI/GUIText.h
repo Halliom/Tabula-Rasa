@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../TextRenderer.h"
+#include "../GuiSystem.h"
 
 class GUIText : public IGUIElement
 {
