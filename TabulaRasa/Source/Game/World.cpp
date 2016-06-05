@@ -5,7 +5,6 @@
 
 #include "../Engine/Block.h"
 #include "../Engine/Chunk.h"
-#include "../Engine/PerlinNoise.h"
 
 #include "../Engine/ScriptEngine.h"
 #include "../Engine/ChunkManager.h"
