@@ -12,7 +12,7 @@ public:
 
 	virtual ~IFeature() {}
 
-	virtual void GenerateToChunk(class SimplexNoise* NoiseGenerator, glm::ivec3 WorldPosition) = 0;
+	virtual void GenerateToChunk(class Chunk* Chunk, class World* WorldObject, class SimplexNoise* NoiseGenerator, glm::ivec3 WorldPosition) = 0;
 
 };
 
@@ -22,7 +22,7 @@ public:
 
 	virtual ~BaseTerrain() override;
 
-	virtual void GenerateToChunk(class SimplexNoise* NoiseGenerator, glm::ivec3 WorldPosition) override;
+	virtual void GenerateToChunk(class Chunk* Chunk, class World* WorldObject, class SimplexNoise* NoiseGenerator, glm::ivec3 WorldPosition) override;
 };
 
 class IBiome
@@ -35,14 +35,22 @@ public:
 
 	void AddFeatureGenerator(int Order, IFeature* Generator);
 
-	void Generate(class SimplexNoise* NoiseGenerator, glm::ivec3 WorldPosition);
+	virtual void Generate(class Chunk* Chunk, class World* WorldObject, class SimplexNoise* NoiseGenerator, glm::ivec3 WorldPosition);
 
-	class IFeature*		m_Features[8];
+	IFeature*	m_Features[8];
 
-	int					m_MinHeatLevel;
-	int					m_MaxHeatLevel;
-	int					m_MinHeight;
-	int					m_MaxHeight;
+	int			m_MinHeatLevel;
+	int			m_MaxHeatLevel;
+	int			m_MinHeight;
+	int			m_MaxHeight;
+};
+
+class BiomeGrasslands : public IBiome
+{
+public:
+
+	BiomeGrasslands(int MinHeat, int MaxHeat, int MinHeight, int MaxHeight);
+
 };
 
 class WorldGenerator

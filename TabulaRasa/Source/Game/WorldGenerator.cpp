@@ -11,9 +11,26 @@ BaseTerrain::~BaseTerrain()
 {
 }
 
-void BaseTerrain::GenerateToChunk(SimplexNoise* NoiseGenerator, glm::ivec3 WorldPosition)
+void BaseTerrain::GenerateToChunk(Chunk* Chunk, World* WorldObject, SimplexNoise* NoiseGenerator, glm::ivec3 WorldPosition)
 {
-
+	for (int i = 0; i < Chunk::SIZE; ++i)
+	{
+		for (int j = 0; j < Chunk::SIZE; ++j)
+		{
+			int Y = (int)(NoiseGenerator->Noise((WorldPosition.x + i) / 30.0f, (WorldPosition.z + j) / 30.0f) * 10.0f);
+			for (int k = 0; k < Chunk::SIZE; ++k)
+			{
+				if ((WorldPosition.y + k) <= Y)
+				{
+					Chunk->SetVoxel(WorldObject, i, k, j, 1);
+				}
+				if (WorldPosition.y + k == 0)
+				{
+					Chunk->SetVoxel(WorldObject, i, k, j, 1);
+				}
+			}
+		}
+	}
 }
 
 WorldGenerator::WorldGenerator(int Seed, World* WorldObject) : 
@@ -61,7 +78,7 @@ void WorldGenerator::GenerateChunk(glm::ivec3 ChunkPosition, Chunk* Result)
 	}
 	else
 	{
-		ChosenBiome->Generate(m_NoiseGenerator, ChunkPosition * Chunk::SIZE);
+		ChosenBiome->Generate(Result, m_WorldObject, m_NoiseGenerator, ChunkPosition * Chunk::SIZE);
 	}
 }
 
@@ -99,13 +116,25 @@ void IBiome::AddFeatureGenerator(int Order, IFeature* Generator)
 	m_Features[Order] = Generator;
 }
 
-void IBiome::Generate(SimplexNoise* NoiseGenerator, glm::ivec3 WorldPosition)
+void IBiome::Generate(Chunk* Chunk, World* WorldObject, SimplexNoise* NoiseGenerator, glm::ivec3 WorldPosition)
 {
 	for (int i = 0; i < ArrayCount(m_Features); ++i)
 	{
 		if (m_Features[i])
 		{
-			m_Features[i]->GenerateToChunk(NoiseGenerator, WorldPosition);
+			m_Features[i]->GenerateToChunk(Chunk, WorldObject, NoiseGenerator, WorldPosition);
 		}
 	}
+}
+
+BiomeGrasslands::BiomeGrasslands(int MinHeat, int MaxHeat, int MinHeight, int MaxHeight)
+{
+	IBiome::IBiome();
+
+	m_MinHeatLevel = MinHeat;
+	m_MaxHeatLevel = MaxHeat;
+	m_MinHeight = MinHeight;
+	m_MaxHeight = MaxHeight;
+
+	AddFeatureGenerator(0, new BaseTerrain());
 }
