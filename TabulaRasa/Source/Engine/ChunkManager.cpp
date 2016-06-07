@@ -2,12 +2,13 @@
 
 #include "Core\Memory.h"
 #include "../Rendering/ChunkRenderer.h"
-
+#include "../Game/WorldGenerator.h"
 #include "ScriptEngine.h"
 
-ChunkManager::ChunkManager(World* WorldObject, int ChunkLoadingRadius) : 
+ChunkManager::ChunkManager(World* WorldObject, WorldGenerator* WorldGen, int ChunkLoadingRadius) : 
 	m_ChunkLoadingRadius(ChunkLoadingRadius),
-	m_pWorldObject(WorldObject)
+	m_pWorldObject(WorldObject),
+	m_pWorldGenerator(WorldGen)
 {
 	m_LoadedChunks.reserve(ChunkLoadingRadius * ChunkLoadingRadius * ChunkLoadingRadius);
 }
@@ -42,6 +43,9 @@ Chunk* ChunkManager::LoadChunk(glm::ivec3 ChunkPosition)
 	Result->m_ChunkX = ChunkPosition.x;
 	Result->m_ChunkY = ChunkPosition.y;
 	Result->m_ChunkZ = ChunkPosition.z;
+
+	m_pWorldGenerator->GenerateChunk(ChunkPosition, Result);
+
 	Result->Initialize();
 
 	return Result;

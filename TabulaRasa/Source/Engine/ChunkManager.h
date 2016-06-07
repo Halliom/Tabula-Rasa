@@ -38,7 +38,7 @@ class ChunkManager
 {
 public:
 
-	ChunkManager(World* WorldObject, int ChunkLoadingRadius);
+	ChunkManager(World* WorldObject, class WorldGenerator* WorldGen, int ChunkLoadingRadius);
 
 	~ChunkManager();
 
@@ -60,8 +60,8 @@ public:
 
 private:
 
-	std::unordered_map<glm::ivec3, Chunk*> m_LoadedChunks;
+	std::unordered_map<glm::ivec3, Chunk*>	m_LoadedChunks;
 
-	World* m_pWorldObject;
-
+	World*									m_pWorldObject;
+	WorldGenerator*							m_pWorldGenerator;
 };
