@@ -475,8 +475,6 @@ const char* GetClipboardText()
 #define IMCOLOR(r, g, b) ImVec4(r.0f / 255.0f, g.0f / 255.0f, b.0f / 255.0f, 1.0f)
 #define IMCOLOR_A(r, g, b, a) ImVec4(r.0f / 255.0f, g.0f / 255.0f, b.0f / 255.0f, a.0f / 255.0f)
 
-static GLuint NoiseTexture = 0;
-
 DebugGUIRenderer::DebugGUIRenderer(int ScreenWidth, int ScreenHeight)
 {
 	ImGuiIO& IO = ImGui::GetIO();
@@ -575,30 +573,6 @@ DebugGUIRenderer::DebugGUIRenderer(int ScreenWidth, int ScreenHeight)
 	{
 		DebugGui.Shader = GLShaderProgram::CreateVertexFragmentShaderFromFile(std::string("VertexDebugGUI.glsl"), std::string("FragmentDebugGUI.glsl"));
 	}
-
-	glGenTextures(1, &NoiseTexture);
-	static SimplexNoise Noise(1231237);
-	GLubyte* PerlinImage = new GLubyte[512 * 512 * 4];
-	for (int i = 0; i < 512; ++i)
-	{
-		for (int j = 0; j < 512; ++j)
-		{
-			float x = (float)i / 512.0f;
-			float y = (float)j / 512.0f;
-			GLubyte Color = (GLubyte)((Noise.Noise(x * 2, y * 2) + 1.0f) * 127.5f);
-			unsigned int Index = ((i * 512) + j) * 4;
-			PerlinImage[Index] = Color;
-			PerlinImage[Index + 1] = Color;
-			PerlinImage[Index + 2] = Color;
-			PerlinImage[Index + 3] = 255;
-		}
-	}
-	glBindTexture(GL_TEXTURE_2D, NoiseTexture);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 512, 512, 0, GL_RGBA, GL_UNSIGNED_BYTE, PerlinImage);
-	
-	delete[] PerlinImage;
 }
 
 DebugGUIRenderer::~DebugGUIRenderer()
@@ -668,10 +642,6 @@ void DebugGUIRenderer::BeginFrame()
 void DebugGUIRenderer::RenderFrame(int FramesPerSecond, float FrameTime)
 {
 	static bool ShowWindow = true;
-
-	ImGui::Begin("Perlin Noise");
-	ImGui::Image((void *)(intptr_t)NoiseTexture, ImVec2(400, 400));
-	ImGui::End();
 
 	// Display FPS
 	ImGui::SetNextWindowPos(ImVec2(10, 10));
