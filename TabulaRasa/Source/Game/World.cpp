@@ -46,7 +46,7 @@ void World::Initialize()
 	m_pWorldGenerator = new WorldGenerator(123123, this);
 	m_pWorldGenerator->AddBiome(new BiomeGrasslands(0, 50, -1, 10));
 
-	m_pChunkManager = new ChunkManager(this, m_pWorldGenerator, 2);
+	m_pChunkManager = new ChunkManager(this, m_pWorldGenerator, 3);
 	m_pChunkManager->LoadNewChunks(glm::ivec3(0, 0, 0));
 
 	//Script WorldGen = Script("world_gen.lua");
