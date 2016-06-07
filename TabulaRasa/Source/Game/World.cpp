@@ -5,6 +5,7 @@
 
 #include "../Engine/Block.h"
 #include "../Engine/Chunk.h"
+#include "../Game/WorldGenerator.h"
 
 #include "../Engine/ScriptEngine.h"
 #include "../Engine/ChunkManager.h"
@@ -19,6 +20,7 @@ extern GameMemoryManager* g_MemoryManager;
 World::World()
 {
 	m_pCurrentPlayer = NULL;
+	m_pWorldGenerator = NULL;
 	CachedChunk = NULL;
 }
 
@@ -28,6 +30,8 @@ World::~World()
 	{
 		delete m_pCurrentPlayer;
 	}
+
+	delete m_pWorldGenerator;
 	delete m_pChunkManager;
 }
 
@@ -39,11 +43,14 @@ void World::Initialize()
 	m_pCurrentPlayer->BeginPlay();
 	m_pCurrentPlayer->m_pWorldObject = this;
 
-	m_pChunkManager = new ChunkManager(this, 2);
+	m_pWorldGenerator = new WorldGenerator(123123, this);
+	m_pWorldGenerator->AddBiome(new BiomeGrasslands(0, 50, -1, 10));
+
+	m_pChunkManager = new ChunkManager(this, m_pWorldGenerator, 2);
 	m_pChunkManager->LoadNewChunks(glm::ivec3(0, 0, 0));
 
-	Script WorldGen = Script("world_gen.lua");
-	WorldGen.CallFunction("gen_world");
+	//Script WorldGen = Script("world_gen.lua");
+	//WorldGen.CallFunction("gen_world");
 }
 
 void World::Update(float DeltaTime)

@@ -29,11 +29,11 @@ public:
 
 	void RemoveMultiblock(const int& X, const int& Y, const int& Z);
 
-	Player* m_pCurrentPlayer;
-
-	class ChunkManager* m_pChunkManager;
+	Player*					m_pCurrentPlayer;
+	class ChunkManager*		m_pChunkManager;
+	class WorldGenerator*	m_pWorldGenerator;
 
 private:
 
-	class Chunk* CachedChunk;
+	class Chunk*		CachedChunk;
 };
