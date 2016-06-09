@@ -7,13 +7,15 @@
 #include "GUI\imgui\imgui.h"
 
 #include "../Platform/Platform.h"
-#include "..\Engine\Input.h"
+#include "../Engine/Input.h"
 #include "GL_shader.h"
 #include "../Engine/Core/Memory.h"
+#include "../Engine/Console.h"
 
-#include "..\Engine\Noise.h"
+#include "../Engine/Noise.h"
 
 extern GameMemoryManager* g_MemoryManager;
+extern Console* g_Console;
 
 /**
  * Predefined color values
@@ -652,6 +654,8 @@ void DebugGUIRenderer::RenderFrame(int FramesPerSecond, float FrameTime)
 	ImGui::Separator();
 	ImGui::Text("Current FPS: %d", FramesPerSecond);
 	ImGui::End();
+
+	g_Console->Draw();
 
 	ImGui::Render();
 }

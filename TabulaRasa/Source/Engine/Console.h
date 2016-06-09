@@ -1,12 +1,23 @@
 #pragma once
 
-#include "../Rendering/GuiSystem.h"
+#include <string>
 
-#include "SDL2\SDL.h"
+#define MAX_INPUT_LINE_SIZE 140
+#define MAX_BUFFER_SIZE 200
 
-#define MAX_INPUT_LENGTH 128
-#define MAX_TEXT_BUFFER_LENGTH 1024
-#define BUFFER_CLEANUP 64
+enum EConsoleMessageType
+{
+	MESSAGE_TYPE_NORMAL,
+	MESSAGE_TYPE_WARNING,
+	MESSAGE_TYPE_ERROR,
+	MESSAGE_TYPE_INFO
+};
+
+struct ConsoleMessage
+{
+	EConsoleMessageType MessageType;
+	const char*			Message;
+};
 
 class Console
 {
@@ -16,32 +27,39 @@ public:
 
 	~Console();
 
-	void Print(char* Message);
+	/**
+	 * Prints a line to the console
+	 */
+	void PrintLine(const char* Message, int Length = -1, EConsoleMessageType Type = EConsoleMessageType::MESSAGE_TYPE_NORMAL);
+	void PrintLine(std::string& Message, EConsoleMessageType Type = EConsoleMessageType::MESSAGE_TYPE_NORMAL);
 
-	void Print(std::string& Message);
+	/**
+	 * Sets the title of the console window
+	 */
+	void SetTitle(const char* Title);
 
-	void PrintLine(char* Message);
+	// Clears the buffer in the console
+	void Clear();
 
-	void PrintLine(std::string& Message);
+	// Toggles the console to be visible or not by setting the argument Show
+	// to true or false, this can also be toggled internally by the console
+	void ShowConsole(bool Show = true);
 
-	void ReceiveTextInput(SDL_Keycode* KeyCode, bool IsShiftDown, bool IsAltDown);
+	char* ExecuteCommand(const char *Command);
 
-	void OnUpdateInputMode();
+	// Draws the entire console, if the console is shown
+	void Draw();
 
-	char *ExecuteCommand(char *Command);
-
-	bool m_bIsActive;
+	bool			m_bShowConsole;
 
 private:
 
-	std::string m_CurrentlyTyping;
-	std::string m_TextBuffer;
-	std::string m_LastTyped;
+	char			m_pConsoleInputLine[MAX_INPUT_LINE_SIZE];
+	char*			m_pConsoleTitle;
 
-	TrueTypeFont m_ConsoleFont;
+	ConsoleMessage	m_pMessageBuffer[MAX_BUFFER_SIZE];
+	unsigned int	m_NumConsoleMessages;
 };
 
 extern Console* g_Console;
-
-#define LogLn(str) g_Console->PrintLine(str);
-#define Log(str) g_Console->Print(str);
+#define Log(str) g_Console->PrintLine(str);

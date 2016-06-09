@@ -180,6 +180,11 @@ bool PlatformWindow::PrepareForRender()
 							SDL_SetWindowFullscreen(MainWindow, 0);
 						break;
 					}
+					case SDL_SCANCODE_1:
+					{
+						g_Console->ShowConsole(!g_Console->m_bShowConsole);
+						break;
+					}
 					case SDL_SCANCODE_F10:
 					{
 						SDL_MaximizeWindow(MainWindow);
@@ -204,13 +209,7 @@ bool PlatformWindow::PrepareForRender()
 				IO.KeyAlt = ((SDL_GetModState() & KMOD_ALT) != 0);
 				IO.KeySuper = ((SDL_GetModState() & KMOD_GUI) != 0);
 
-				if (g_Console->m_bIsActive)
-				{
-					g_Console->ReceiveTextInput(&Event.key.keysym.sym, 
-						(Event.key.keysym.mod & KMOD_LSHIFT) == KMOD_LSHIFT || (Event.key.keysym.mod & KMOD_RSHIFT) == KMOD_RSHIFT,
-						(Event.key.keysym.mod & KMOD_LALT) == KMOD_LALT || (Event.key.keysym.mod & KMOD_RALT) == KMOD_RALT);
-				}
-				else
+				if (!Input::IsGameFrozen)
 				{
 					Input::Keys[Event.key.keysym.scancode] = true;
 				}
@@ -222,7 +221,7 @@ bool PlatformWindow::PrepareForRender()
 				ImGuiIO& IO = ImGui::GetIO();
 				IO.KeysDown[Key] = false;
 
-				if (!g_Console->m_bIsActive)
+				if (!Input::IsGameFrozen)
 				{
 					Input::Keys[Event.key.keysym.scancode] = false;
 				}

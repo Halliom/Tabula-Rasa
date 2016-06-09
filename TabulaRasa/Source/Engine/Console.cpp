@@ -1,242 +1,8 @@
 #include "Console.h"
 
-#include <sstream>
-#include <iostream>
-#include <stdio.h>
-#include <sys/types.h>
+#include "../Rendering/GUI/imgui/imgui.h"
 
-#include "../Engine/Core/Memory.h"
-#include "../Rendering/RenderingEngine.h"
-
-extern RenderingEngine* g_RenderingEngine;
-
-Console::Console() :
-	m_bIsActive(false),
-	m_CurrentlyTyping(">"),
-	m_LastTyped("")
-{
-	m_ConsoleFont = FontLibrary::g_FontLibrary->GetFont(1);
-}
-
-Console::~Console()
-{
-	// We actually don't need to dereference anything here
-	// since the console only gets destroyed when the game 
-	// closes and then the text/rect rendering has already
-	// been destroyed
-}
-
-void Console::Print(char* Message)
-{
-	char a = 'a';
-	m_TextBuffer.append(Message);
-}
-
-void Console::Print(std::string& Message)
-{
-	m_TextBuffer.append(Message);
-}
-
-void Console::PrintLine(char* Message)
-{
-	m_TextBuffer.append(Message);
-	m_TextBuffer.append("\n");
-}
-
-void Console::PrintLine(std::string& Message)
-{
-	m_TextBuffer.append(Message);
-	m_TextBuffer.append("\n");
-}
-
-void Console::ReceiveTextInput(SDL_Keycode* KeyCode, bool IsShiftDown, bool IsAltDown)
-{
-	if (m_bIsActive)
-	{
-		switch (*KeyCode)
-		{
-			case SDLK_BACKSPACE:
-			{
-				if (m_CurrentlyTyping.size() > 1) // Don't remove first character since it is the '>'
-				{
-					m_CurrentlyTyping.pop_back();
-				}
-				break;
-			}
-			case SDLK_UP:
-			{
-				m_CurrentlyTyping = std::string(">").append(m_LastTyped);
-				break;
-			}
-			case SDLK_TAB:
-			case SDLK_SPACE:
-			{
-				m_CurrentlyTyping.append(" ");
-				break;
-			}
-			case SDLK_PERIOD:
-			{
-				if (IsShiftDown)
-					m_CurrentlyTyping.append(":");
-				else
-					m_CurrentlyTyping.append(".");
-				break;
-			}
-			case SDLK_COMMA:
-			{
-				if (IsShiftDown)
-					m_CurrentlyTyping.append(";");
-				else
-					m_CurrentlyTyping.append(",");
-				break;
-			}
-			case SDLK_MINUS:
-			{
-				if (IsShiftDown)
-					m_CurrentlyTyping.append("_");
-				else
-					m_CurrentlyTyping.append("-");
-				break;
-			}
-			case SDLK_RETURN:
-			{
-				// Remove the '>' character
-				char* Command = AllocateWithType<char>(g_MemoryManager->m_pTransientFrameMemory, m_CurrentlyTyping.size() - 1);
-				strcpy(Command, m_CurrentlyTyping.c_str() + 1);
-
-				if (strcmp(Command, "clear") == 0)
-				{
-					m_TextBuffer.clear();
-					m_CurrentlyTyping.clear();
-					m_CurrentlyTyping.append(">");
-					break;
-				}
-
-				bool OnlyWhiteSpace = true;
-				for (int i = 0; *(Command + i); ++i)
-				{
-					if (!isspace(*(Command + i)))
-					{
-						OnlyWhiteSpace = false;
-						break;
-					}
-				}
-
-				if (OnlyWhiteSpace)
-				{
-					return;
-				}
-
-				m_LastTyped = std::string(Command);
-
-				m_TextBuffer.append(Command);
-				m_TextBuffer.append("\n");
-
-				char* Result = ExecuteCommand(Command);
-				if (Result[0] != '\0')
-				{
-					// Add a new line and append the result string
-					//m_TextBuffer[m_TextBuffer.size()] = '\n';
-					m_TextBuffer.append(Result);
-					m_TextBuffer.append("\n");
-				}
-
-				m_CurrentlyTyping.clear();
-				m_CurrentlyTyping.append(">");
-
-				break;
-			}
-			default:
-			{
-				if (*KeyCode <= SDLK_z)
-				{
-					const char* Symbol = SDL_GetKeyName(*KeyCode);
-					if (isdigit(Symbol[0]))
-					{
-						if (*KeyCode <= SDLK_9) // Not a numpad key
-						{
-							if (IsShiftDown)
-							{
-								char c[2] = " ";
-								switch (*KeyCode)
-								{
-									case SDLK_0: { c[0] = '='; break; }
-									case SDLK_1: { c[0] = '!'; break; }
-									case SDLK_2: { c[0] = '"'; break; }
-									case SDLK_3: { c[0] = '#'; break; }
-									case SDLK_4: { c[0] = '¤'; break; }
-									case SDLK_5: { c[0] = '%'; break; }
-									case SDLK_6: { c[0] = '&'; break; }
-									case SDLK_7: { c[0] = '/'; break; }
-									case SDLK_8: { c[0] = '('; break; }
-									case SDLK_9: { c[0] = ')'; break; }
-									case SDLK_PLUS: { c[0] = '?'; break; }
-								}
-								m_CurrentlyTyping.append(c);
-								break;
-							}
-							else if (IsAltDown)
-							{
-								char c[2] = " ";
-								switch (*KeyCode)
-								{
-								case SDLK_0: { c[0] = '}'; break; }
-								case SDLK_1: { c[0] = '1'; break; }
-								case SDLK_2: { c[0] = '@'; break; }
-								case SDLK_3: { c[0] = '£'; break; }
-								case SDLK_4: { c[0] = '$'; break; }
-								case SDLK_5: { c[0] = '€'; break; }
-								case SDLK_6: { c[0] = '6'; break; }
-								case SDLK_7: { c[0] = '{'; break; }
-								case SDLK_8: { c[0] = '['; break; }
-								case SDLK_9: { c[0] = ']'; break; }
-								case SDLK_PLUS: { c[0] = '\\'; break; }
-								}
-								m_CurrentlyTyping.append(c);
-								break;
-							}
-							else
-							{
-								m_CurrentlyTyping.append(Symbol);
-								break;
-							}
-						}
-					}
-					else
-					{
-						if (IsShiftDown)
-						{
-							m_CurrentlyTyping.append(Symbol);
-						}
-						else
-						{
-							char AddBuffer[2];
-							AddBuffer[0] = tolower(Symbol[0]);
-							AddBuffer[1] = '\0'; // You NEED to null terminate
-							m_CurrentlyTyping.append(AddBuffer);
-						}
-					}
-				}
-			}
-		}
-	}
-}
-
-void Console::OnUpdateInputMode()
-{
-	if (!m_bIsActive)
-	{
-	}
-	else
-	{
-		if (m_TextBuffer.length() > MAX_TEXT_BUFFER_LENGTH)
-		{
-			size_t Overload = m_TextBuffer.length() - MAX_TEXT_BUFFER_LENGTH + BUFFER_CLEANUP;
-			m_TextBuffer = m_TextBuffer.substr(Overload, MAX_TEXT_BUFFER_LENGTH - BUFFER_CLEANUP);
-			m_TextBuffer.append("");
-		}
-	}
-}
+#include "Input.h"
 
 bool IsSingleWord(char* String)
 {
@@ -260,9 +26,97 @@ bool IsSingleWord(char* String)
 	return true;
 }
 
-char* Console::ExecuteCommand(char* Command)
+Console::Console() : 
+	m_bShowConsole(false),
+	m_pConsoleTitle("Console"),
+	m_NumConsoleMessages(0)
 {
-	//g_ScriptEngine->ExecuteStringInInterpreter(Command);
+}
 
-	return "";
+Console::~Console()
+{
+	Clear();
+}
+
+void Console::PrintLine(const char* Line, int Length, EConsoleMessageType Type)
+{
+	// If no length was specified, calculate it via strlen
+	if (Length = -1)
+	{
+		Length = strlen(Line);
+	}
+
+	char* Message = new char[Length];
+	strcpy(Message, Line);
+
+	if (m_NumConsoleMessages < MAX_BUFFER_SIZE)
+	{
+		m_pMessageBuffer[m_NumConsoleMessages].Message = Message;
+		m_pMessageBuffer[m_NumConsoleMessages].MessageType = Type;
+		++m_NumConsoleMessages;
+	}
+	else // We have reached the maximum allowance of messages in the buffer
+	{
+		// Delete the first element and shuffle the rest downwards
+		delete[] m_pMessageBuffer[0].Message;
+		memcpy(m_pMessageBuffer, m_pMessageBuffer + 1, sizeof(ConsoleMessage) * (m_NumConsoleMessages - 1));
+		--m_NumConsoleMessages;
+	}
+}
+
+void Console::PrintLine(std::string& Line, EConsoleMessageType Type)
+{
+	PrintLine(Line.c_str(), Line.size(), Type);
+}
+
+void Console::SetTitle(const char* Title)
+{
+	m_pConsoleTitle = (char*)Title;
+}
+
+void Console::Clear()
+{
+	for (unsigned int i = 0; i < m_NumConsoleMessages; ++i)
+	{
+		delete[] m_pMessageBuffer[i].Message;
+	}
+	m_NumConsoleMessages = 0;
+}
+
+void Console::ShowConsole(bool Show)
+{
+	m_bShowConsole = Show;
+}
+
+char* Console::ExecuteCommand(const char* Command)
+{
+	return NULL;
+}
+
+void Console::Draw()
+{
+	if (m_bShowConsole) // Don't draw the console if we're not supposed to
+	{
+		// Sets the window size to 520x600, but only the first time
+		ImGui::SetNextWindowSize(ImVec2(520, 600), ImGuiSetCond_Once);
+
+		// Starts rendering the console, if the user shut down the console
+		// by clicking the x this will return false and then the rendering
+		// will stop
+		if (!ImGui::Begin(m_pConsoleTitle, &m_bShowConsole))
+		{
+			ImGui::End();
+			return;
+		}
+
+		// If the user pressed the "Clear" button on the console window this
+		// frame, clear the console
+		if (ImGui::Button("Clear"))
+		{
+			Clear();
+		}
+
+		// End drawmode
+		ImGui::End();
+	}
 }

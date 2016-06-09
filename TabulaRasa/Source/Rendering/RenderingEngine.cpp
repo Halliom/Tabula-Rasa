@@ -58,10 +58,10 @@ void RenderingEngine::Initialize(const unsigned int& ScreenWidth, const unsigned
 
 void RenderingEngine::PostInitialize()
 {
-	LogLn("Rendering system initialized on system:");
-	LogLn((char*) glGetString(GL_VENDOR));
-	LogLn((char*) glGetString(GL_RENDERER));
-	LogLn((char*) glGetString(GL_VERSION));
+	Log("Rendering system initialized on system:");
+	Log((char*) glGetString(GL_VENDOR));
+	Log((char*) glGetString(GL_RENDERER));
+	Log((char*) glGetString(GL_VERSION));
 
 	SYSTEM_INFO SystemInfo;
 	GetSystemInfo(&SystemInfo);

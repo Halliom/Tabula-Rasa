@@ -85,7 +85,6 @@ int main(int argc, char* argv[])
 	FontLibrary::g_FontLibrary->LoadFontFromFile("RobotoMono-Regular.ttf", 18);
 
 	g_Console = new Console();
-	g_Console->OnUpdateInputMode();
 
 	g_RenderingEngine = new RenderingEngine();
 	g_RenderingEngine->Initialize(WindowParams.Width, WindowParams.Height);

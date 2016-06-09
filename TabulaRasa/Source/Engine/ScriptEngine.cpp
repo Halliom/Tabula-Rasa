@@ -60,7 +60,7 @@ Script::Script(char* Filename)
 	int Error = luaL_dostring(g_State, ScriptSource);
 	if (Error != 0)
 	{
-		LogLn("Failed to load script");
+		Log("Failed to load script");
 	}
 }
 
@@ -90,7 +90,7 @@ bool Script::GetBool(char* VariableName)
 	}
 	else
 	{
-		LogLn("Error getting boolean, variable not boolean");
+		Log("Error getting boolean, variable not boolean");
 	}
 	return Result;
 }
@@ -116,7 +116,7 @@ bool Script::GetBoolFromTable(char* TableName, char* VariableName)
 		}
 		else
 		{
-			LogLn("Error getting variable from table: variable is not a boolean");
+			Log("Error getting variable from table: variable is not a boolean");
 		}
 
 		// Since lua pops VariableName once gettable returns, there are now two
@@ -125,7 +125,7 @@ bool Script::GetBoolFromTable(char* TableName, char* VariableName)
 	}
 	else
 	{
-		LogLn("Error getting variable from table");
+		Log("Error getting variable from table");
 	}
 
 	return Result;
@@ -147,7 +147,7 @@ int Script::GetInt(char* VariableName)
 	}
 
 	// Something went wrong
-	LogLn("Error getting variable")
+	Log("Error getting variable")
 	return 0;
 }
 
@@ -172,7 +172,7 @@ int Script::GetIntFromTable(char* TableName, char* VariableName)
 		}
 		else
 		{
-			LogLn("Error getting variable from table: variable is not a number");
+			Log("Error getting variable from table: variable is not a number");
 		}
 
 		// Since lua pops VariableName once gettable returns, there are now two
@@ -181,7 +181,7 @@ int Script::GetIntFromTable(char* TableName, char* VariableName)
 	}
 	else
 	{
-		LogLn("Error getting variable from table");
+		Log("Error getting variable from table");
 	}
 
 	return Result;
@@ -202,7 +202,7 @@ std::string Script::GetString(char* VariableName)
 		// Do nothing let it be handled by the next lines
 	}
 
-	LogLn("Error getting variable");
+	Log("Error getting variable");
 	return std::string("");
 }
 
@@ -227,7 +227,7 @@ std::string Script::GetStringFromTable(char* TableName, char* VariableName)
 		}
 		else
 		{
-			LogLn("Error getting variable from table: variable is not a string");
+			Log("Error getting variable from table: variable is not a string");
 		}
 
 		// Since lua pops VariableName once gettable returns, there are now two
@@ -236,7 +236,7 @@ std::string Script::GetStringFromTable(char* TableName, char* VariableName)
 	}
 	else
 	{
-		LogLn("Error getting variable from table");
+		Log("Error getting variable from table");
 	}
 	return Result;
 }
