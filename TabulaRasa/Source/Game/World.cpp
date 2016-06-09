@@ -44,7 +44,8 @@ void World::Initialize()
 	m_pCurrentPlayer->m_pWorldObject = this;
 
 	m_pWorldGenerator = new WorldGenerator(123123, this);
-	m_pWorldGenerator->AddBiome(new BiomeGrasslands(0, 50, -1, 10));
+//	m_pWorldGenerator->AddBiome(new BiomeGrasslands(0, 50, -1, 10));
+	m_pWorldGenerator->AddBiome(new BiomeScript("BiomeTest", "WorldGen/biome_test.lua"));
 
 	m_pChunkManager = new ChunkManager(this, m_pWorldGenerator, 3);
 	m_pChunkManager->LoadNewChunks(glm::ivec3(0, 0, 0));
@@ -55,8 +56,8 @@ void World::Initialize()
 
 void World::Update(float DeltaTime)
 {
-	glm::ivec3 PlayerChunkPosition = m_pCurrentPlayer->m_pPlayerCamera->Position / glm::vec3(Chunk::SIZE);
-	glm::ivec3 OldPlayerChunkPosition = m_pCurrentPlayer->m_pPlayerCamera->OldPosition / glm::vec3(Chunk::SIZE);
+	glm::ivec3 PlayerChunkPosition = m_pCurrentPlayer->m_pPlayerCamera->m_Position / glm::vec3(Chunk::SIZE);
+	glm::ivec3 OldPlayerChunkPosition = m_pCurrentPlayer->m_pPlayerCamera->m_OldPosition / glm::vec3(Chunk::SIZE);
 
 	if (PlayerChunkPosition != OldPlayerChunkPosition)
 	{

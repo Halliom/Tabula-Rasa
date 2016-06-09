@@ -31,7 +31,10 @@ public:
 
 	std::string GetStringFromTable(char* TableName, char* VariableName);
 
-	luabridge::LuaRef GetReference(char* VariableName);
+	luabridge::LuaRef GetReference(const char* VariableName)
+	{
+		return luabridge::getGlobal(g_State, VariableName);
+	}
 
 	void LogFunctionErrors(char* FunctionName);
 

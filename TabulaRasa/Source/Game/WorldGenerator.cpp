@@ -3,6 +3,7 @@
 #include "..\Engine\Noise.h"
 #include "..\Game\World.h"
 #include "..\Engine\Chunk.h"
+#include "..\Engine\ScriptEngine.h"
 
 float WorldGenerator::g_ScaleFactor = 30.0f;
 int WorldGenerator::g_MaxHeatTiers = 50;
@@ -17,7 +18,7 @@ void BaseTerrain::GenerateToChunk(Chunk* Chunk, World* WorldObject, SimplexNoise
 	{
 		for (int j = 0; j < Chunk::SIZE; ++j)
 		{
-			int Y = (int)(NoiseGenerator->Noise((WorldPosition.x + i) / 30.0f, (WorldPosition.z + j) / 30.0f) * 10.0f);
+			int Y = (int)(NoiseGenerator->Noise((WorldPosition.x + i) / 50.0f, (WorldPosition.z + j) / 50.0f) * 10.0f);
 			for (int k = 0; k < Chunk::SIZE; ++k)
 			{
 				if ((WorldPosition.y + k) <= Y)
@@ -137,4 +138,32 @@ BiomeGrasslands::BiomeGrasslands(int MinHeat, int MaxHeat, int MinHeight, int Ma
 	m_MaxHeight = MaxHeight;
 
 	AddFeatureGenerator(0, new BaseTerrain());
+}
+
+BiomeScript::BiomeScript(const std::string& BiomeName, const std::string& ScriptFilePath) :
+	m_BiomeName(BiomeName),
+	m_BiomeInfoTable(Script::g_State), // TODO: Fix this since it gets assigned anyways later (below)
+	m_GenerateFunction(Script::g_State)
+{
+	m_pScript = new Script((char*)ScriptFilePath.c_str());
+	m_BiomeInfoTable = m_pScript->GetReference(m_BiomeName.c_str());
+
+	// Set the values for the biome picking part of the WorldGenerator
+	m_MinHeatLevel = m_BiomeInfoTable["min_heat"];
+	m_MaxHeatLevel = m_BiomeInfoTable["max_heat"];
+	m_MinHeight = m_BiomeInfoTable["min_height"];
+	m_MaxHeight = m_BiomeInfoTable["max_height"];
+
+	// Get the reference to the generate function
+	m_GenerateFunction = m_BiomeInfoTable["generate"];
+}
+
+BiomeScript::~BiomeScript()
+{
+	delete m_pScript;
+}
+
+void BiomeScript::Generate(Chunk* Chunk, World* WorldObject, SimplexNoise* NoiseGenerator, glm::ivec3 WorldPosition)
+{
+	m_GenerateFunction();
 }
