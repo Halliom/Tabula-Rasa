@@ -509,11 +509,14 @@ DebugGUIRenderer::DebugGUIRenderer(int ScreenWidth, int ScreenHeight)
 
 	ImGui::PushStyleColor(ImGuiCol_Button, IMCOLOR(88, 100, 29));
 	ImGui::PushStyleColor(ImGuiCol_SliderGrab, IMCOLOR(88, 100, 29));
+	ImGui::PushStyleColor(ImGuiCol_ScrollbarGrab, IMCOLOR(88, 100, 29));
 
 	ImGui::PushStyleColor(ImGuiCol_ButtonActive, IMCOLOR(59, 67, 20));
 	ImGui::PushStyleColor(ImGuiCol_SliderGrabActive, IMCOLOR(59, 67, 20));
+	ImGui::PushStyleColor(ImGuiCol_ScrollbarGrabActive, IMCOLOR(59, 67, 20));
 
 	ImGui::PushStyleColor(ImGuiCol_ButtonHovered, IMCOLOR(98, 110, 42));
+	ImGui::PushStyleColor(ImGuiCol_ScrollbarGrabHovered, IMCOLOR(98, 110, 42));
 
 	IO.KeyMap[ImGuiKey_Tab] = SDLK_TAB;
 	IO.KeyMap[ImGuiKey_LeftArrow] = SDL_SCANCODE_LEFT;

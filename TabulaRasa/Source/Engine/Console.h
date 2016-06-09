@@ -30,7 +30,7 @@ public:
 	/**
 	 * Prints a line to the console
 	 */
-	void PrintLine(const char* Message, int Length = -1, EConsoleMessageType Type = EConsoleMessageType::MESSAGE_TYPE_NORMAL);
+	void PrintLine(const char* Message, EConsoleMessageType Type = EConsoleMessageType::MESSAGE_TYPE_NORMAL, int Length = -1);
 	void PrintLine(std::string& Message, EConsoleMessageType Type = EConsoleMessageType::MESSAGE_TYPE_NORMAL);
 
 	/**
