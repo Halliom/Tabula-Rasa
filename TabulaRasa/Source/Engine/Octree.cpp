@@ -12,6 +12,7 @@ static glm::uvec3 VS_SOUTH_OFFSET = glm::uvec3(0, 0, -1);
 void Voxel::OnNodeUpdatedAdjacent(const uint8_t& X, const uint8_t& Y, const uint8_t& Z, Voxel* NodeEast, Voxel* NodeWest, Voxel* NodeTop, Voxel* NodeBottom, Voxel* NodeNorth, Voxel* NodeSouth, const bool& Placed)
 {
 	uint8_t Result = 63;
+#if 0
 	if (NodeEast)
 	{
 		if (Placed)
@@ -48,6 +49,7 @@ void Voxel::OnNodeUpdatedAdjacent(const uint8_t& X, const uint8_t& Y, const uint
 			Result ^= VoxelSide::SIDE_SOUTH;
 		NodeSouth->OnNodeUpdatedOnSide(X, Y, Z - 1, VoxelSide::SIDE_NORTH, Placed);
 	}
+#endif
 
 	if (!Placed)
 	{
