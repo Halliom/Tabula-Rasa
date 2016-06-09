@@ -2,27 +2,29 @@
 
 #include "../Platform/Platform.h"
 
-Camera* Camera::ActiveCamera = NULL;
+Camera* Camera::g_ActiveCamera = NULL;
 
-Camera::Camera()
+Camera::Camera() :
+	m_Position(glm::vec3(0.0f, 0.0f, 0.0f)),
+	m_WorldUp(glm::vec3(0.0f, 1.0f, 0.0f)),
+	m_WindowWidth(PlatformWindow::GlobalWindow->WindowParams.Width), // Get startup value for width
+	m_WindowHeight(PlatformWindow::GlobalWindow->WindowParams.Height) // Get startup value for height
 {
-	Position = glm::vec3(0.0f, 0.0f, 0.0f);
-	WorldUp = glm::vec3(0.0f, 1.0f, 0.0f);
-
 	UpdateCameraRotation(-90.0f, 0.0f);
 }
 
 void Camera::InitProjection(const float& FOV, const float& NearPlane, const float& FarPlane)
 {
-	WindowWidth = PlatformWindow::GlobalWindow->WindowParams.Width;
-	WindowHeight = PlatformWindow::GlobalWindow->WindowParams.Height;
+	m_ProjectionMatrix = glm::perspective(glm::radians(m_FOV), (float) m_WindowWidth / (float) m_WindowHeight, NearPlane, FarPlane);
 
-	ProjectionMatrix = glm::perspective(glm::radians(FOV), (float) WindowWidth / (float) WindowHeight, NearPlane, FarPlane);
+	m_FOV = FOV;
+	m_NearPlane = NearPlane;
+	m_FarPlane = FarPlane;
 
-	IsScreenMatrixDirty = true;
-	IsViewMatrixDirty = true;
+	m_bIsScreenMatrixDirty = true;
+	m_bIsViewMatrixDirty = true;
 
-	ActiveCamera = this;
+	g_ActiveCamera = this;
 }
 
 void Camera::UpdateCameraRotation(const float& Yaw, const float& Pitch)
@@ -31,9 +33,9 @@ void Camera::UpdateCameraRotation(const float& Yaw, const float& Pitch)
 	front.x = cos(glm::radians(Yaw)) * cos(glm::radians(Pitch));
 	front.y = sin(glm::radians(Pitch));
 	front.z = sin(glm::radians(Yaw)) * cos(glm::radians(Pitch));
-	this->Front = glm::normalize(front);
-	this->Right = glm::normalize(glm::cross(this->Front, this->WorldUp));
-	this->Up = glm::normalize(glm::cross(this->Right, this->Front));
+	this->m_Front = glm::normalize(front);
+	this->m_Right = glm::normalize(glm::cross(this->m_Front, this->m_WorldUp));
+	this->m_Up = glm::normalize(glm::cross(this->m_Right, this->m_Front));
 
-	IsViewMatrixDirty = true;
+	m_bIsViewMatrixDirty = true;
 }

@@ -10,71 +10,63 @@ public:
 
 	Camera();
 
-	void InitProjection(const float& FOV = 35.0f, const float& NearPlane = 0.1f, const float& FarPlane = 100.0f);
+	void InitProjection(const float& FOV = 70.0f, const float& NearPlane = 0.1f, const float& FarPlane = 100.0f);
 
 	void UpdateCameraRotation(const float& Yaw, const float& Pitch);
 
 	__forceinline glm::mat4* GetProjectionMatrix()
 	{
-		if (IsProjectionMatrixDirty)
+		if (m_bIsProjectionMatrixDirty)
 		{
-			ProjectionMatrix = glm::perspective(glm::radians(FOV), (float) WindowWidth / (float) WindowHeight, 0.01f, 100.0f);
-			IsProjectionMatrixDirty = false;
+			m_ProjectionMatrix = glm::perspective(glm::radians(m_FOV), (float)m_WindowWidth / (float)m_WindowHeight, m_NearPlane, m_FarPlane);
+			m_bIsProjectionMatrixDirty = false;
 		}
-		return &ProjectionMatrix;
+		return &m_ProjectionMatrix;
 	}
 
 	__forceinline glm::mat4* GetScreenMatrix()
 	{
-		if (IsScreenMatrixDirty)
+		if (m_bIsScreenMatrixDirty)
 		{
-			ScreenMatrix = glm::ortho(0.0f, (float) WindowWidth, (float) WindowHeight, 0.0f);
-			IsScreenMatrixDirty = false;
+			m_ScreenMatrix = glm::ortho(0.0f, (float) m_WindowWidth, (float) m_WindowHeight, 0.0f);
+			m_bIsScreenMatrixDirty = false;
 		}
-		return &ScreenMatrix;
+		return &m_ScreenMatrix;
 	}
 
 	__forceinline glm::mat4* GetViewMatrix()
 	{
-		if (IsViewMatrixDirty)
+		if (m_bIsViewMatrixDirty)
 		{
-			ViewMatrix = glm::lookAt(Position, Position + Front, Up);
-			IsViewMatrixDirty = false;
+			m_ViewMatrix = glm::lookAt(m_Position, m_Position + m_Front, m_Up);
+			m_bIsViewMatrixDirty = false;
 		}
-		return &ViewMatrix;
+		return &m_ViewMatrix;
 	}
 
-	static Camera* ActiveCamera;
+	// The static camera that is active for this client
+	static Camera*	g_ActiveCamera;
 
-	unsigned int WindowWidth;
+	unsigned int	m_WindowWidth;
+	unsigned int	m_WindowHeight;
+	bool			m_bIsProjectionMatrixDirty;
+	bool			m_bIsScreenMatrixDirty;
+	bool			m_bIsViewMatrixDirty;
 
-	unsigned int WindowHeight;
+	float			m_FOV;
+	float			m_NearPlane;
+	float			m_FarPlane;
 
-	float FOV;
-
-	bool IsProjectionMatrixDirty;
-
-	bool IsScreenMatrixDirty;
-
-	bool IsViewMatrixDirty;
-
-	glm::vec3 Position;
-
-	glm::vec3 OldPosition;
-
-	glm::vec3 Front;
-
-	glm::vec3 Up;
-
-	glm::vec3 Right;
-
-	glm::vec3 WorldUp;
+	glm::vec3		m_Position;
+	glm::vec3		m_OldPosition;
+	glm::vec3		m_Front;
+	glm::vec3		m_Up;
+	glm::vec3		m_Right;
+	glm::vec3		m_WorldUp;
 
 private:
 
-	glm::mat4 ProjectionMatrix;
-
-	glm::mat4 ScreenMatrix;
-	
-	glm::mat4 ViewMatrix;
+	glm::mat4		m_ProjectionMatrix;
+	glm::mat4		m_ScreenMatrix;
+	glm::mat4		m_ViewMatrix;
 };
