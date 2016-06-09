@@ -60,7 +60,7 @@ Script::Script(char* Filename)
 	int Error = luaL_dostring(g_State, ScriptSource);
 	if (Error != 0)
 	{
-		Log("Failed to load script");
+		LogF("Failed to load script: %s", Filename);
 	}
 }
 
@@ -90,7 +90,7 @@ bool Script::GetBool(char* VariableName)
 	}
 	else
 	{
-		Log("Error getting boolean, variable not boolean");
+		LogF("Error getting boolean %s, variable not boolean", VariableName);
 	}
 	return Result;
 }
@@ -116,7 +116,7 @@ bool Script::GetBoolFromTable(char* TableName, char* VariableName)
 		}
 		else
 		{
-			Log("Error getting variable from table: variable is not a boolean");
+			LogF("Error getting variable from table %s: variable is not a boolean", TableName);
 		}
 
 		// Since lua pops VariableName once gettable returns, there are now two
@@ -125,7 +125,7 @@ bool Script::GetBoolFromTable(char* TableName, char* VariableName)
 	}
 	else
 	{
-		Log("Error getting variable from table");
+		LogF("Error getting variable %s from table %s", VariableName, TableName);
 	}
 
 	return Result;
@@ -147,7 +147,7 @@ int Script::GetInt(char* VariableName)
 	}
 
 	// Something went wrong
-	Log("Error getting variable")
+	Log("Error getting variable %s", VariableName);
 	return 0;
 }
 

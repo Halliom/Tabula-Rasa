@@ -70,6 +70,17 @@ void Console::PrintLine(std::string& Line, EConsoleMessageType Type)
 	PrintLine(Line.c_str(), Type, Line.size());
 }
 
+void Console::PrintLineF(const char* Format, ...)
+{
+	char Buffer[1024];
+	va_list Arguments;
+	va_start(Arguments, Format);
+	vsnprintf(Buffer, 1024, Format, Arguments);
+	Buffer[1024 - 1] = 0;
+	va_end(Arguments);
+	PrintLine(Buffer);
+}
+
 void Console::SetTitle(const char* Title)
 {
 	m_pConsoleTitle = (char*)Title;

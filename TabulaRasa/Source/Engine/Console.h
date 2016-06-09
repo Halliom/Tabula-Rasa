@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <stdarg.h>
 
 #define MAX_INPUT_LINE_SIZE 140
 #define MAX_BUFFER_SIZE 200
@@ -33,6 +34,8 @@ public:
 	void PrintLine(const char* Message, EConsoleMessageType Type = EConsoleMessageType::MESSAGE_TYPE_NORMAL, int Length = -1);
 	void PrintLine(std::string& Message, EConsoleMessageType Type = EConsoleMessageType::MESSAGE_TYPE_NORMAL);
 
+	void PrintLineF(const char* Format, ...);
+
 	/**
 	 * Sets the title of the console window
 	 */
@@ -62,4 +65,5 @@ private:
 };
 
 extern Console* g_Console;
-#define Log(str) g_Console->PrintLine(str);
+#define Log(str) g_Console->PrintLine(str)
+#define LogF(fmt, ...) g_Console->PrintLineF(fmt, __VA_ARGS__)
