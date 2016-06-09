@@ -59,8 +59,8 @@ void ChunkRenderer::RenderAllChunks(Player* CurrentPlayer)
 {
 	const static glm::mat4 Identity = glm::mat4(1.0f);
 
-	glm::mat4 Projection = *Camera::ActiveCamera->GetProjectionMatrix();
-	glm::mat4 View = *Camera::ActiveCamera->GetViewMatrix();
+	glm::mat4 Projection = *Camera::g_ActiveCamera->GetProjectionMatrix();
+	glm::mat4 View = *Camera::g_ActiveCamera->GetViewMatrix();
 
 	g_ChunkRenderShader->Bind();
 	g_ChunkRenderShader->SetProjectionMatrix(Projection);

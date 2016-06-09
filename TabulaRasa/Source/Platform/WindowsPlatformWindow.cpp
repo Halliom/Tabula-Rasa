@@ -127,12 +127,12 @@ bool PlatformWindow::PrepareForRender()
 					case SDL_WINDOWEVENT_SIZE_CHANGED:
 					case SDL_WINDOWEVENT_RESIZED:
 					{
-						if (Camera::ActiveCamera)
+						if (Camera::g_ActiveCamera)
 						{
-							Camera::ActiveCamera->WindowWidth = Event.window.data1;
-							Camera::ActiveCamera->WindowHeight = Event.window.data2;
-							Camera::ActiveCamera->IsScreenMatrixDirty = true;
-							Camera::ActiveCamera->IsProjectionMatrixDirty = true;
+							Camera::g_ActiveCamera->m_WindowWidth = Event.window.data1;
+							Camera::g_ActiveCamera->m_WindowHeight = Event.window.data2;
+							Camera::g_ActiveCamera->m_bIsScreenMatrixDirty = true;
+							Camera::g_ActiveCamera->m_bIsProjectionMatrixDirty = true;
 
 							g_RenderingEngine->ScreenDimensionsChanged(Event.window.data1, Event.window.data2);
 							g_GUIRenderer->UpdateScreenDimensions(Event.window.data1, Event.window.data2);

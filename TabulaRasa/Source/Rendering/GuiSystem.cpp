@@ -639,6 +639,8 @@ void DebugGUIRenderer::BeginFrame()
 	ImGui::NewFrame();
 }
 
+#include "../Engine/Camera.h"
+
 void DebugGUIRenderer::RenderFrame(int FramesPerSecond, float FrameTime)
 {
 	static bool ShowWindow = true;
