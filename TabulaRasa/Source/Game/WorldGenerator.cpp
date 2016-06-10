@@ -167,11 +167,19 @@ class SimplexNoiseWrapper
 {
 public:
 
-	SimplexNoiseWrapper() : m_pNoise(NULL) {}
-
-	float Noise(float X, float Y) { return m_pNoise != NULL ? m_pNoise->Noise(X, Y) : 0; }
+	float Noise(float X, float Y) { return m_pNoise->Noise(X, Y); }
 
 	SimplexNoise* m_pNoise;
+};
+
+class ChunkWrapper
+{
+public:
+
+	void SetBlock(int X, int Y, int Z, int BlockID) { m_pChunk->SetVoxel(m_pWorldObject, X, Y, Z, BlockID, NULL); }
+
+	Chunk* m_pChunk;
+	World* m_pWorldObject;
 };
 
 static bool Initialized = false;
@@ -183,12 +191,21 @@ void BiomeScript::Generate(Chunk* Chunk, World* WorldObject, SimplexNoise* Noise
 		luabridge::getGlobalNamespace(Script::g_State)
 			.beginClass<SimplexNoiseWrapper>("SimplexNoiseWrapper")
 				.addFunction("noise", &SimplexNoiseWrapper::Noise)
+			.endClass()
+			.beginClass<ChunkWrapper>("ChunkWrapper")
+				.addFunction("set_block", &ChunkWrapper::SetBlock)
 			.endClass();
 		Initialized = true;
 	}
 
-	SimplexNoiseWrapper* Wrapper = new SimplexNoiseWrapper();
-	Wrapper->m_pNoise = NoiseGenerator;
+	// Prepare the Noise object wrapper
+	SimplexNoiseWrapper* NoiseObject = new SimplexNoiseWrapper();
+	NoiseObject->m_pNoise = NoiseGenerator;
 
-	m_GenerateFunction(Wrapper);
+	// Prepare the Chunk object wrapper
+	ChunkWrapper* ChunkObject = new ChunkWrapper();
+	ChunkObject->m_pChunk = Chunk;
+	ChunkObject->m_pWorldObject = WorldObject;
+
+	m_GenerateFunction(NoiseObject, ChunkObject, WorldPosition.x, WorldPosition.y, WorldPosition.z);
 }
