@@ -163,7 +163,32 @@ BiomeScript::~BiomeScript()
 	delete m_pScript;
 }
 
+class SimplexNoiseWrapper
+{
+public:
+
+	SimplexNoiseWrapper() : m_pNoise(NULL) {}
+
+	float Noise(float X, float Y) { return m_pNoise != NULL ? m_pNoise->Noise(X, Y) : 0; }
+
+	SimplexNoise* m_pNoise;
+};
+
+static bool Initialized = false;
+
 void BiomeScript::Generate(Chunk* Chunk, World* WorldObject, SimplexNoise* NoiseGenerator, glm::ivec3 WorldPosition)
 {
-	m_GenerateFunction();
+	if (!Initialized)
+	{
+		luabridge::getGlobalNamespace(Script::g_State)
+			.beginClass<SimplexNoiseWrapper>("SimplexNoiseWrapper")
+				.addFunction("noise", &SimplexNoiseWrapper::Noise)
+			.endClass();
+		Initialized = true;
+	}
+
+	SimplexNoiseWrapper* Wrapper = new SimplexNoiseWrapper();
+	Wrapper->m_pNoise = NoiseGenerator;
+
+	m_GenerateFunction(Wrapper);
 }
