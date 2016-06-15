@@ -1,5 +1,8 @@
 #pragma once
 
+#include <string>
+#include <unordered_map>
+
 #include "glm\common.hpp"
 #include "lua5.2\lua.hpp"
 #include "LuaBridge/LuaBridge.h"
@@ -15,12 +18,13 @@ class IFeature
 {
 public:
 
-	IFeature() {};
+	IFeature(std::string Name) : m_Name(Name) {};
 
 	virtual ~IFeature() {}
 
 	virtual void GenerateToChunk(Chunk* Chunk, World* WorldObject, SimplexNoise* NoiseGenerator, glm::ivec3 WorldPosition) = 0;
 
+	std::string m_Name;
 };
 
 class BaseTerrain : public IFeature
@@ -32,6 +36,19 @@ public:
 	virtual void GenerateToChunk(Chunk* Chunk, World* WorldObject, SimplexNoise* NoiseGenerator, glm::ivec3 WorldPosition) override;
 };
 
+class ScriptedFeature : public IFeature
+{
+public:
+
+	ScriptedFeature(std::string Name);
+
+	virtual void GenerateToChunk(Chunk* Chunk, World* WorldObject, SimplexNoise* NoiseGenerator, glm::ivec3 WorldPosition) override;
+
+	luabridge::LuaRef	m_FeatureTable;
+	luabridge::LuaRef	m_GenerateFunction;
+
+};
+
 class IBiome
 {
 public:
@@ -40,7 +57,7 @@ public:
 
 	virtual ~IBiome();
 
-	void AddFeatureGenerator(int Order, IFeature* Generator);
+	void AddFeatureGenerator(int Order, std::string FeatureName);
 
 	virtual void Generate(Chunk* Chunk, World* WorldObject, SimplexNoise* NoiseGenerator, glm::ivec3 WorldPosition);
 
@@ -64,20 +81,14 @@ class BiomeScript : public IBiome
 {
 public:
 
-	// TODO: Create an init method which handles creation of the script instead of the constructor?
-	BiomeScript(const std::string& BiomeName, const std::string& ScriptFilePath);
+	BiomeScript(std::string BiomeName);
 
 	~BiomeScript() override;
 
-	virtual void Generate(Chunk* Chunk, World* WorldObject, SimplexNoise* NoiseGenerator, glm::ivec3 WorldPosition) override;
-
 private:
 
-	Script*				m_pScript;
 	std::string			m_BiomeName;
-
 	luabridge::LuaRef	m_BiomeInfoTable;
-	luabridge::LuaRef	m_GenerateFunction;
 };
 
 class WorldGenerator
@@ -86,6 +97,10 @@ public:
 	WorldGenerator(int Seed, World* WorldObject);
 
 	~WorldGenerator();
+
+	static void LoadFeature(std::string Name, IFeature* Feature);
+
+	void LoadFeatures();
 
 	void GenerateChunk(glm::ivec3 ChunkPosition, Chunk* Result);
 
@@ -101,4 +116,6 @@ public:
 
 	IBiome*			m_Biomes[16];
 	int				m_NumBiomes;
+
+	static std::unordered_map<std::string, IFeature*> m_LoadedFeatures;
 };
