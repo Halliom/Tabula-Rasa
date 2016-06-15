@@ -1,0 +1,3 @@
+Biomes = {
+	"BiomeTest"
+}
