@@ -50,8 +50,6 @@ TrueTypeFont FontLibrary::LoadFontFromFile(char* FontFileName, int Size)
 	int TextureWidth = NextPower2(NumGlyphsPerX * GlyphWidth);
 	int TextureHeight = NextPower2(NumGlyphsPerY * GlyphHeight);
 
-	int Offset = 0;
-
 	glActiveTexture(GL_TEXTURE0);
 
 	glGenTextures(1, &NewFont.TextureObject);
@@ -136,7 +134,8 @@ void FontLibrary::Initialize(std::string& FontLibraryLocation)
 	if (FT_Init_FreeType(&m_pFreeTypeLibrary))
 	{
 		// TODO: Error logging
-		assert(false, "Freetype could not initialize");
+		// Freetype could not initialize
+		assert(false);
 	}
 
 	m_FontLibraryLocation = FontLibraryLocation.append("\\");

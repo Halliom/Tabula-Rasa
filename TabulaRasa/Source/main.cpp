@@ -57,7 +57,8 @@ int main(int argc, char* argv[])
 	g_MemoryManager = new GameMemoryManager();
 	if (!g_MemoryManager->Initialize())
 	{
-		assert(false, "Failure to load memory");
+		// Failure to load memory
+		assert(false);
 	}
 
 	// TODO: Create Settings class
@@ -90,7 +91,7 @@ int main(int argc, char* argv[])
 	g_RenderingEngine->Initialize(WindowParams.Width, WindowParams.Height);
 	g_RenderingEngine->AddRendererForBlock(3, "Chest_Model.obj");
 
-	g_GUIRenderer = new DebugGUIRenderer(WindowParams.Width, WindowParams.Height);
+	g_GUIRenderer = new DebugGUIRenderer((int)WindowParams.Width, (int)WindowParams.Height);
 
 	// Loads the world and initializes subobjects
 	g_World = new World();
@@ -114,7 +115,7 @@ int main(int argc, char* argv[])
 		g_RenderingEngine->RenderFrame(g_World, DeltaTime);
 
 		// Render all GUI elements
-		g_GUIRenderer->RenderFrame(StaticFPS, DeltaTime);
+		g_GUIRenderer->RenderFrame(StaticFPS, (float)DeltaTime);
 
 		// Swap the buffers
 		Window.PostRender();

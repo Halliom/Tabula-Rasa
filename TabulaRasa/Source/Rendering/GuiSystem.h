@@ -62,11 +62,11 @@ struct GUIRenderable
 	GLuint VAO;
 	GLuint VBO;
 	GLuint IBO;
-	unsigned short NumIndices;
 
 	GLuint Texture;
-
 	Color Color;
+
+	unsigned short NumIndices;
 };
 
 class IGUIElement
