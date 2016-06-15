@@ -58,6 +58,7 @@ Script::Script(char* Filename)
 	}
 
 	int Error = luaL_dostring(g_State, ScriptSource);
+
 	if (Error != 0)
 	{
 		LogF("Failed to load script: %s", Filename);
@@ -147,7 +148,7 @@ int Script::GetInt(char* VariableName)
 	}
 
 	// Something went wrong
-	Log("Error getting variable %s", VariableName);
+	LogF("Error getting variable %s", VariableName);
 	return 0;
 }
 
