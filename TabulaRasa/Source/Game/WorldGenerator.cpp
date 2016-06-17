@@ -269,8 +269,8 @@ BiomeScript::BiomeScript(std::string BiomeName) :
 		std::string FeatureName = *It;
 		int Key = It.key();
 		AddFeatureGenerator(Key - 1, FeatureName);
-
-		LogF("Biome %s loaded feature generator %s", m_BiomeName.c_str(), FeatureName.c_str());
+		
+		LogF("Biome \"%s\" loaded feature generator \"%s\"", m_BiomeName.c_str(), FeatureName.c_str());
 		lua_pop(Script::g_State, 1);
 	}
 }
