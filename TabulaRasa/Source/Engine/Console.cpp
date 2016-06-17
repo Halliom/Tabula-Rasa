@@ -3,6 +3,7 @@
 #include "../Rendering/GUI/imgui/imgui.h"
 
 #include "Input.h"
+#include "ScriptEngine.h"
 
 bool IsSingleWord(char* String)
 {
@@ -131,7 +132,7 @@ void Console::Draw()
 			{
 				case MESSAGE_TYPE_WARNING:
 				{
-					// Warning yello (255, 204, 0)
+					// Warning yellow (255, 204, 0)
 					TextColor = ImVec4(1.0f, 204.0f / 255.0f, 0.0f, 1.0f);
 					break;
 				}
@@ -164,6 +165,13 @@ void Console::Draw()
 		if (ImGui::InputText("", m_pConsoleInputLine, MAX_INPUT_LINE_SIZE, ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_NoHorizontalScroll))
 		{
 			PrintLine(m_pConsoleInputLine, MESSAGE_TYPE_NORMAL);
+
+			if (Script::ExecuteStringInInterpreter(m_pConsoleInputLine))
+			{
+				// TODO: Perhaps add to command history buffer?
+			}
+
+			// Clear the input line
 			strcpy(m_pConsoleInputLine, "");
 		}
 

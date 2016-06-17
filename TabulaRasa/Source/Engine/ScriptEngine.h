@@ -17,6 +17,8 @@ public:
 
 	Script(char* Filename);
 
+	static bool ExecuteStringInInterpreter(const char* InputString);
+
 	void CallFunction(char* FunctionName);
 
 	bool GetBool(char* VariableName);

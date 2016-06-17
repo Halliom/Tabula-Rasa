@@ -65,6 +65,65 @@ Script::Script(char* Filename)
 	}
 }
 
+bool Script::ExecuteStringInInterpreter(const char* InputString)
+{
+	// Gets the number of elements on the stack before executing the command
+	int PreStackSize = lua_gettop(g_State);
+
+	// Returns 0 if it succeeded
+	int Error = luaL_dostring(g_State, InputString);
+	
+	if (Error != 0)
+	{
+		// Get the error from the top (-1) of the stack and then pop it
+		LogF("Error executing string \"%s\" in the interpreter:\nError: %s", InputString, lua_tostring(g_State, -1));
+		lua_pop(g_State, -1);
+
+		return false;
+	}
+	else
+	{
+		// Gets the number of elements on the stack after executing the command
+		int PostStackSize = lua_gettop(g_State);
+
+		// TODO: Is this even necessary?
+		int NumNewStackItems = -(PostStackSize - PreStackSize);
+		for (int i = -1; i >= NumNewStackItems; --i)
+		{
+			int ItemType = lua_type(g_State, i);
+			switch (ItemType)
+			{
+				case LUA_TNIL:
+				{
+					break;
+				}
+				case LUA_TNUMBER:
+				{
+					break;
+				}
+				case LUA_TBOOLEAN:
+				{
+					break;
+				}
+				case LUA_TSTRING:
+				{
+					break;
+				}
+				case LUA_TTABLE:
+				{
+					break;
+				}
+				case LUA_TFUNCTION:
+				{
+					break;
+				}
+			}
+			lua_pop(g_State, i);
+		}
+		return true;
+	}
+}
+
 void Script::CallFunction(char* FunctionName)
 {
 	try
@@ -244,10 +303,9 @@ std::string Script::GetStringFromTable(char* TableName, char* VariableName)
 
 void Script::LogFunctionErrors(char* FunctionName)
 {
-	char Buffer[300];
-	sprintf(Buffer, "Error in script: \"%s\" while calling function: \"%s\":", m_pScriptName, FunctionName);
-
-	LogToConsole(Buffer);
-	LogToConsole(lua_tostring(g_State, -1));
-	lua_pop(g_State, 1); // remove error message
+	// Since the error message always gets pushed to the top of the stack, simply print whats
+	// at the top of the stack and then pop it off
+	LogF("Error in script \"%s\" while calling function \"%s\":\nError: %s", m_pScriptName, FunctionName, lua_tostring(g_State, -1));
+	// Pop the error message of the stack
+	lua_pop(g_State, 1);
 }
