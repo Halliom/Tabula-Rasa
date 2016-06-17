@@ -73,6 +73,7 @@ void ChunkRenderer::RenderAllChunks(Player* CurrentPlayer)
 		if (!g_ChunksToRender[Index])
 			continue;
 
+		ChunkRenderData* RenderItem = g_ChunksToRender[Index];
 		for (
 			unsigned int MultiblockID = 0;
 			MultiblockID < g_ChunksToRender[Index]->NumMultiblocksToRender;
@@ -408,6 +409,15 @@ ChunkRenderData* ChunkRenderer::CreateRenderData(const glm::vec3& Position, Chun
 	g_ChunksToRender.Push(RenderData);
 
 	return RenderData;
+}
+
+void ChunkRenderer::DeleteRenderData(ChunkRenderData* RenderData)
+{
+	assert(RenderData != NULL);
+
+	// Remove it from the list and deallocate it from the memory pool
+	g_ChunksToRender.Remove(RenderData);
+	g_RenderDataMemoryPool->Deallocate(RenderData);
 }
 
 void ChunkRenderer::UpdateRenderData(ChunkRenderData* RenderData, Chunk* Voxels)

@@ -63,6 +63,8 @@ public:
 
 	static ChunkRenderData* CreateRenderData(const glm::vec3& Position, Chunk* Voxels);
 
+	static void DeleteRenderData(ChunkRenderData* RenderData);
+
 	static void UpdateRenderData(ChunkRenderData* RenderData, Chunk* Voxels);
 
 	static List<ChunkRenderData*> g_ChunksToRender;

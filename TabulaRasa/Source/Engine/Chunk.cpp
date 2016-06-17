@@ -13,7 +13,7 @@ Chunk::Chunk()
 
 Chunk::~Chunk()
 {
-
+	ChunkRenderer::DeleteRenderData(m_pChunkRenderData);
 }
 
 void Chunk::Initialize()

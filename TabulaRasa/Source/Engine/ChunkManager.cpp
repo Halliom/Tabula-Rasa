@@ -70,7 +70,7 @@ void ChunkManager::UnloadChunks(glm::ivec3 PlayerChunkPosition)
 				It = m_LoadedChunks.erase(It);
 
 				// TODO: Free the Chunk->m_pChunkRenderData back aswell
-				g_MemoryManager->m_pChunkAllocator->Deallocate(CurrentChunk);
+				g_MemoryManager->m_pChunkAllocator->DeallocateDelete(CurrentChunk);
 				continue;
 			}
 		}
