@@ -161,7 +161,7 @@ void Console::Draw()
 		// Just a line
 		ImGui::Separator();
 
-		ImGui::SetKeyboardFocusHere();
+		//ImGui::SetKeyboardFocusHere();
 		if (ImGui::InputText("", m_pConsoleInputLine, MAX_INPUT_LINE_SIZE, ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_NoHorizontalScroll))
 		{
 			PrintLine(m_pConsoleInputLine, MESSAGE_TYPE_NORMAL);
