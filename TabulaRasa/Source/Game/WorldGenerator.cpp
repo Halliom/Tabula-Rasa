@@ -333,5 +333,13 @@ void ScriptedFeature::GenerateToChunk(Chunk* Chunk, World* WorldObject, SimplexN
 	ChunkObject->m_pChunk = Chunk;
 	ChunkObject->m_pWorldObject = WorldObject;
 
-	m_GenerateFunction(NoiseObject, ChunkObject, WorldPosition.x, WorldPosition.y, WorldPosition.z);
+	try 
+	{
+		m_GenerateFunction(NoiseObject, ChunkObject, WorldPosition.x, WorldPosition.y, WorldPosition.z);
+	}
+	catch (std::exception e)
+	{
+		LogF("Error running feature-generator %s\nError: %s", m_Name.c_str(), lua_tostring(Script::g_State, -1));
+		lua_pop(Script::g_State, 1);
+	}
 }
