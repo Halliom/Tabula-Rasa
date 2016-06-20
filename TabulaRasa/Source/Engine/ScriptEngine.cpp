@@ -37,6 +37,11 @@ void WorldWrapper::RemoveMultiblock(int X, int Y, int Z)
 	g_World->RemoveMultiblock(X, Y, Z);
 }
 
+Player* WorldWrapper::GetPlayer()
+{
+	return g_World->m_pCurrentPlayer;
+}
+
 Script::Script(char* Filename)
 {
 	m_pScriptName = Filename;
@@ -49,11 +54,16 @@ Script::Script(char* Filename)
 
 		luabridge::getGlobalNamespace(g_State)
 			.addFunction("print", &LogToConsole)
+			.beginClass<Player>("player")
+				.addFunction("set_speed", &Player::SetMovementSpeed)
+				.addFunction("set_position", &Player::SetPositionLua)
+			.endClass()
 			.beginNamespace("world")
 				.addFunction("add_block", &WorldWrapper::AddBlock)
 				.addFunction("remove_block", &WorldWrapper::RemoveBlock)
 				.addFunction("add_multiblock", &WorldWrapper::AddMultiblock)
 				.addFunction("remove_mutliblock", &WorldWrapper::RemoveMultiblock)
+				.addFunction("get_player", &WorldWrapper::GetPlayer)
 			.endNamespace();
 	}
 

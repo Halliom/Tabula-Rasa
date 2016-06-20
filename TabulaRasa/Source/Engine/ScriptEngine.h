@@ -9,6 +9,7 @@ struct WorldWrapper
 	static void RemoveBlock(int X, int Y, int Z);
 	static void AddMultiblock(int X, int Y, int Z, int BlockID);
 	static void RemoveMultiblock(int X, int Y, int Z);
+	static class Player* GetPlayer();
 };
 
 class Script

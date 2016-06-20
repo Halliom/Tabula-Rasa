@@ -85,3 +85,9 @@ void Player::BeginPlay()
 	// Set the global instance
 	g_Player = this;
 }
+
+void Player::SetMovementSpeed(float NewSpeed)
+{
+	assert(NewSpeed > 0.0f);
+	m_MovementSpeed = NewSpeed;
+}

@@ -39,3 +39,12 @@ void Camera::UpdateCameraRotation(const float& Yaw, const float& Pitch)
 
 	m_bIsViewMatrixDirty = true;
 }
+
+void Camera::SetPosition(glm::vec3 NewPosition)
+{
+	// Set the new position
+	m_Position = NewPosition;
+
+	// The view matrix must be updated since it is the one that deals with the player position
+	m_bIsViewMatrixDirty = true;
+}

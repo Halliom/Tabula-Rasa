@@ -14,6 +14,8 @@ public:
 
 	void UpdateCameraRotation(const float& Yaw, const float& Pitch);
 
+	void SetPosition(glm::vec3 NewPosition);
+	
 	__forceinline glm::mat4* GetProjectionMatrix()
 	{
 		if (m_bIsProjectionMatrixDirty)

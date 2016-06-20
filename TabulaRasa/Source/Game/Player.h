@@ -15,19 +15,29 @@ public:
 
 	void BeginPlay();
 
-	Camera* m_pPlayerCamera;
+	void SetMovementSpeed(float NewSpeed);
 
-	class World* m_pWorldObject;
+	void SetPositionLua(float X, float Y, float Z)
+	{
+		m_pPlayerCamera->SetPosition(glm::vec3(X, Y, Z));
+	}
+
+	void SetPosition(glm::vec3 NewPosition)
+	{
+		m_pPlayerCamera->SetPosition(NewPosition);
+	}
+
+	Camera*			m_pPlayerCamera;
+	class World*	m_pWorldObject;
 
 private:
 
-	float m_Sensitivity;
-	float m_MovementSpeed;
+	float	m_Sensitivity;
+	float	m_Yaw;
+	float	m_Pitch;
+	float	m_MovementSpeed;
 
-	float m_Yaw;
-	float m_Pitch;
-
-	int m_LastMouseX;
-	int m_LastMouseY;
+	int		m_LastMouseX;
+	int		m_LastMouseY;
 
 };
