@@ -4,18 +4,25 @@
 
 #include "SDL2\SDL.h"
 #include "SDL2\SDL_syswm.h"
+
 #include "GUI\imgui\imgui.h"
 
-#include "../Platform/Platform.h"
-#include "../Engine/Input.h"
 #include "GL_shader.h"
+
+#include "../Platform/Platform.h"
+
+#include "../Engine/Input.h"
 #include "../Engine/Core/Memory.h"
 #include "../Engine/Console.h"
+
+#include "../Game/Player.h"
+#include "../Game/World.h"
 
 #include "../Engine/Noise.h"
 
 extern GameMemoryManager* g_MemoryManager;
 extern Console* g_Console;
+extern World* g_World;
 
 /**
  * Predefined color values
@@ -650,12 +657,16 @@ void DebugGUIRenderer::RenderFrame(int FramesPerSecond, float FrameTime)
 {
 	static bool ShowWindow = true;
 
+	glm::vec3 PlayerPos = g_World->m_pCurrentPlayer->GetPosition();
+	glm::ivec3 PlayerChunkPos = glm::ivec3(PlayerPos) / 32;
 	// Display FPS
 	ImGui::SetNextWindowPos(ImVec2(10, 10));
 	ImGui::Begin("Debug info:", (bool*)0, ImVec2(0, 0), 0.3f, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings);
 	ImGui::Text("Last frame time: %.2f ms", FrameTime * 1000.0f);
-	ImGui::Separator();
 	ImGui::Text("Current FPS: %d", FramesPerSecond);
+	ImGui::Separator();
+	ImGui::Text("World Pos: (%.2f, %.2f, %.2f)", PlayerPos.x, PlayerPos.y, PlayerPos.z);
+	ImGui::Text("Chunk Pos: (%d, %d, %d)", PlayerChunkPos.x, PlayerChunkPos.y, PlayerChunkPos.z);
 	ImGui::End();
 
 	g_Console->Draw();
