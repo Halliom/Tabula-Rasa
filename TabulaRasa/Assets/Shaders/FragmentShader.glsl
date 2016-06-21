@@ -9,7 +9,7 @@ in vec2 frag_texCoord;
 in vec2 frag_atlasOffset;
 
 const float NEAR = 0.1;
-const float FAR = 100.0;
+const float FAR = 160.0;
 
 float linearizeDepth(float depth)
 {
