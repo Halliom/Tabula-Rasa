@@ -17,9 +17,9 @@ namespace std
 		{
 			return (
 				(IVEC_HASH_PRIME + std::hash<int>()(val.x)) *
-				(IVEC_HASH_PRIME + std::hash<int>()(val.y)) *
-				(IVEC_HASH_PRIME + std::hash<int>()(val.z))
-				);
+				IVEC_HASH_PRIME + std::hash<int>()(val.y)) *
+				IVEC_HASH_PRIME + std::hash<int>()(val.z)
+				;
 		}
 	};
 
@@ -28,7 +28,9 @@ namespace std
 	{
 		bool operator()(const glm::ivec3& val0, const glm::ivec3& val1) const
 		{
-			return val0 == val1;
+			return val0.x == val1.x && 
+				   val0.y == val1.y && 
+				   val0.z == val1.z;
 		}
 	};
 }

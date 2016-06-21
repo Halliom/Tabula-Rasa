@@ -40,6 +40,8 @@ void ChunkManager::Tick(float DeltaTime)
 Chunk* ChunkManager::LoadChunk(glm::ivec3 ChunkPosition)
 {
 	Chunk* Result = g_MemoryManager->m_pChunkAllocator->AllocateNew();
+	assert(Result);
+
 	Result->m_ChunkX = ChunkPosition.x;
 	Result->m_ChunkY = ChunkPosition.y;
 	Result->m_ChunkZ = ChunkPosition.z;
@@ -63,13 +65,17 @@ void ChunkManager::UnloadChunks(glm::ivec3 PlayerChunkPosition)
 		if (CurrentChunk != NULL)
 		{
 			glm::ivec3 ChunkPosition = (*It).first;
-			float DistanceFromPlayer = glm::length(glm::vec3(ChunkPosition - PlayerChunkPosition));
-			if (DistanceFromPlayer > m_ChunkLoadingRadius)
+
+			// Calculate the farthest distance in any direction away from the player
+			int DistX = glm::abs(ChunkPosition.x - PlayerChunkPosition.x);
+			int DistY = glm::abs(ChunkPosition.y - PlayerChunkPosition.y);
+			int DistZ = glm::abs(ChunkPosition.z - PlayerChunkPosition.z);
+			int FarthestDistance = glm::max(DistX, glm::max(DistY, DistZ));
+			if (FarthestDistance > m_ChunkLoadingRadius)
 			{
 				// The chunk is outside the radius and needs to be removed
 				It = m_LoadedChunks.erase(It);
 
-				// TODO: Free the Chunk->m_pChunkRenderData back aswell
 				g_MemoryManager->m_pChunkAllocator->DeallocateDelete(CurrentChunk);
 				continue;
 			}
@@ -80,22 +86,18 @@ void ChunkManager::UnloadChunks(glm::ivec3 PlayerChunkPosition)
 
 void ChunkManager::LoadNewChunks(glm::ivec3 PlayerChunkPosition)
 {
-	for (int i = -m_ChunkLoadingRadius; i < m_ChunkLoadingRadius; ++i)
+	for (int i = -m_ChunkLoadingRadius; i <= m_ChunkLoadingRadius; ++i)
 	{
-		for (int j = -m_ChunkLoadingRadius; j < m_ChunkLoadingRadius; ++j)
+		for (int j = -m_ChunkLoadingRadius; j <= m_ChunkLoadingRadius; ++j)
 		{
-			for (int k = -m_ChunkLoadingRadius; k < m_ChunkLoadingRadius; ++k)
+			for (int k = -m_ChunkLoadingRadius; k <= m_ChunkLoadingRadius; ++k)
 			{
-				glm::ivec3 LocalChunkPosition = glm::ivec3(i, j, k);
-				float DistanceFromPlayer = glm::length(glm::vec3(LocalChunkPosition));
-				if (DistanceFromPlayer <= m_ChunkLoadingRadius)
+				glm::ivec3 NewChunkPosition = glm::ivec3(i, j, k) + PlayerChunkPosition;
+				if (m_LoadedChunks.find(NewChunkPosition) == m_LoadedChunks.end())
 				{
-					if (m_LoadedChunks.find(LocalChunkPosition + PlayerChunkPosition) == m_LoadedChunks.end())
-					{
-						// There is no chunk in this position, load ti
-						glm::ivec3 ChunkPosition = LocalChunkPosition + PlayerChunkPosition;
-						m_LoadedChunks.insert({ ChunkPosition, LoadChunk(ChunkPosition) });
-					}
+					// There is no chunk in this position, load it
+					glm::ivec3 ChunkPosition = NewChunkPosition;
+					m_LoadedChunks.insert({ ChunkPosition, LoadChunk(ChunkPosition) });
 				}
 			}
 		}
