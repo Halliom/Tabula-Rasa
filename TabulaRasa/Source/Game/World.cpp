@@ -48,11 +48,8 @@ void World::Initialize()
 
 //	m_pWorldGenerator->AddBiome(new BiomeGrasslands(0, 50, -1, 10));
 
-	m_pChunkManager = new ChunkManager(this, m_pWorldGenerator, 3);
+	m_pChunkManager = new ChunkManager(this, m_pWorldGenerator, 1);
 	m_pChunkManager->LoadNewChunks(glm::ivec3(0, 0, 0));
-
-	//Script WorldGen = Script("world_gen.lua");
-	//WorldGen.CallFunction("gen_world");
 }
 
 void World::Update(float DeltaTime)
@@ -60,11 +57,12 @@ void World::Update(float DeltaTime)
 	glm::ivec3 PlayerChunkPosition = m_pCurrentPlayer->m_pPlayerCamera->m_Position / glm::vec3(Chunk::SIZE);
 	glm::ivec3 OldPlayerChunkPosition = m_pCurrentPlayer->m_pPlayerCamera->m_OldPosition / glm::vec3(Chunk::SIZE);
 
+	// If the player moved to a new chunk
 	if (PlayerChunkPosition != OldPlayerChunkPosition)
 	{
-		// Unload/load chunks
-		m_pChunkManager->LoadNewChunks(PlayerChunkPosition);
+		// Unload/load chunks (unload first to make room for new ones)
 		m_pChunkManager->UnloadChunks(PlayerChunkPosition);
+		m_pChunkManager->LoadNewChunks(PlayerChunkPosition);
 	}
 
 	// Tick the chunks
