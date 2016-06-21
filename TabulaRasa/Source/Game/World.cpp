@@ -54,8 +54,8 @@ void World::Initialize()
 
 void World::Update(float DeltaTime)
 {
-	glm::ivec3 PlayerChunkPosition = m_pCurrentPlayer->m_pPlayerCamera->m_Position / glm::vec3(Chunk::SIZE);
-	glm::ivec3 OldPlayerChunkPosition = m_pCurrentPlayer->m_pPlayerCamera->m_OldPosition / glm::vec3(Chunk::SIZE);
+	glm::ivec3 PlayerChunkPosition = m_pCurrentPlayer->m_Position / (float)Chunk::SIZE;
+	glm::ivec3 OldPlayerChunkPosition = m_pCurrentPlayer->m_OldPosition / (float)Chunk::SIZE;
 
 	// If the player moved to a new chunk
 	if (PlayerChunkPosition != OldPlayerChunkPosition)

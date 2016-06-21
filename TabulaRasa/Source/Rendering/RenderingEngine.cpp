@@ -4,12 +4,13 @@
 #include "glm\common.hpp"
 
 #include "../Platform/Platform.h"
+
+#include "../Game/World.h"
 #include "../Game/Player.h"
+#include "../Engine/Console.h"
+#include "../Engine/Camera.h"
 #include "GuiSystem.h"
 #include "ChunkRenderer.h"
-#include "../Game/World.h"
-
-#include "../Engine/Console.h"
 
 #include "GL\glew.h"
 

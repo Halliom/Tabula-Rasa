@@ -27,6 +27,18 @@ void Camera::InitProjection(const float& FOV, const float& NearPlane, const floa
 	g_ActiveCamera = this;
 }
 
+void Camera::UpdatePosition(glm::vec3 NewPosition)
+{
+	// Save the old position
+	m_OldPosition = m_Position;
+
+	// Set the new position
+	m_Position = NewPosition;
+
+	// The view matrix must be updated since it is the one that deals with the player position
+	m_bIsViewMatrixDirty = true;
+}
+
 void Camera::UpdateCameraRotation(const float& Yaw, const float& Pitch)
 {
 	glm::vec3 front;
@@ -37,14 +49,5 @@ void Camera::UpdateCameraRotation(const float& Yaw, const float& Pitch)
 	this->m_Right = glm::normalize(glm::cross(this->m_Front, this->m_WorldUp));
 	this->m_Up = glm::normalize(glm::cross(this->m_Right, this->m_Front));
 
-	m_bIsViewMatrixDirty = true;
-}
-
-void Camera::SetPosition(glm::vec3 NewPosition)
-{
-	// Set the new position
-	m_Position = NewPosition;
-
-	// The view matrix must be updated since it is the one that deals with the player position
 	m_bIsViewMatrixDirty = true;
 }
