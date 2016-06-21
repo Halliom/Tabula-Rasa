@@ -394,17 +394,25 @@ static void GreedyMesh(Chunk* Voxels, ChunkRenderData* RenderData)
 
 	// Unbind so nothing else modifies it
 	glBindVertexArray(0);
+
+	glDisableVertexAttribArray(0);
+	glDisableVertexAttribArray(1);
+	glDisableVertexAttribArray(2);
+	glDisableVertexAttribArray(3);
 }
 
 ChunkRenderData* ChunkRenderer::CreateRenderData(const glm::vec3& Position, Chunk* Voxels)
 {
+	// Allocate a new RenderData object and zero it out
 	ChunkRenderData* RenderData = g_RenderDataMemoryPool->Allocate();
-	RenderData->NumMultiblocksToRender = 0;
-	RenderData->MultiblocksToRender = NULL;
+	memset(RenderData, NULL, sizeof(ChunkRenderData));
 
+	// Generate all of the OpenGL buffers
 	glGenVertexArrays(1, &RenderData->VertexArrayObject);
-	glGenBuffers(2, &RenderData->VertexBufferObject);
+	glGenBuffers(1, &RenderData->VertexBufferObject);
+	glGenBuffers(1, &RenderData->IndexBufferObject);
 
+	// Set the position and add it to the rendering list
 	RenderData->ChunkPosition = Position;
 	g_ChunksToRender.Push(RenderData);
 
