@@ -17,6 +17,11 @@ public:
 
 	void SetMovementSpeed(float NewSpeed);
 
+	glm::vec3 GetPosition() 
+	{
+		return m_pPlayerCamera->m_Position;
+	}
+
 	void SetPositionLua(float X, float Y, float Z)
 	{
 		m_pPlayerCamera->SetPosition(glm::vec3(X, Y, Z));
