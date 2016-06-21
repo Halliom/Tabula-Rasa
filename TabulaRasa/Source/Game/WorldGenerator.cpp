@@ -9,7 +9,7 @@
 #include "..\Engine\ScriptEngine.h"
 #include "..\Engine\Console.h"
 
-float WorldGenerator::g_ScaleFactor = 30.0f;
+float WorldGenerator::g_ScaleFactor = 50.0f;
 int WorldGenerator::g_MaxHeatTiers = 50;
 std::unordered_map<std::string, IFeature*> WorldGenerator::m_LoadedFeatures;
 
@@ -142,7 +142,7 @@ void WorldGenerator::LoadFeatures()
 
 void WorldGenerator::GenerateChunk(glm::ivec3 ChunkPosition, Chunk* Result)
 {
-	int Heat = (int)(m_HeatmapGenerator->Noise(ChunkPosition.x / g_ScaleFactor, ChunkPosition.z / g_ScaleFactor) * g_MaxHeatTiers);	
+	int Heat = (int)(((m_HeatmapGenerator->Noise(ChunkPosition.x / g_ScaleFactor, ChunkPosition.z / g_ScaleFactor) + 1.0f) * 0.5f) * g_MaxHeatTiers);	
 	int Height = ChunkPosition.y * Chunk::SIZE;
 
 	IBiome* ChosenBiome = NULL;
