@@ -168,7 +168,14 @@ bool PlatformWindow::PrepareForRender()
 #ifdef _DEBUG
 					case SDL_SCANCODE_ESCAPE:
 					{
-						return false;
+						if (g_Console->m_bShowConsole)
+						{
+							g_Console->ShowConsole(false);
+						}
+						else
+						{
+							return false;
+						}
 						break;
 					}
 					case SDL_SCANCODE_F11:
@@ -180,7 +187,7 @@ bool PlatformWindow::PrepareForRender()
 							SDL_SetWindowFullscreen(MainWindow, 0);
 						break;
 					}
-					case SDL_SCANCODE_1:
+					case SDL_SCANCODE_F1:
 					{
 						g_Console->ShowConsole(!g_Console->m_bShowConsole);
 						break;
