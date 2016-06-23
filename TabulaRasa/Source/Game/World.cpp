@@ -1,17 +1,18 @@
 #include "World.h"
 
-#include "glm\common.hpp"
-#include "glm\gtc\matrix_transform.hpp"
+#include "glm/common.hpp"
+#include "glm/gtc/matrix_transform.hpp"
 
+#include "../Platform/Platform.h"
 #include "../Engine/Block.h"
 #include "../Engine/Chunk.h"
-#include "../Game/WorldGenerator.h"
-
 #include "../Engine/ScriptEngine.h"
 #include "../Engine/ChunkManager.h"
-#include "../Platform/Platform.h"
-
 #include "../Engine/Core/Memory.h"
+#include "../Engine/Camera.h"
+#include "../Engine/Console.h"
+#include "../Game/WorldGenerator.h"
+#include "../Game/Player.h"
 
 #define TOCHUNK_COORD(X, Y, Z) X / Chunk::SIZE, Y / Chunk::SIZE, Z / Chunk::SIZE
 
@@ -289,4 +290,21 @@ void World::RemoveMultiblock(const int& X, const int& Y, const int& Z)
 			}
 		}
 	}
+}
+
+RayHitResult World::RayTraceWorld(const Ray& Ray)
+{
+	RayHitResult Result;
+
+	if (Ray.Direction.x == 0 && Ray.Direction.y == 0 && Ray.Direction.z == 0)
+	{
+		return Result;
+	}
+
+	List<Chunk*>* ChunksInView = m_pChunkManager->GetChunksOnRay(Ray);
+	LogF("#Chunks in view: %d", ChunksInView->Size);
+
+	delete ChunksInView;
+
+	return Result;
 }

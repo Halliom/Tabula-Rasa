@@ -1,8 +1,15 @@
 #pragma once
 
-#include "glm\common.hpp"
-#include "glm\matrix.hpp"
-#include "glm\gtc\matrix_transform.hpp"
+#include "glm/common.hpp"
+#include "glm/matrix.hpp"
+#include "glm/gtc/matrix_transform.hpp"
+
+struct Ray
+{
+	glm::vec3 Origin;
+	glm::vec3 Direction;
+	float Distance;
+};
 
 class Camera
 {
@@ -15,6 +22,8 @@ public:
 	void UpdateCameraRotation(const float& Yaw, const float& Pitch);
 
 	void UpdatePosition(glm::vec3 NewPosition);
+
+	Ray GetViewingRay(float Distance = 100000.0f);
 	
 	__forceinline glm::mat4* GetProjectionMatrix()
 	{

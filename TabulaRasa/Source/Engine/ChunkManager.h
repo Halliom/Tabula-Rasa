@@ -1,12 +1,13 @@
 #pragma once
 #include <unordered_map>
 
-#include "glm\common.hpp"
-
-#include "Octree.h"
-#include "Chunk.h"
+#include "glm/common.hpp"
 
 #define IVEC_HASH_PRIME 5503
+
+class Chunk;
+class World;
+template <typename T> class List;
 
 namespace std
 {
@@ -57,6 +58,8 @@ public:
 	Chunk* GetChunkAt(int ChunkPositionX, int ChunkPositionY, int ChunkPositionZ);
 
 	List<Chunk*> GetVisibleChunks(glm::ivec3 PlayerChunkPosition);
+
+	List<Chunk*>* GetChunksOnRay(const struct Ray& Ray);
 
 	int m_ChunkLoadingRadius;
 

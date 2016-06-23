@@ -1,7 +1,10 @@
 #include "ChunkManager.h"
 
-#include "Core\Memory.h"
 #include "../Rendering/ChunkRenderer.h"
+#include "../Engine/Core/Memory.h"
+#include "../Engine/Core/List.h"
+#include "../Engine/Camera.h"
+#include "../Engine/Chunk.h"
 #include "../Game/WorldGenerator.h"
 #include "ScriptEngine.h"
 
@@ -134,5 +137,52 @@ List<Chunk*> ChunkManager::GetVisibleChunks(glm::ivec3 PlayerChunkPosition)
 			Result.Push(Chunk);
 		}
 	}
+	return Result;
+}
+
+static inline float max(float a, float b)
+{
+	 return b != b ? a : (a > b ? a : b);
+}
+
+static inline float min(float a, float b)
+{
+	return b != b ? a : (a < b ? a : b);
+}
+
+bool FastRayIntersect(const Ray& Ray, glm::vec3 RayInvDir, glm::vec3 Min, glm::vec3 Max)
+{
+	float tmin = -INFINITY;
+	float tmax = INFINITY;
+
+	for (int i = 0; i < 3; ++i) {
+		float t1 = (Min[i] - Ray.Origin[i]) * RayInvDir[i];
+		float t2 = (Max[i] - Ray.Origin[i]) * RayInvDir[i];
+
+		tmin = max(tmin, min(t1, t2));
+		tmax = min(tmax, max(t1, t2));
+	}
+
+	return tmax > max(tmin, 0.0f);
+}
+
+List<Chunk*>* ChunkManager::GetChunksOnRay(const Ray& Ray)
+{
+	List<Chunk*>* Result = new List<Chunk*>();
+
+	glm::vec3 RayInvDir = 1.0f / Ray.Direction;
+
+	for (auto It = m_LoadedChunks.begin(); It != m_LoadedChunks.end(); ++It)
+	{
+		glm::ivec3 ChunkPosition = (*It).first;
+		glm::vec3 WorldPosition = glm::vec3(ChunkPosition) * (float)Chunk::SIZE;
+		glm::vec3 UpperPosition = WorldPosition + (float)Chunk::SIZE;
+
+		if (FastRayIntersect(Ray, RayInvDir, WorldPosition, UpperPosition))
+		{
+			Result->Push((*It).second);
+		}
+	}
+
 	return Result;
 }

@@ -1,8 +1,11 @@
 #pragma once
 
-#include "../Rendering/GL_shader.h"
 #include "../Rendering/GuiSystem.h"
-#include "Player.h"
+
+struct RayHitResult
+{
+	glm::ivec3 BlockPosition;
+};
 
 class World
 {
@@ -29,7 +32,9 @@ public:
 
 	void RemoveMultiblock(const int& X, const int& Y, const int& Z);
 
-	Player*					m_pCurrentPlayer;
+	RayHitResult RayTraceWorld(const struct Ray& Ray);
+
+	class Player*			m_pCurrentPlayer;
 	class ChunkManager*		m_pChunkManager;
 	class WorldGenerator*	m_pWorldGenerator;
 

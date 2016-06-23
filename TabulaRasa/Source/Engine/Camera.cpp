@@ -39,6 +39,11 @@ void Camera::UpdatePosition(glm::vec3 NewPosition)
 	m_bIsViewMatrixDirty = true;
 }
 
+Ray Camera::GetViewingRay(float Distance)
+{
+	return { m_Position, m_Front, Distance };
+}
+
 void Camera::UpdateCameraRotation(const float& Yaw, const float& Pitch)
 {
 	glm::vec3 front;

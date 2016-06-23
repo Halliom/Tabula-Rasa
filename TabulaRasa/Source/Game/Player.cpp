@@ -1,11 +1,12 @@
 #include "Player.h"
 
-#include "glm\common.hpp"
-#include "glm\gtc\matrix_transform.hpp"
+#include "glm/common.hpp"
+#include "glm/gtc/matrix_transform.hpp"
 
 #include "../Engine/Input.h"
 #include "../Engine/Camera.h"
 #include "../Rendering/GuiSystem.h"
+#include "../Game/World.h"
 
 #define KEY_W 0x57
 #define KEY_S 0x53
@@ -63,6 +64,13 @@ void Player::Update(float DeltaTime)
 	// Save the previous state
 	m_LastMouseX = Input::MouseX;
 	m_LastMouseY = Input::MouseY;
+
+	static bool Previous = false;
+	if (Input::MouseButtons[1] && !Previous)
+	{
+		m_pWorldObject->RayTraceWorld(m_pPlayerCamera->GetViewingRay());
+	}
+	Previous = Input::MouseButtons[1];
 }
 
 void Player::BeginPlay()
