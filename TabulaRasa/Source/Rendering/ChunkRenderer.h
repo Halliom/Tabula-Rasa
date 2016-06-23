@@ -1,12 +1,13 @@
 #pragma once
-
-#include "glm\common.hpp"
+#include "GL/glew.h"
+#include "glm/common.hpp"
 
 #include "../Engine/Core/Memory.h"
-#include "../Engine/Core/List.h"
 
-#include "GL_shader.h"
-#include "../Game/Player.h"
+template<typename T> class Octree;
+template<typename T> class List;
+class Voxel;
+class Chunk;
 
 struct MultiblockRenderData
 {
@@ -46,11 +47,6 @@ struct TexturedQuadVertex
 	unsigned char TextureCoord; /* size 4, align 4 */
 };
 
-template<typename T> class Octree;
-
-class Voxel;
-class Chunk;
-
 class ChunkRenderer
 {
 public:
@@ -59,7 +55,7 @@ public:
 
 	static void DestroyChunkRenderer();
 
-	static void RenderAllChunks(Player* CurrentPlayer);
+	static void RenderAllChunks(class Player* CurrentPlayer);
 
 	static ChunkRenderData* CreateRenderData(const glm::vec3& Position, Chunk* Voxels);
 
@@ -73,8 +69,7 @@ public:
 
 private:
 
-	static GLShaderProgram *g_ChunkRenderShader;
-
+	static class GLShaderProgram*		g_ChunkRenderShader;
 	static MemoryPool<ChunkRenderData>* g_RenderDataMemoryPool;
 
 };

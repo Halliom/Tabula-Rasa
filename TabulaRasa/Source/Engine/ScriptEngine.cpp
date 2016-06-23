@@ -3,9 +3,10 @@
 #include <string>
 #include <exception>
 
-#include "Console.h"
-#include "../Game/World.h"
 #include "../Platform/Platform.h"
+#include "../Game/World.h"
+#include "../Game/Player.h"
+#include "../Engine/Console.h"
 
 extern Console* g_Console;
 extern World* g_World;

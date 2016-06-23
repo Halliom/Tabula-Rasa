@@ -1,6 +1,6 @@
 #include "Platform.h"
 
-#include "glm\common.hpp"
+#include "glm/common.hpp"
 
 #include "../Engine/Input.h"
 #include "../Engine/Camera.h"
@@ -9,7 +9,7 @@
 #include "../Rendering/RenderingEngine.h"
 #include "../Engine/Console.h"
 
-#include "..\Rendering\GUI\imgui\imgui.h"
+#include "../Rendering/GUI/imgui/imgui.h"
 
 PlatformWindow* PlatformWindow::GlobalWindow = NULL;
 

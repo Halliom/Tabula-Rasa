@@ -1,25 +1,25 @@
 #include "ChunkRenderer.h"
 
+#include "../Engine/Core/Memory.h"
+#include "../Engine/Core/List.h"
 #include "../Engine/Octree.h"
 #include "../Engine/Camera.h"
 #include "../Engine/Block.h"
 #include "../Engine/Chunk.h"
 #include "../Rendering/RenderingEngine.h"
+#include "../Rendering/GL_shader.h"
 #include "../Platform/Platform.h"
-#include "../Engine/Core/Memory.h"
+#include "../Game/Player.h"
 
-#include "glm\gtc\matrix_transform.hpp"
+#include "glm/gtc/matrix_transform.hpp"
 
-#include "SDL2\SDL.h"
+#include "SDL2/SDL.h"
 
 // Init the chunk list
-List<ChunkRenderData*> ChunkRenderer::g_ChunksToRender;
-
-GLShaderProgram* ChunkRenderer::g_ChunkRenderShader = NULL;
-
-MemoryPool<ChunkRenderData>* ChunkRenderer::g_RenderDataMemoryPool = NULL;
-
-GLuint ChunkRenderer::g_TextureAtlas;
+List<ChunkRenderData*>			ChunkRenderer::g_ChunksToRender;
+GLShaderProgram*				ChunkRenderer::g_ChunkRenderShader = NULL;
+MemoryPool<ChunkRenderData>*	ChunkRenderer::g_RenderDataMemoryPool = NULL;
+GLuint							ChunkRenderer::g_TextureAtlas;
 
 extern RenderingEngine* g_RenderingEngine;
 extern GameMemoryManager* g_MemoryManager;
@@ -52,8 +52,6 @@ void ChunkRenderer::DestroyChunkRenderer()
 }
 
 #define PI 3.14159265359f
-
-#include <Windows.h>
 
 void ChunkRenderer::RenderAllChunks(Player* CurrentPlayer)
 {
