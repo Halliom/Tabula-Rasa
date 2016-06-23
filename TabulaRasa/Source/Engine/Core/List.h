@@ -1,6 +1,9 @@
 #pragma once
 
 #include <cstdint>
+#include <stdio.h>
+#include <string.h>
+
 #include "Memory.h"
 
 template <typename T>

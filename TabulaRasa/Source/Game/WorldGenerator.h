@@ -3,8 +3,8 @@
 #include <string>
 #include <unordered_map>
 
-#include "glm\common.hpp"
-#include "lua5.2\lua.hpp"
+#include "glm/common.hpp"
+#include "lua5.2/lua.hpp"
 #include "LuaBridge/LuaBridge.h"
 
 #define ArrayCount(Array) sizeof(Array) / sizeof(Array[0])

@@ -1,7 +1,5 @@
 #include "Memory.h"
 
-#include <Windows.h>
-
 #include "../Chunk.h"
 
 LinearAllocator::LinearAllocator(unsigned char* StartAddress, size_t MaxByteSize) :

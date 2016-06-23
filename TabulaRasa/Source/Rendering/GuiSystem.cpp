@@ -2,10 +2,15 @@
 
 #include <algorithm>
 
-#include "SDL2\SDL.h"
-#include "SDL2\SDL_syswm.h"
+#ifdef _WIN32
+#include "SDL2/SDL.h"
+#include "SDL2/SDL_syswm.h"
+#elif __APPLE__
+#include "SDL2OSX/SDL.h"
+#include "SDL2OSX/SDL_syswm.h"
+#endif
 
-#include "GUI\imgui\imgui.h"
+#include "GUI/imgui/imgui.h"
 
 #include "GL_shader.h"
 

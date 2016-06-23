@@ -2,7 +2,11 @@
 
 #include <string>
 
-#include "GL\glew.h"
+#ifdef _WIN32
+#include "GL/glew.h"
+#elif __APPLE__
+#include <OpenGL/gl3.h>
+#endif
 
 #include <ft2build.h>
 #include FT_FREETYPE_H

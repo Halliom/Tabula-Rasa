@@ -1,3 +1,4 @@
+#ifdef _WIN32
 #include "WindowsPlatformFilesystem.h"
 
 #include "windows.h"
@@ -240,3 +241,4 @@ char* PlatformFileSystem::LoadScript(char* ScriptName)
 
 	return Data;
 }
+#endif

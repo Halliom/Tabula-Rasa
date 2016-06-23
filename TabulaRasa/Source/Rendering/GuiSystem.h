@@ -2,13 +2,17 @@
 
 #include <string>
 
-#include "GL\glew.h"
-#include "glm\glm.hpp"
-#include "glm\gtc\matrix_transform.hpp"
+#ifdef _WIN32
+#include "GL/glew.h"
+#elif __APPLE__
+#include <OpenGL/gl3.h>
+#endif
+#include "glm/glm.hpp"
+#include "glm/gtc/matrix_transform.hpp"
 
 #include "Fonts.h"
 
-#include "..\Engine\Core\List.h"
+#include "../Engine/Core/List.h"
 
 template<typename T>
 struct MemoryPool;
@@ -74,8 +78,8 @@ class IGUIElement
 public:
 
 	IGUIElement(IGUIElement* Parent) :
+        m_pParent(Parent),
 		m_Position(glm::ivec2(0)),
-		m_pParent(Parent),
 		m_Dimensions(glm::ivec2(0))
 	{}
 

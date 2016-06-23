@@ -13,7 +13,11 @@
 
 #include "glm/gtc/matrix_transform.hpp"
 
+#ifdef _WIN32
 #include "SDL2/SDL.h"
+#elif __APPLE__
+#include "SDL2OSX/SDL.h"
+#endif
 
 // Init the chunk list
 List<ChunkRenderData*>			ChunkRenderer::g_ChunksToRender;
@@ -96,7 +100,7 @@ void ChunkRenderer::RenderAllChunks(Player* CurrentPlayer)
 	glBindVertexArray(0);
 }
 
-__forceinline int GetVoxelSide(Chunk* Voxels, List<MultiblockRenderData>* AdditionalRenderData, const int& X, const int& Y, const int& Z, const VoxelSide& Side)
+FORCEINLINE int GetVoxelSide(Chunk* Voxels, List<MultiblockRenderData>* AdditionalRenderData, const int& X, const int& Y, const int& Z, const VoxelSide& Side)
 {
 	Voxel* Node = Voxels->GetVoxel(X, Y, Z);
 	if (Node && ((Node->SidesToRender & Side) == Side))

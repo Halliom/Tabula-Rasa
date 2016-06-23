@@ -3,7 +3,13 @@
 #include <string>
 #include <vector>
 
-#include "GL\glew.h"
+#ifdef _WIN32
+#include "GL/glew.h"
+#elif __APPLE__
+#include <OpenGL/gl3.h>
+#endif
+
+#include "../Engine/Engine.h"
 
 enum AssetDirectoryType
 {
@@ -34,7 +40,7 @@ class PlatformFileSystem
 public:
 	static std::string LoadFile(const AssetDirectoryType& Directory, const char* FileName);
 
-	static __forceinline std::string LoadFile(const AssetDirectoryType& Directory, const std::string& FileName)
+	static FORCEINLINE std::string LoadFile(const AssetDirectoryType& Directory, const std::string& FileName)
 	{
 		return LoadFile(Directory, FileName.c_str());
 	}
@@ -45,7 +51,7 @@ public:
 
 	static GLuint LoadBitmapFromFile(char* FileName);
 
-	static void LoadModel(LoadedModel *Model, const char* FileName);
+	static void LoadModel(LoadedModel* Model, const char* FileName);
 
 	static char* LoadScript(char* ScriptName);
 };

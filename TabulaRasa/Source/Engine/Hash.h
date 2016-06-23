@@ -33,7 +33,7 @@ inline IntegerHashTable<T>::IntegerHashTable()
 	m_NumElements = 0;
 
 	m_pKeyValuePairs = new T[TABLE_SIZE];
-	memset(m_pKeyValuePairs, NULL, sizeof(T) * TABLE_SIZE);
+	memset(m_pKeyValuePairs, 0, sizeof(T) * TABLE_SIZE);
 }
 
 template<typename T>
@@ -69,6 +69,6 @@ inline void IntegerHashTable<T>::Remove(const uint32_t& Key)
 	unsigned int Index = Hash % m_Size;
 
 	T* Value = m_pKeyValuePairs[Index];
-	m_pKeyValuePairs[Index] = NULL;
+	m_pKeyValuePairs[Index] = 0;
 	return Value;
 }

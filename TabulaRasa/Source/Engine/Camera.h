@@ -4,6 +4,8 @@
 #include "glm/matrix.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 
+#include "../Engine/Engine.h"
+
 struct Ray
 {
 	glm::vec3 Origin;
@@ -25,7 +27,7 @@ public:
 
 	Ray GetViewingRay(float Distance = 100000.0f);
 	
-	__forceinline glm::mat4* GetProjectionMatrix()
+	FORCEINLINE glm::mat4* GetProjectionMatrix()
 	{
 		if (m_bIsProjectionMatrixDirty)
 		{
@@ -35,7 +37,7 @@ public:
 		return &m_ProjectionMatrix;
 	}
 
-	__forceinline glm::mat4* GetScreenMatrix()
+	FORCEINLINE glm::mat4* GetScreenMatrix()
 	{
 		if (m_bIsScreenMatrixDirty)
 		{
@@ -45,7 +47,7 @@ public:
 		return &m_ScreenMatrix;
 	}
 
-	__forceinline glm::mat4* GetViewMatrix()
+	FORCEINLINE glm::mat4* GetViewMatrix()
 	{
 		if (m_bIsViewMatrixDirty)
 		{

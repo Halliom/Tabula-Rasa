@@ -5,11 +5,11 @@
 
 #include "Platform/Platform.h"
 #include "Game/World.h"
-#include "Engine\Console.h"
-#include "Rendering\GuiSystem.h"
-#include "Rendering\RenderingEngine.h"
-#include "Engine\ScriptEngine.h"
-#include "Engine\Core\Memory.h"
+#include "Engine/Console.h"
+#include "Rendering/GuiSystem.h"
+#include "Rendering/RenderingEngine.h"
+#include "Engine/ScriptEngine.h"
+#include "Engine/Core/Memory.h"
 
 #include "Engine/Core/Random.h"
 
@@ -22,7 +22,6 @@ Console* g_Console = NULL;
 GameMemoryManager* g_MemoryManager = NULL;
 
 #ifdef _WIN32
-
 #define WIN32_LEAN_AND_MEAN
 #include "windows.h"
 

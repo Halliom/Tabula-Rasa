@@ -12,7 +12,11 @@
 #include "GuiSystem.h"
 #include "ChunkRenderer.h"
 
-#include "GL\glew.h"
+#ifdef _WIN32
+#include "GL/glew.h"
+#elif __APPLE__
+#include <OpenGL/gl3.h>
+#endif
 
 extern Player* g_Player;
 

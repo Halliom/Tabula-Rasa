@@ -48,4 +48,5 @@ set(LUA52 "${CMAKE_SOURCE_DIR}/Lib/lua52.lib")
 set(ASSIMP "${CMAKE_SOURCE_DIR}/Lib/assimp.lib")
 
 add_executable(TabulaRasa WIN32 ${SOURCE_FILES})
+target_compile_features(TabulaRasa PRIVATE cxx_constexpr)
 target_link_libraries(TabulaRasa ${OPENGL_LIBRARIES} ${GLEW32} ${GLEW32S} ${SDL2} ${SDL2MAIN} ${SDL2TEST} ${FREETYPE} ${LUA52} ${ASSIMP})

@@ -29,7 +29,7 @@ bool IsSingleWord(char* String)
 
 Console::Console() : 
 	m_bShowConsole(false),
-	m_pConsoleTitle("Console"),
+    m_pConsoleTitle("Console"),
 	m_NumConsoleMessages(0)
 {
 	memset(m_pConsoleInputLine, 0, MAX_INPUT_LINE_SIZE);

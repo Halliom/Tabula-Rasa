@@ -1,7 +1,5 @@
 #include "Fonts.h"
 
-#include "windows.h"
-
 #include "../Engine/Core/Memory.h"
 
 FontLibrary* FontLibrary::g_FontLibrary;
@@ -59,8 +57,11 @@ TrueTypeFont FontLibrary::LoadFontFromFile(char* FontFileName, int Size)
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
+    // TODO: Fix this
+#ifndef __APPLE__
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+#endif
 
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, TextureWidth, TextureHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
 

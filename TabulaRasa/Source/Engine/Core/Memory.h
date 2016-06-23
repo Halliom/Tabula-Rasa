@@ -1,16 +1,21 @@
 #pragma once
 
+#include "../Engine.h"
+
 #include <assert.h>
 #include <cstdint>
 
-__forceinline unsigned char* AlignAddress(unsigned char* Address, size_t Alignment)
+FORCEINLINE unsigned char* AlignAddress(unsigned char* Address, size_t Alignment)
 {
-	return (unsigned char*) ((reinterpret_cast<unsigned char>(Address) + static_cast<unsigned char>(Alignment - 1)) & static_cast<unsigned char>(~(Alignment - 1)));
+	return (unsigned char*)
+    ((reinterpret_cast<size_t>(Address) +
+      static_cast<unsigned char>(Alignment - 1)) &
+      static_cast<unsigned char>(~(Alignment - 1)));
 }
 
-__forceinline size_t CalcualteAlignmentAdjustment(const unsigned char* Address, size_t Alignment)
+FORCEINLINE size_t CalcualteAlignmentAdjustment(const unsigned char* Address, size_t Alignment)
 {
-	size_t Adjustment = Alignment - (reinterpret_cast<unsigned char>(Address) & static_cast<unsigned char>(Alignment - 1));
+	size_t Adjustment = Alignment - (reinterpret_cast<size_t>(Address) & static_cast<unsigned char>(Alignment - 1));
 
 	if (Adjustment == Alignment)
 		return 0;
@@ -18,7 +23,7 @@ __forceinline size_t CalcualteAlignmentAdjustment(const unsigned char* Address, 
 	return Adjustment;
 }
 
-__forceinline uint8_t AlignForwardAdjustmentWithHeader(const unsigned char* Address, uint8_t Alignment, uint8_t HeaderSize)
+FORCEINLINE uint8_t AlignForwardAdjustmentWithHeader(const unsigned char* Address, uint8_t Alignment, uint8_t HeaderSize)
 {
 	uint8_t Adjustment = CalcualteAlignmentAdjustment(Address, Alignment);
 
@@ -162,7 +167,7 @@ MemoryPool<T>::~MemoryPool()
 }
 
 template<typename T>
-__forceinline T* MemoryPool<T>::Allocate()
+FORCEINLINE T* MemoryPool<T>::Allocate()
 {
 	if (m_pFreeList == NULL)
 	{
@@ -183,7 +188,7 @@ __forceinline T* MemoryPool<T>::Allocate()
 }
 
 template<typename T>
-__forceinline T* MemoryPool<T>::AllocateNew()
+FORCEINLINE T* MemoryPool<T>::AllocateNew()
 {
 	if (m_pFreeList->m_pNext == NULL)
 	{
@@ -204,7 +209,7 @@ __forceinline T* MemoryPool<T>::AllocateNew()
 }
 
 template<typename T>
-__forceinline void MemoryPool<T>::Deallocate(T* Pointer) // TODO: Add __forceinline
+FORCEINLINE void MemoryPool<T>::Deallocate(T* Pointer) // TODO: Add __forceinline
 {
 	MemorySlot* Slot = (MemorySlot*) Pointer;
 	
@@ -218,7 +223,7 @@ __forceinline void MemoryPool<T>::Deallocate(T* Pointer) // TODO: Add __forceinl
 }
 
 template<typename T>
-__forceinline void MemoryPool<T>::DeallocateDelete(T* Pointer)
+FORCEINLINE void MemoryPool<T>::DeallocateDelete(T* Pointer)
 {
 	MemorySlot* Slot = (MemorySlot*) Pointer;
 	Pointer->~T();
@@ -233,13 +238,13 @@ __forceinline void MemoryPool<T>::DeallocateDelete(T* Pointer)
 }
 
 template<typename T>
-__forceinline unsigned char* Allocate(LinearAllocator* Allocator, size_t NumInstances = 1)
+FORCEINLINE unsigned char* Allocate(LinearAllocator* Allocator, size_t NumInstances = 1)
 {
 	return Allocator->Allocate(sizeof(T) * NumInstances, __alignof(T));
 }
 
 template<typename T>
-__forceinline T* AllocateWithType(LinearAllocator* Allocator, size_t NumInstances = 1)
+FORCEINLINE T* AllocateWithType(LinearAllocator* Allocator, size_t NumInstances = 1)
 {
 	return (T*) Allocator->Allocate(sizeof(T) * NumInstances, __alignof(T));
 }
@@ -273,7 +278,7 @@ private:
 extern GameMemoryManager* g_MemoryManager;
 
 template<typename T>
-__forceinline T* AllocateTransient(size_t Num)
+FORCEINLINE T* AllocateTransient(size_t Num)
 {
 	return (T*) g_MemoryManager->m_pTransientFrameMemory->Allocate(sizeof(T) * Num, __alignof(T));
 }

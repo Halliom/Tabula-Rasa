@@ -1,6 +1,6 @@
 #pragma once
 
-#include "lua5.2\lua.hpp"
+#include "lua5.2/lua.hpp"
 #include "LuaBridge/LuaBridge.h"
 
 struct WorldWrapper

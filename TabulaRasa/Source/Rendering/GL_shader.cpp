@@ -10,7 +10,7 @@ GLShaderProgram::~GLShaderProgram()
 	}
 }
 
-GLShaderProgram* GLShaderProgram::CreateVertexFragmentShader(std::string& VertexShaderSource, std::string& FragmentShaderSource, bool IsSSAOShader)
+GLShaderProgram* GLShaderProgram::CreateVertexFragmentShader(const std::string& VertexShaderSource, const std::string& FragmentShaderSource, bool IsSSAOShader)
 {
 	GLShaderProgram* Program = new GLShaderProgram();
 
@@ -39,7 +39,7 @@ GLShaderProgram* GLShaderProgram::CreateVertexFragmentShader(std::string& Vertex
 	return Program;
 }
 
-GLShaderProgram* GLShaderProgram::CreateVertexFragmentShaderFromFile(std::string& VertexShaderFilename, std::string& FragmentShaderFilename, bool IsSSAOShader)
+GLShaderProgram* GLShaderProgram::CreateVertexFragmentShaderFromFile(const std::string& VertexShaderFilename, const std::string& FragmentShaderFilename, bool IsSSAOShader)
 {
 	return CreateVertexFragmentShader(
 		PlatformFileSystem::LoadFile(DT_SHADERS, VertexShaderFilename),
