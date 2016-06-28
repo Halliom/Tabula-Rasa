@@ -19,6 +19,8 @@ public:
 
 	FORCEINLINE Voxel* GetVoxel(unsigned int X, unsigned int Y, unsigned int Z)
 	{
+        assert(X < SIZE && Y < SIZE && Z < SIZE);
+        
 		Voxel *Result = &m_pVoxels[X][Y][Z];
 		return Result->BlockID > 0 ? Result : NULL; // Only return a value if the block id is not 0
 	}
