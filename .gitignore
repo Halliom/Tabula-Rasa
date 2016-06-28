@@ -83,3 +83,7 @@ TabulaRasa/imgui.ini
 *.xcscheme
 
 *.plist
+
+*.xcbkptlist
+
+TabulaRasa/TabulaRasa.vcxproj.user
