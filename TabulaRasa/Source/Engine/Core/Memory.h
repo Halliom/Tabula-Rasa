@@ -275,10 +275,8 @@ private:
 
 };
 
-extern GameMemoryManager* g_MemoryManager;
-
 template<typename T>
 FORCEINLINE T* AllocateTransient(size_t Num)
 {
-	return (T*) g_MemoryManager->m_pTransientFrameMemory->Allocate(sizeof(T) * Num, __alignof(T));
+	return (T*) g_Engine->g_MemoryManager->m_pTransientFrameMemory->Allocate(sizeof(T) * Num, __alignof(T));
 }

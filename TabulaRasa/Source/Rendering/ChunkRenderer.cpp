@@ -25,15 +25,12 @@ GLShaderProgram*				ChunkRenderer::g_ChunkRenderShader = NULL;
 MemoryPool<ChunkRenderData>*	ChunkRenderer::g_RenderDataMemoryPool = NULL;
 GLuint							ChunkRenderer::g_TextureAtlas;
 
-extern RenderingEngine* g_RenderingEngine;
-extern GameMemoryManager* g_MemoryManager;
-
 void ChunkRenderer::SetupChunkRenderer()
 {
-	g_ChunksToRender = List<ChunkRenderData*>(g_MemoryManager->m_pGameMemory);
+	g_ChunksToRender = List<ChunkRenderData*>(g_Engine->g_MemoryManager->m_pGameMemory);
 	// Allocate a memory pool from the rendering memory to hold 512 ChunkRenderDatas
 	g_RenderDataMemoryPool = new MemoryPool<ChunkRenderData>(
-		Allocate<ChunkRenderData>(g_MemoryManager->m_pRenderingMemory, 512), 
+		Allocate<ChunkRenderData>(g_Engine->g_MemoryManager->m_pRenderingMemory, 512),
 		512 * sizeof(ChunkRenderData));
 	g_ChunksToRender.Reserve(16);
 
@@ -82,7 +79,7 @@ void ChunkRenderer::RenderAllChunks(Player* CurrentPlayer)
 			++MultiblockID)
 		{
 			MultiblockRenderData* Multiblock = &g_ChunksToRender[Index]->MultiblocksToRender[MultiblockID];
-			LoadedModel Model = g_RenderingEngine->CustomBlockRenderers[Multiblock->BlockID];
+			LoadedModel Model = g_Engine->g_RenderingEngine->CustomBlockRenderers[Multiblock->BlockID];
 
 			g_ChunkRenderShader->SetModelMatrix(glm::translate(
 				Identity,
@@ -131,12 +128,12 @@ static glm::vec3 SOUTH_FACE_NORMAL	= glm::vec3(0.0f, 0.0f, -1.0f);
 
 static void GreedyMesh(Chunk* Voxels, ChunkRenderData* RenderData)
 {
-	List<TexturedQuadVertex> Vertices = List<TexturedQuadVertex>(g_MemoryManager->m_pGameMemory);
+	List<TexturedQuadVertex> Vertices = List<TexturedQuadVertex>(g_Engine->g_MemoryManager->m_pGameMemory);
 	Vertices.Reserve(32 * 32 * 32);
-	List<unsigned short> Indices = List<unsigned short>(g_MemoryManager->m_pGameMemory);
+	List<unsigned short> Indices = List<unsigned short>(g_Engine->g_MemoryManager->m_pGameMemory);
 	Indices.Reserve(32 * 32 * 32);
 
-	List<MultiblockRenderData> AdditionalRenderData = List<MultiblockRenderData>(g_MemoryManager->m_pGameMemory);
+	List<MultiblockRenderData> AdditionalRenderData = List<MultiblockRenderData>(g_Engine->g_MemoryManager->m_pGameMemory);
 	bool Counter = false;
 
 	int ChunkSize = Chunk::SIZE;

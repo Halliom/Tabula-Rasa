@@ -1,4 +1,3 @@
-#ifdef __APPLE__
 #include "OSXPlatformFilesystem.h"
 
 #include <fstream>
@@ -6,10 +5,11 @@
 #include <unistd.h>
 
 #include "picopng.cpp"
-#include <assimp/Importer.hpp>
+#include "assimp/Importer.hpp"
 #include "assimp/scene.h"
 #include "assimp/postprocess.h"
 
+#include "../Engine/Engine.h"
 #include "../Engine/Core/Memory.h"
 #include "../Engine/Core/List.h"
 
@@ -81,7 +81,7 @@ GLuint PlatformFileSystem::LoadImageFromFile(const std::string& FileName, unsign
     size_t Size = File.tellg();
     File.seekg(0, std::ios::beg);
     
-    List<unsigned char> Data = List<unsigned char>(g_MemoryManager->m_pGameMemory);
+    List<unsigned char> Data = List<unsigned char>(g_Engine->g_MemoryManager->m_pGameMemory);
     //Reduce the file size by any header bytes that might be present
     Size -= File.tellg();
     Data.Reserve(Size);
@@ -216,4 +216,3 @@ char* PlatformFileSystem::LoadScript(char* ScriptName)
     
     return Data;
 }
-#endif

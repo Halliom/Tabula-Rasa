@@ -3,11 +3,9 @@
 #include <string>
 #include <vector>
 
-#ifdef _WIN32
-#include "GL/glew.h"
-#elif __APPLE__
+#include "../Engine/Engine.h"
+
 #include <OpenGL/gl3.h>
-#endif
 
 enum AssetDirectoryType
 {
@@ -38,7 +36,7 @@ class PlatformFileSystem
 public:
     static std::string LoadFile(const AssetDirectoryType& Directory, const char* FileName);
     
-    static inline std::string LoadFile(const AssetDirectoryType& Directory, const std::string& FileName)
+    static FORCEINLINE std::string LoadFile(const AssetDirectoryType& Directory, const std::string& FileName)
     {
         return LoadFile(Directory, FileName.c_str());
     }

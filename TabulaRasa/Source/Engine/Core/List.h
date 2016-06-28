@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "../Engine.h"
 #include "Memory.h"
 
 template <typename T>
@@ -56,9 +57,9 @@ private:
 };
 
 template<typename T>
-List<T>::List(FreeList* Memory) : 
+List<T>::List(FreeList* Memory) :
+    Size(0),
 	m_pAllocator(Memory),
-	Size(0),
 	m_pBuffer(NULL),
 	m_BytesUsed(0),
 	m_BytesAllocated(0)
@@ -72,8 +73,8 @@ List<T>::List()	:
 	m_BytesUsed(0),
 	m_BytesAllocated(0)
 {
-	if (g_MemoryManager)
-		m_pAllocator = g_MemoryManager->m_pGameMemory;
+	if (g_Engine)
+		m_pAllocator = g_Engine->g_MemoryManager->m_pGameMemory;
 }
 
 template<typename T>

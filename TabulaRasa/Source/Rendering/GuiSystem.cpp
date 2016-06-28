@@ -10,12 +10,15 @@
 #include "SDL2OSX/SDL_syswm.h"
 #endif
 
+#include "glm/common.hpp"
+
 #include "GUI/imgui/imgui.h"
 
 #include "GL_shader.h"
 
 #include "../Platform/Platform.h"
 
+#include "../Engine/Engine.h"
 #include "../Engine/Input.h"
 #include "../Engine/Core/Memory.h"
 #include "../Engine/Console.h"
@@ -24,10 +27,6 @@
 #include "../Game/World.h"
 
 #include "../Engine/Noise.h"
-
-extern GameMemoryManager* g_MemoryManager;
-extern Console* g_Console;
-extern World* g_World;
 
 /**
  * Predefined color values
@@ -66,9 +65,9 @@ GUIRenderable GUIRenderer::CreateText(const char* Text, size_t StringLength, glm
 	glGenBuffers(1, &Result.VBO);
 	glGenBuffers(1, &Result.IBO);
 
-	List<float> Vertices = List<float>(g_MemoryManager->m_pGameMemory);
+	List<float> Vertices = List<float>(g_Engine->g_MemoryManager->m_pGameMemory);
 	Vertices.Reserve(StringLength * 20);
-	List<unsigned short> Indices = List<unsigned short>(g_MemoryManager->m_pGameMemory);
+	List<unsigned short> Indices = List<unsigned short>(g_Engine->g_MemoryManager->m_pGameMemory);
 	Indices.Reserve(StringLength * 6);
 	unsigned int NumGlyphs = 0;
 
@@ -83,7 +82,7 @@ GUIRenderable GUIRenderer::CreateText(const char* Text, size_t StringLength, glm
 		{
 			OffsetY += FontToUse.Size;
 
-			MaxWidth = max(MaxWidth, (int)OffsetX);
+            MaxWidth = glm::max(MaxWidth, (int)OffsetX);
 			OffsetX = 0.0f;
 			continue;
 		}
@@ -138,7 +137,7 @@ GUIRenderable GUIRenderer::CreateText(const char* Text, size_t StringLength, glm
 		++NumGlyphs;
 	}
 
-	MaxWidth = max(MaxWidth, (int)OffsetX);
+    MaxWidth = glm::max(MaxWidth, (int)OffsetX);
 	MaxHeight = -(int)OffsetY;
 
 	glBindBuffer(GL_ARRAY_BUFFER, Result.VBO);
@@ -285,7 +284,7 @@ GUIRenderer::GUIRenderer(int ScreenWidth, int ScreenHeight) :
 	m_ScreenDimensions(glm::ivec2(ScreenWidth, ScreenHeight)),
 	m_MousePosition(glm::ivec2(0, 0)),
 	m_bIsMouseActivated(false),
-	m_Elements(List<IGUIElement*>(g_MemoryManager->m_pGameMemory)) // TODO: Should this be moved to the rendering memory?
+	m_Elements(List<IGUIElement*>(g_Engine->g_MemoryManager->m_pGameMemory)) // TODO: Should this be moved to the rendering memory?
 {
 	m_ProjectionMatrix = glm::ortho(0.0f, (float)ScreenWidth, (float)ScreenHeight, 0.0f);
 
@@ -486,8 +485,8 @@ const char* GetClipboardText()
 	return SDL_GetClipboardText();
 }
 
-#define IMCOLOR(r, g, b) ImVec4(r.0f / 255.0f, g.0f / 255.0f, b.0f / 255.0f, 1.0f)
-#define IMCOLOR_A(r, g, b, a) ImVec4(r.0f / 255.0f, g.0f / 255.0f, b.0f / 255.0f, a.0f / 255.0f)
+#define IMCOLOR(r, g, b) ImVec4(r / 255.0f, g / 255.0f, b / 255.0f, 1.0f)
+#define IMCOLOR_A(r, g, b, a) ImVec4(r / 255.0f, g / 255.0f, b / 255.0f, a / 255.0f)
 
 DebugGUIRenderer::DebugGUIRenderer(int ScreenWidth, int ScreenHeight)
 {
@@ -506,7 +505,7 @@ DebugGUIRenderer::DebugGUIRenderer(int ScreenWidth, int ScreenHeight)
 	// The padding (distance inside a slider for example) and the rounding on the slider background
 	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(8, 8));
 	ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 3.0f);
-
+    
 	ImGui::PushStyleColor(ImGuiCol_Border, IMCOLOR(255, 255, 255));
 
 	ImGui::PushStyleColor(ImGuiCol_TitleBg, IMCOLOR(88, 100, 29));
@@ -662,7 +661,7 @@ void DebugGUIRenderer::RenderFrame(int FramesPerSecond, float FrameTime)
 {
 	static bool ShowWindow = true;
 
-	glm::vec3 PlayerPos = g_World->m_pCurrentPlayer->GetPosition();
+	glm::vec3 PlayerPos = g_Engine->g_World->m_pCurrentPlayer->GetPosition();
 	glm::ivec3 PlayerChunkPos = glm::ivec3(PlayerPos) / 32;
 	// Display FPS
 	ImGui::SetNextWindowPos(ImVec2(10, 10));
@@ -674,7 +673,7 @@ void DebugGUIRenderer::RenderFrame(int FramesPerSecond, float FrameTime)
 	ImGui::Text("Chunk Pos: (%d, %d, %d)", PlayerChunkPos.x, PlayerChunkPos.y, PlayerChunkPos.z);
 	ImGui::End();
 
-	g_Console->Draw();
+	g_Engine->g_Console->Draw();
 
 	ImGui::Render();
 }

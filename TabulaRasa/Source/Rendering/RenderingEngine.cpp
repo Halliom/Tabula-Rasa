@@ -1,7 +1,7 @@
 #include "RenderingEngine.h"
 
 #include <random>
-#include "glm\common.hpp"
+#include "glm/common.hpp"
 
 #include "../Platform/Platform.h"
 
@@ -68,9 +68,11 @@ void RenderingEngine::PostInitialize()
 	LogF("Renderer: %s", (char*) glGetString(GL_RENDERER));
 	LogF("Verision: %s", (char*) glGetString(GL_VERSION));
 
+#ifdef _WIN32
 	SYSTEM_INFO SystemInfo;
 	GetSystemInfo(&SystemInfo);
 	LogF("Number of processors: %d\n", SystemInfo.dwNumberOfProcessors);
+#endif
 }
 
 void RenderingEngine::AddRendererForBlock(unsigned int BlockID, const char *BlockModelFileName)
@@ -315,7 +317,7 @@ void RenderingEngine::SSAOPass()
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-__forceinline void RenderingEngine::StartGeometryPass()
+FORCEINLINE void RenderingEngine::StartGeometryPass()
 {
 	glBindFramebuffer(GL_FRAMEBUFFER, m_GeometryFBO);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

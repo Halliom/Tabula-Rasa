@@ -3,6 +3,8 @@
 #include <string>
 #include <stdarg.h>
 
+#include "../Engine/Engine.h"
+
 #define MAX_INPUT_LINE_SIZE 140
 #define MAX_BUFFER_SIZE 200
 
@@ -64,6 +66,5 @@ private:
 	unsigned int	m_NumConsoleMessages;
 };
 
-extern Console* g_Console;
-#define Log(str) g_Console->PrintLine(str)
-#define LogF(fmt, ...) g_Console->PrintLineF(fmt, __VA_ARGS__)
+#define Log(str) g_Engine->g_Console->PrintLine(str)
+#define LogF(fmt, ...) g_Engine->g_Console->PrintLineF(fmt, __VA_ARGS__)

@@ -1,5 +1,6 @@
 #include "Fonts.h"
 
+#include "../Engine/Engine.h"
 #include "../Engine/Core/Memory.h"
 
 FontLibrary* FontLibrary::g_FontLibrary;
@@ -141,7 +142,7 @@ void FontLibrary::Initialize(std::string& FontLibraryLocation)
 
 	m_FontLibraryLocation = FontLibraryLocation.append("\\");
 
-	m_LoadedFonts = List<TrueTypeFont>(g_MemoryManager->m_pGameMemory);
+	m_LoadedFonts = List<TrueTypeFont>(g_Engine->g_MemoryManager->m_pGameMemory);
 
 #if 0
 	HANDLE FileHandle;

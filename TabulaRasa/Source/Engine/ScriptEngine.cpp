@@ -7,40 +7,38 @@
 #include "../Game/World.h"
 #include "../Game/Player.h"
 #include "../Engine/Console.h"
-
-extern Console* g_Console;
-extern World* g_World;
+#include "../Engine/Engine.h"
 
 lua_State* Script::g_State = NULL;
 
 void LogToConsole(std::string Message)
 {
-	g_Console->PrintLine(Message);
+	g_Engine->g_Console->PrintLine(Message);
 }
 
 void WorldWrapper::AddBlock(int X, int Y, int Z, int BlockID)
 {
-	g_World->AddBlock(X, Y, Z, BlockID);
+	g_Engine->g_World->AddBlock(X, Y, Z, BlockID);
 }
 
 void WorldWrapper::RemoveBlock(int X, int Y, int Z)
 {
-	g_World->RemoveBlock(X, Y, Z);
+	g_Engine->g_World->RemoveBlock(X, Y, Z);
 }
 
 void WorldWrapper::AddMultiblock(int X, int Y, int Z, int BlockID)
 {
-	g_World->AddMultiblock(X, Y, Z, BlockID);
+	g_Engine->g_World->AddMultiblock(X, Y, Z, BlockID);
 }
 
 void WorldWrapper::RemoveMultiblock(int X, int Y, int Z)
 {
-	g_World->RemoveMultiblock(X, Y, Z);
+	g_Engine->g_World->RemoveMultiblock(X, Y, Z);
 }
 
 Player* WorldWrapper::GetPlayer()
 {
-	return g_World->m_pCurrentPlayer;
+	return g_Engine->g_World->m_pCurrentPlayer;
 }
 
 Script::Script(char* Filename)

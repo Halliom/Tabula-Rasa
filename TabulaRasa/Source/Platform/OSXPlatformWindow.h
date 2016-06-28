@@ -1,13 +1,7 @@
 #pragma once
 
-#ifdef _WIN32
-#include "GL/glew.h"
-#include "GL/wglew.h"
-#include "SDL2/SDL.h"
-#elif __APPLE__
 #include <OpenGL/gl3.h>
 #include "SDL2OSX/SDL.h"
-#endif
 
 struct WindowParameters
 {
