@@ -45,8 +45,8 @@ int main(int argc, char* argv[])
 {
 	WindowParameters WindowParams;
 	WindowParams.Title = "Tabula Rasa";
-	WindowParams.Width = 1280;
-	WindowParams.Height = 720;
+	WindowParams.Width = 640;
+	WindowParams.Height = 360;
 	WindowParams.UseVSync = true;
 	WindowParams.UseDepthTest = false;
 	WindowParams.Fullscreen = false;
@@ -64,8 +64,8 @@ int main(int argc, char* argv[])
 	// TODO: Create Settings class
 	Script Preferences = Script("preferences.lua");
 	WindowParams.Title = Preferences.GetStringFromTable("Window", "title").c_str();
-	WindowParams.Width = Preferences.GetIntFromTable("Window", "width");
-	WindowParams.Height = Preferences.GetIntFromTable("Window", "height");
+	//WindowParams.Width = Preferences.GetIntFromTable("Window", "width");
+	//WindowParams.Height = Preferences.GetIntFromTable("Window", "height");
 	WindowParams.UseVSync = Preferences.GetBoolFromTable("Window", "vsync");
 	//WindowParams.Fullscreen = Preferences.GetBoolFromTable("Window", "full_screen");
 	//WindowParams.StartMaximized = Preferences.GetBoolFromTable("Window", "start_maximized");
@@ -88,7 +88,7 @@ int main(int argc, char* argv[])
 	g_Engine->g_Console = new Console();
 
 	g_Engine->g_RenderingEngine = new RenderingEngine();
-	g_Engine->g_RenderingEngine->Initialize(WindowParams.Width, WindowParams.Height);
+	g_Engine->g_RenderingEngine->Initialize(Window.WindowParams.Width, Window.WindowParams.Height);
 	g_Engine->g_RenderingEngine->AddRendererForBlock(3, "Chest_Model.obj");
 
 	g_Engine->g_GUIRenderer = new DebugGUIRenderer((int)WindowParams.Width, (int)WindowParams.Height);

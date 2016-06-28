@@ -56,7 +56,13 @@ bool PlatformWindow::SetupWindowAndRenderContext()
     SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8);
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
     
-    MainWindow = SDL_CreateWindow(WindowParams.Title, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WindowParams.Width, WindowParams.Height, Flags);
+    MainWindow = SDL_CreateWindow(
+                                  WindowParams.Title,
+                                  SDL_WINDOWPOS_CENTERED,
+                                  SDL_WINDOWPOS_CENTERED,
+                                  WindowParams.Width,
+                                  WindowParams.Height,
+                                  Flags);
     if (MainWindow == NULL)
     {
         //TODO: Print to log since rendering isn't initialized yet
@@ -89,6 +95,11 @@ bool PlatformWindow::SetupWindowAndRenderContext()
     {
         SDL_GL_SetSwapInterval(0);
     }
+    
+    int DrawWidth, DrawHeight;
+    SDL_GL_GetDrawableSize(MainWindow, &DrawWidth, &DrawHeight);
+    WindowParams.Width = DrawWidth;
+    WindowParams.Height = DrawHeight;
     
     return true;
 }
@@ -127,17 +138,19 @@ bool PlatformWindow::PrepareForRender()
                     {
                         if (Camera::g_ActiveCamera)
                         {
-                            Camera::g_ActiveCamera->m_WindowWidth = Event.window.data1;
-                            Camera::g_ActiveCamera->m_WindowHeight = Event.window.data2;
+                            int Width, Height;
+                            SDL_GL_GetDrawableSize(MainWindow, &Width, &Height);
+                            WindowParams.Width = Width;
+                            WindowParams.Height = Height;
+                            
+                            Camera::g_ActiveCamera->m_WindowWidth = WindowParams.Width;
+                            Camera::g_ActiveCamera->m_WindowHeight = WindowParams.Height;
                             Camera::g_ActiveCamera->m_bIsScreenMatrixDirty = true;
                             Camera::g_ActiveCamera->m_bIsProjectionMatrixDirty = true;
                             
-                            g_Engine->g_RenderingEngine->ScreenDimensionsChanged(Event.window.data1, Event.window.data2);
-                            g_Engine->g_GUIRenderer->UpdateScreenDimensions(Event.window.data1, Event.window.data2);
+                            g_Engine->g_RenderingEngine->ScreenDimensionsChanged(WindowParams.Width, WindowParams.Height);
+                            g_Engine->g_GUIRenderer->UpdateScreenDimensions(WindowParams.Width, WindowParams.Height);
                         }
-                        
-                        WindowParams.Width = Event.window.data1;
-                        WindowParams.Height = Event.window.data2;
                         break;
                     }
                 }
