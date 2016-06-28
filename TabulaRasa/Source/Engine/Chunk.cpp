@@ -3,6 +3,8 @@
 #include "../Rendering/ChunkRenderer.h"
 #include "Octree.h"
 
+constexpr int Chunk::SIZE;
+
 Chunk::Chunk()
 {
 	m_bIsRenderStateDirty = false;
