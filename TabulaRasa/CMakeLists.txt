@@ -94,6 +94,9 @@ elseif (APPLE)
       ${CORE_VIDEO}
       ${ICONV}
       )
+
+   # Windows defines the _DEBUG macro so to comply, define the _DEBUG macro
+   add_definitions(-D_DEBUG)
 endif()
 
 message(STATUS “Architecture: ${CMAKE_SYSTEM_NAME}”)
