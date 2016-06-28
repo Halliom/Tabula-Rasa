@@ -568,7 +568,6 @@ DebugGUIRenderer::DebugGUIRenderer(int ScreenWidth, int ScreenHeight)
 
 	IO.Fonts->TexID = (void *)(intptr_t)DebugGui.Texture;
 
-
 	// This tells it to send all the draw calls to RenderDrawLists
 	// when ImGui::Render is called
 	IO.RenderDrawListsFn = &RenderDrawLists;

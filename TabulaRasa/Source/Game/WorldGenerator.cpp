@@ -120,7 +120,11 @@ void WorldGenerator::LoadFeatures()
 	FindClose(FoundFile); //Always, Always, clean things up!
 #else
     std::string DirectoryCppString = PlatformFileSystem::GetAssetDirectory(DT_SCRIPTS).c_str();
+#ifdef _WIN32
     DirectoryCppString.append("WorldGen\\");
+#else
+    DirectoryCppString.append("WorldGen/");
+#endif
     const char* Directory = DirectoryCppString.c_str();
     char Path[2048];
     
@@ -134,7 +138,11 @@ void WorldGenerator::LoadFeatures()
         
         if (!file.is_dir)
         {
+#ifdef _WIN32
             sprintf(Path, "WorldGen\\%s", file.name);
+#else
+            sprintf(Path, "WorldGen/%s", file.name);
+#endif
             
             // Just create a script object on the stack which will load the
             // contents of the script file into the public Lua state

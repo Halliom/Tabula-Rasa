@@ -140,7 +140,11 @@ void FontLibrary::Initialize(std::string& FontLibraryLocation)
 		assert(false);
 	}
 
+#ifdef _WIN32
 	m_FontLibraryLocation = FontLibraryLocation.append("\\");
+#else
+    m_FontLibraryLocation = FontLibraryLocation.append("/");
+#endif
 
 	m_LoadedFonts = List<TrueTypeFont>(g_Engine->g_MemoryManager->m_pGameMemory);
 

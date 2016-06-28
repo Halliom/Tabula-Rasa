@@ -36,9 +36,17 @@ std::string PlatformFileSystem::GetAssetDirectory(const AssetDirectoryType& Dire
 {
     char CurrentDirectory[MAX_FILE_PATH];
     char* CurrentWorkingDirectory = getcwd(CurrentDirectory, sizeof(CurrentDirectory));
-    assert(CurrentWorkingDirectory);
     
+    // Ensure that we actually got a directory
+    assert(CurrentWorkingDirectory);
+#ifdef _DEBUG
+    // TODO: This won't work in release
+    
+    int StringLength = strlen(CurrentWorkingDirectory);
+    std::string OutDirectory = std::string(CurrentDirectory, StringLength - 6);
+#else
     std::string OutDirectory = std::string(CurrentDirectory);
+#endif
     
     //TODO: Cache this
     switch (Directory)
