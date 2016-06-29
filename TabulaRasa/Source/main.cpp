@@ -64,8 +64,8 @@ int main(int argc, char* argv[])
 	// TODO: Create Settings class
 	Script Preferences = Script("preferences.lua");
 	WindowParams.Title = Preferences.GetStringFromTable("Window", "title").c_str();
-	//WindowParams.Width = Preferences.GetIntFromTable("Window", "width");
-	//WindowParams.Height = Preferences.GetIntFromTable("Window", "height");
+	WindowParams.Width = Preferences.GetIntFromTable("Window", "width") / 2;
+	WindowParams.Height = Preferences.GetIntFromTable("Window", "height") / 2;
 	WindowParams.UseVSync = Preferences.GetBoolFromTable("Window", "vsync");
 	//WindowParams.Fullscreen = Preferences.GetBoolFromTable("Window", "full_screen");
 	//WindowParams.StartMaximized = Preferences.GetBoolFromTable("Window", "start_maximized");
@@ -91,7 +91,7 @@ int main(int argc, char* argv[])
 	g_Engine->g_RenderingEngine->Initialize(Window.WindowParams.Width, Window.WindowParams.Height);
 	g_Engine->g_RenderingEngine->AddRendererForBlock(3, "Chest_Model.obj");
 
-	g_Engine->g_GUIRenderer = new DebugGUIRenderer((int)WindowParams.Width, (int)WindowParams.Height);
+	g_Engine->g_GUIRenderer = new DebugGUIRenderer((int)Window.WindowParams.Width, (int)Window.WindowParams.Height);
 
 	// Loads the world and initializes subobjects
 	g_Engine->g_World = new World();
@@ -113,8 +113,8 @@ int main(int argc, char* argv[])
 
 		// Render the world
 		g_Engine->g_RenderingEngine->RenderFrame(g_Engine->g_World, DeltaTime);
-
-		// Render all GUI elements
+        
+        // Render all GUI elements
 		g_Engine->g_GUIRenderer->RenderFrame(StaticFPS, (float)DeltaTime);
 
 		// Swap the buffers
