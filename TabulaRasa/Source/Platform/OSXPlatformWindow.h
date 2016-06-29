@@ -1,6 +1,6 @@
 #pragma once
 
-#include <OpenGL/gl3.h>
+#include "GL/gl3w.h"
 #include "SDL2OSX/SDL.h"
 
 struct WindowParameters

@@ -1,10 +1,6 @@
 #pragma once
 
-#ifdef _WIN32
-#include "GL/glew.h"
-#elif __APPLE__
-#include <OpenGL/gl3.h>
-#endif
+#include "GL/gl3w.h"
 
 #include "../Platform/Platform.h"
 #include "../Engine/Block.h"

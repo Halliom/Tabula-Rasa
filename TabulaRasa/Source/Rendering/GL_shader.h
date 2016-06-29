@@ -3,11 +3,8 @@
 #include <string>
 #include <vector>
 
-#ifdef _WIN32
-#include "GL/glew.h"
-#elif __APPLE__
-#include <OpenGL/gl3.h>
-#endif
+#include "GL/gl3w.h"
+
 #include "glm/common.hpp"
 #include "glm/gtc/type_ptr.hpp"
 

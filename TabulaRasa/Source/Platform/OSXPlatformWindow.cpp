@@ -34,7 +34,7 @@ bool PlatformWindow::SetupWindowAndRenderContext()
         return false;
     }
     
-    uint32_t Flags = SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL | SDL_WINDOW_INPUT_GRABBED | SDL_WINDOW_INPUT_FOCUS | SDL_WINDOW_MOUSE_FOCUS | SDL_WINDOW_MOUSE_CAPTURE | SDL_WINDOW_ALLOW_HIGHDPI;
+    uint32_t Flags = SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL | SDL_WINDOW_INPUT_GRABBED | SDL_WINDOW_INPUT_FOCUS | SDL_WINDOW_MOUSE_FOCUS | SDL_WINDOW_MOUSE_CAPTURE | SDL_WINDOW_ALLOW_HIGHDPI ;
     
     if (WindowParams.Fullscreen)
     {
@@ -49,6 +49,7 @@ bool PlatformWindow::SetupWindowAndRenderContext()
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+    SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1);
     
     SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
     SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
@@ -84,8 +85,12 @@ bool PlatformWindow::SetupWindowAndRenderContext()
     
     SDL_GL_SetSwapInterval(1);
     
-    //glewExperimental = true;
-    //glewInit();
+    // Make sure that OpenGL works
+    if (gl3wInit() != 0 || !gl3wIsSupported(3, 2))
+    {
+        // TODO: Exit/crash with error
+        assert(false);
+    }
     
     if (GlobalWindow->WindowParams.UseVSync)
     {

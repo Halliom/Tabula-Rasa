@@ -3,9 +3,9 @@
 #include <string>
 #include <vector>
 
-#include "../Engine/Engine.h"
+#include "GL/gl3w.h"
 
-#include <OpenGL/gl3.h>
+#include "../Engine/Engine.h"
 
 enum AssetDirectoryType
 {
@@ -49,5 +49,5 @@ public:
     
     static void LoadModel(LoadedModel* Model, const char* FileName);
     
-    static char* LoadScript(char* ScriptName);
+    static char* LoadScript(const char* ScriptName);
 };
