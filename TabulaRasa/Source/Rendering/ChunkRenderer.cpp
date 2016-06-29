@@ -62,6 +62,7 @@ void ChunkRenderer::RenderAllChunks(Player* CurrentPlayer)
 	glm::mat4 View = *Camera::g_ActiveCamera->GetViewMatrix();
 
 	g_ChunkRenderShader->Bind();
+    g_ChunkRenderShader->SetDefaultSamplers();
 	g_ChunkRenderShader->SetProjectionMatrix(Projection);
 	g_ChunkRenderShader->SetViewMatrix(View);
 
@@ -72,7 +73,6 @@ void ChunkRenderer::RenderAllChunks(Player* CurrentPlayer)
 		if (!g_ChunksToRender[Index])
 			continue;
 
-		ChunkRenderData* RenderItem = g_ChunksToRender[Index];
 		for (
 			unsigned int MultiblockID = 0;
 			MultiblockID < g_ChunksToRender[Index]->NumMultiblocksToRender;
@@ -114,6 +114,11 @@ FORCEINLINE int GetVoxelSide(Chunk* Voxels, List<MultiblockRenderData>* Addition
 				AdditionalRenderData->Push({ X, Y, Z, Block.BlockID });
 				return -1;
 			}
+            case TYPE_STRUCTURE:
+            {
+                // TODO: Add structures
+                break;
+            }
 		}
 	}
 	return -1;

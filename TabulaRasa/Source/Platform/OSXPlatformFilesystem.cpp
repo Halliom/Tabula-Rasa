@@ -10,6 +10,7 @@
 #include "assimp/postprocess.h"
 
 #include "../Engine/Engine.h"
+#include "../Engine/Console.h"
 #include "../Engine/Core/Memory.h"
 #include "../Engine/Core/List.h"
 
@@ -154,8 +155,9 @@ void PlatformFileSystem::LoadModel(LoadedModel* Model, const char* FileName)
     
     if (!ImportedScene)
     {
-        const char *ErrorMessage = Importer.GetErrorString();
+        const char* ErrorMessage = Importer.GetErrorString();
         // TODO: Error loggin
+        LogF("Error loading model %s\n%s", FileName, ErrorMessage);
         return;
     }
     
@@ -203,7 +205,7 @@ void PlatformFileSystem::LoadModel(LoadedModel* Model, const char* FileName)
     glBindVertexArray(0);
 }
 
-char* PlatformFileSystem::LoadScript(char* ScriptName)
+char* PlatformFileSystem::LoadScript(const char* ScriptName)
 {
     std::string FileName = GetAssetDirectory(DT_SCRIPTS).append(ScriptName);
     

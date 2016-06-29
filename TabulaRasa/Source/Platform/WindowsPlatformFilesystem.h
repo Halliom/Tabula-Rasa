@@ -3,11 +3,7 @@
 #include <string>
 #include <vector>
 
-#ifdef _WIN32
-#include "GL/glew.h"
-#elif __APPLE__
-#include <OpenGL/gl3.h>
-#endif
+#include "GL/gl3w.h"
 
 #include "../Engine/Engine.h"
 
@@ -53,5 +49,5 @@ public:
 
 	static void LoadModel(LoadedModel* Model, const char* FileName);
 
-	static char* LoadScript(char* ScriptName);
+	static char* LoadScript(const char* ScriptName);
 };

@@ -2,11 +2,7 @@
 
 #include <string>
 
-#ifdef _WIN32
-#include "GL/glew.h"
-#elif __APPLE__
-#include <OpenGL/gl3.h>
-#endif
+#include "GL/gl3w.h"
 
 #include <ft2build.h>
 #include FT_FREETYPE_H
@@ -51,7 +47,7 @@ public:
 
 	void Destroy();
 
-	TrueTypeFont LoadFontFromFile(char* FontFileName, int Size);
+	TrueTypeFont LoadFontFromFile(const char* FontFileName, int Size);
 
 	TrueTypeFont GetFont(int Index);
 

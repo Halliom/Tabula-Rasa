@@ -148,6 +148,11 @@ void Console::Draw()
 					TextColor = ImVec4(0.6f, 0.0f, 0.6f, 1.0f);
 					break;
 				}
+                default:
+                {
+                    // If none of the above it must be normal which means white color
+                    break;
+                }
 			}
 
 			// Set the color (and then pop it) and render the text

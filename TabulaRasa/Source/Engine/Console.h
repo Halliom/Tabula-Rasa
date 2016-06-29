@@ -60,7 +60,7 @@ public:
 private:
 
 	char			m_pConsoleInputLine[MAX_INPUT_LINE_SIZE];
-	char*			m_pConsoleTitle;
+	const char*		m_pConsoleTitle;
 
 	ConsoleMessage	m_pMessageBuffer[MAX_BUFFER_SIZE];
 	unsigned int	m_NumConsoleMessages;

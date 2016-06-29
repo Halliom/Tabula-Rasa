@@ -18,7 +18,7 @@ public:
 
 private:
 
-	char* m_pDisplayString;
+	const char* m_pDisplayString;
 
 	GUIRenderable m_Renderable;
 

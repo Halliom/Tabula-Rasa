@@ -12,7 +12,7 @@ static inline int NextPower2(int x)
 	return val;
 }
 
-TrueTypeFont FontLibrary::LoadFontFromFile(char* FontFileName, int Size)
+TrueTypeFont FontLibrary::LoadFontFromFile(const char* FontFileName, int Size)
 {
 	FT_Face FontFace;
 
@@ -58,7 +58,6 @@ TrueTypeFont FontLibrary::LoadFontFromFile(char* FontFileName, int Size)
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
-    // TODO: Fix this
 #ifndef __APPLE__
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);

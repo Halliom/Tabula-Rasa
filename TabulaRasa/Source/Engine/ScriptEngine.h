@@ -16,32 +16,32 @@ class Script
 {
 public:
 
-	Script(char* Filename);
+	Script(const char* Filename);
 
 	static bool ExecuteStringInInterpreter(const char* InputString);
 
-	void CallFunction(char* FunctionName);
+	void CallFunction(const char* FunctionName);
 
-	bool GetBool(char* VariableName);
+	bool GetBool(const char* VariableName);
 
-	bool GetBoolFromTable(char* TableName, char* VariableName);
+	bool GetBoolFromTable(const char* TableName, const char* VariableName);
 
-	int GetInt(char* VariableName);
+	int GetInt(const char* VariableName);
 
-	int GetIntFromTable(char* TableName, char* VariableName);
+	int GetIntFromTable(const char* TableName, const char* VariableName);
 
-	std::string GetString(char* VariableName);
+	std::string GetString(const char* VariableName);
 
-	std::string GetStringFromTable(char* TableName, char* VariableName);
+	std::string GetStringFromTable(const char* TableName, const char* VariableName);
 
 	luabridge::LuaRef GetReference(const char* VariableName)
 	{
 		return luabridge::getGlobal(g_State, VariableName);
 	}
 
-	void LogFunctionErrors(char* FunctionName);
+	void LogFunctionErrors(const char* FunctionName);
 
-	char* m_pScriptName;
+	const char* m_pScriptName;
 
 	static lua_State* g_State;
 };

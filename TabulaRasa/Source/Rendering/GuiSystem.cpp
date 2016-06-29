@@ -11,6 +11,7 @@
 #endif
 
 #include "glm/common.hpp"
+#include "GL/gl3w.h"
 
 #include "GUI/imgui/imgui.h"
 
@@ -125,7 +126,6 @@ GUIRenderable GUIRenderer::CreateText(const char* Text, size_t StringLength, glm
 		Vertices.Push(CurrentGlyph.TexCoordTopX);
 		Vertices.Push(CurrentGlyph.TexCoordTopY);
 
-		int IndexBase = CurrentChar * 4; // What index we currently are at
 		Indices.Push(BaseIndex + 0); //3
 		Indices.Push(BaseIndex + 1); //2
 		Indices.Push(BaseIndex + 2); //0
@@ -281,10 +281,10 @@ void GUIRenderer::RenderAtPosition(GUIRenderable Renderable, glm::vec2 Position)
 }
 
 GUIRenderer::GUIRenderer(int ScreenWidth, int ScreenHeight) :
+    m_bIsMouseActivated(false),
+    m_Elements(List<IGUIElement*>(g_Engine->g_MemoryManager->m_pGameMemory)), // TODO: Should this be moved to the rendering memory?
 	m_ScreenDimensions(glm::ivec2(ScreenWidth, ScreenHeight)),
-	m_MousePosition(glm::ivec2(0, 0)),
-	m_bIsMouseActivated(false),
-	m_Elements(List<IGUIElement*>(g_Engine->g_MemoryManager->m_pGameMemory)) // TODO: Should this be moved to the rendering memory?
+	m_MousePosition(glm::ivec2(0, 0))
 {
 	m_ProjectionMatrix = glm::ortho(0.0f, (float)ScreenWidth, (float)ScreenHeight, 0.0f);
 
@@ -402,18 +402,12 @@ void RenderDrawLists(ImDrawData* DrawData)
 	glEnable(GL_SCISSOR_TEST);
 	glActiveTexture(GL_TEXTURE0);
 
+    glViewport(0, 0, Width, Height);
+    
 	glBindVertexArray(DebugGui.VAO);
 
 	DebugGui.Shader->Bind();
-
-	const float ortho_projection[4][4] =
-	{
-		{ 2.0f / IO.DisplaySize.x, 0.0f,                   0.0f, 0.0f },
-		{ 0.0f,                  2.0f / -IO.DisplaySize.y, 0.0f, 0.0f },
-		{ 0.0f,                  0.0f,                  -1.0f, 0.0f },
-		{ -1.0f,                  1.0f,                   0.0f, 1.0f },
-	};
-
+    DebugGui.Shader->SetDefaultSamplers();
 	DebugGui.Shader->SetProjectionMatrix(DebugGui.ProjectionMatrix);
 
 	for (int i = 0; i < DrawData->CmdListsCount; ++i)
@@ -450,7 +444,9 @@ void RenderDrawLists(ImDrawData* DrawData)
 			else
 			{
 				// Bind the texture for the
-				glBindTexture(GL_TEXTURE_2D, (GLuint)(intptr_t)DrawCommand->TextureId);
+                GLuint TextureId = (GLuint)(intptr_t)DrawCommand->TextureId;
+                glActiveTexture(GL_TEXTURE0);
+				glBindTexture(GL_TEXTURE_2D, TextureId);
 
 				// Define a scissor box defined by the ClipRect where anything outside does not get drawn
 				glScissor(
@@ -485,14 +481,16 @@ const char* GetClipboardText()
 	return SDL_GetClipboardText();
 }
 
-#define IMCOLOR(r, g, b) ImVec4(r / 255.0f, g / 255.0f, b / 255.0f, 1.0f)
-#define IMCOLOR_A(r, g, b, a) ImVec4(r / 255.0f, g / 255.0f, b / 255.0f, a / 255.0f)
+#define IMCOLOR(r, g, b) ImVec4((float)r / 255.0f, (float)g / 255.0f, (float)b / 255.0f, 1.0f)
+#define IMCOLOR_A(r, g, b, a) ImVec4((float)r / 255.0f, (float)g / 255.0f, (float)b / 255.0f, (float)a / 255.0f)
 
 DebugGUIRenderer::DebugGUIRenderer(int ScreenWidth, int ScreenHeight)
 {
 	ImGuiIO& IO = ImGui::GetIO();
 
 	IO.DisplaySize = ImVec2((float)ScreenWidth, (float)ScreenHeight);
+    IO.DisplayFramebufferScale = ImVec2(1.0f, 1.0f);
+    
 	DebugGui.ProjectionMatrix = glm::ortho(0.0f, (float)ScreenWidth, (float)ScreenHeight, 0.0f);
 
 	// The padding (space between the window and the elements) and rounding (corners)
@@ -618,9 +616,9 @@ DebugGUIRenderer::~DebugGUIRenderer()
 
 void DebugGUIRenderer::UpdateScreenDimensions(int NewWidth, int NewHeight)
 {
-	ImGuiIO& IO = ImGui::GetIO();
-	IO.DisplaySize = ImVec2(NewWidth, NewHeight);
-	IO.DisplayFramebufferScale = ImVec2(1.0f, 1.0f);
+    ImGuiIO& IO = ImGui::GetIO();
+    IO.DisplaySize = ImVec2(NewWidth, NewHeight);
+    IO.DisplayFramebufferScale = ImVec2(1.0f, 1.0f);
 
 	DebugGui.ProjectionMatrix = glm::ortho(0.0f, (float)NewWidth, (float)NewHeight, 0.0f);
 }
@@ -628,7 +626,7 @@ void DebugGUIRenderer::UpdateScreenDimensions(int NewWidth, int NewHeight)
 void DebugGUIRenderer::BeginFrame()
 {
 	ImGuiIO& IO = ImGui::GetIO();
-
+    
 	// TODO: This should not be gotten from SDL directly rather it should go through the input system
 
 	// Get the mouse state
@@ -658,8 +656,6 @@ void DebugGUIRenderer::BeginFrame()
 
 void DebugGUIRenderer::RenderFrame(int FramesPerSecond, float FrameTime)
 {
-	static bool ShowWindow = true;
-
 	glm::vec3 PlayerPos = g_Engine->g_World->m_pCurrentPlayer->GetPosition();
 	glm::ivec3 PlayerChunkPos = glm::ivec3(PlayerPos) / 32;
 	// Display FPS

@@ -6,6 +6,8 @@
 #define FORCEINLINE inline
 #endif
 
+#include <assert.h>
+
 struct EngineGlobals
 {
     class GameMemoryManager*    g_MemoryManager;

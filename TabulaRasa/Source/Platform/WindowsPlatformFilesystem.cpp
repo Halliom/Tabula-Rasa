@@ -221,7 +221,7 @@ void PlatformFileSystem::LoadModel(LoadedModel *Model, const char *FileName)
 	glBindVertexArray(0);
 }
 
-char* PlatformFileSystem::LoadScript(char* ScriptName)
+char* PlatformFileSystem::LoadScript(const char* ScriptName)
 {
 	std::string FileName = GetAssetDirectory(DT_SCRIPTS).append(ScriptName);
 
