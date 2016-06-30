@@ -34,6 +34,11 @@ public:
     
     void Use();
     
+    FORCEINLINE GLuint GetTextureId()
+    {
+        return m_TextureId;
+    }
+    
 private:
     
     void CreateResource();

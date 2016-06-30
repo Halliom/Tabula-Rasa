@@ -5,7 +5,6 @@ Texture::Texture() :
     m_BindingPoint(0),
     m_ReferenceCount(new unsigned int)
 {
-    CreateResource();
     *m_ReferenceCount = 1;
 }
 
@@ -58,7 +57,8 @@ Texture::~Texture()
 
 void Texture::LoadFromBuffer(unsigned char* Pixels, unsigned int Width, unsigned int Height, GLenum Format)
 {
-    assert(m_TextureId);
+    if (!m_TextureId)
+        CreateResource();
     
     // We actually don't need to specify which binding point to use
     // (via glActiveTexture()) so just bind to GL_TEXTURE_2D target
@@ -78,7 +78,8 @@ void Texture::LoadFromBuffer(unsigned char* Pixels, unsigned int Width, unsigned
 
 void Texture::LoadFromBuffer(float* Pixels, unsigned int Width, unsigned int Height, GLenum Format)
 {
-    assert(m_TextureId);
+    if (!m_TextureId)
+        CreateResource();
     
     // We actually don't need to specify which binding point to use
     // (via glActiveTexture()) so just bind to GL_TEXTURE_2D target
