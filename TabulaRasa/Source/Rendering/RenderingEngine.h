@@ -4,7 +4,7 @@
 
 #include "../Platform/Platform.h"
 #include "../Engine/Block.h"
-#include "../Rendering/GL_shader.h"
+#include "../Rendering/Shader.h"
 
 enum GBufferTextureLayerGeometryPass
 {

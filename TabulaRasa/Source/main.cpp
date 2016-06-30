@@ -45,8 +45,8 @@ int main(int argc, char* argv[])
 {
 	WindowParameters WindowParams;
 	WindowParams.Title = "Tabula Rasa";
-	WindowParams.Width = 640;
-	WindowParams.Height = 360;
+	WindowParams.Width = 960;
+	WindowParams.Height = 540;
 	WindowParams.UseVSync = true;
 	WindowParams.UseDepthTest = false;
 	WindowParams.Fullscreen = false;

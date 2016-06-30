@@ -22,8 +22,7 @@ void Chunk::Initialize()
 {
 	// Create render data for the chunk
 	m_pChunkRenderData = ChunkRenderer::CreateRenderData(
-		glm::vec3(m_ChunkX * SIZE, m_ChunkY * SIZE, m_ChunkZ * SIZE),
-		this);
+		glm::vec3(m_ChunkX * SIZE, m_ChunkY * SIZE, m_ChunkZ * SIZE));
 }
 
 void Chunk::Tick(float DeltaTime)

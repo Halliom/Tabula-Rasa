@@ -182,7 +182,7 @@ void WorldGenerator::GenerateChunk(glm::ivec3 ChunkPosition, Chunk* Result)
 	int Height = ChunkPosition.y * Chunk::SIZE;
 
 	IBiome* ChosenBiome = NULL;
-	for (unsigned int i = 0; i < m_NumBiomes; ++i)
+	for (int i = 0; i < m_NumBiomes; ++i)
 	{
 		IBiome* CurrentBiome = m_Biomes[i];
 		if (Heat >= CurrentBiome->m_MinHeatLevel && Heat <= CurrentBiome->m_MaxHeatLevel)
@@ -216,7 +216,7 @@ void WorldGenerator::AddBiome(IBiome* Biome)
 
 IBiome::IBiome()
 {
-	for (int i = 0; i < ArrayCount(m_Features); ++i)
+	for (unsigned int i = 0; i < ArrayCount(m_Features); ++i)
 	{
 		m_Features[i] = NULL;
 	}
@@ -257,7 +257,7 @@ void IBiome::AddFeatureGenerator(int Order, std::string FeatureName)
 
 void IBiome::Generate(Chunk* Chunk, World* WorldObject, SimplexNoise* NoiseGenerator, glm::ivec3 WorldPosition)
 {
-	for (int i = 0; i < ArrayCount(m_Features); ++i)
+	for (size_t i = 0; i < ArrayCount(m_Features); ++i)
 	{
 		if (m_Features[i])
 		{

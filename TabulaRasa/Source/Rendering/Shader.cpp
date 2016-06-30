@@ -1,4 +1,4 @@
-#include "GL_shader.h"
+#include "Shader.h"
 
 #include "../Platform/Platform.h"
 
@@ -34,6 +34,8 @@ GLShaderProgram* GLShaderProgram::CreateVertexFragmentShader(const std::string& 
 
 	Program->m_bIsSSAOShader = IsSSAOShader;
 
+    // Bind the shader so we can generate the uniform bindings
+    Program->Bind();
 	Program->GenerateUniformBindings();
 
 	return Program;
@@ -67,6 +69,8 @@ void GLShaderProgram::GenerateUniformBindings()
 	{
 		SSAOSamplesLocation = GetUniform("g_Samples");
 	}
+    
+    SetDefaultSamplers();
 }
 
 bool GLShaderProgram::AttachShaderSource(const GLShaderSource& Source)

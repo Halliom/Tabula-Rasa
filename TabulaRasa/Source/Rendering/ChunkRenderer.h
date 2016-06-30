@@ -57,7 +57,7 @@ public:
 
 	static void RenderAllChunks(class Player* CurrentPlayer);
 
-	static ChunkRenderData* CreateRenderData(const glm::vec3& Position, Chunk* Voxels);
+	static ChunkRenderData* CreateRenderData(const glm::vec3& Position);
 
 	static void DeleteRenderData(ChunkRenderData* RenderData);
 

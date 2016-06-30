@@ -125,7 +125,7 @@ void Console::Draw()
 		// Begins a child region within the window for the output
 		ImGui::BeginChild("ScrollingRegion", ImVec2(0, -ImGui::GetItemsLineHeightWithSpacing()), true, ImGuiWindowFlags_HorizontalScrollbar);
 		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(4, 1));
-		for (int i = 0; i < m_NumConsoleMessages; ++i)
+		for (unsigned int i = 0; i < m_NumConsoleMessages; ++i)
 		{
 			ImVec4 TextColor = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
 			switch (m_pMessageBuffer[i].MessageType)

@@ -108,7 +108,7 @@ void List<T>::Reserve(int NumElements)
 	// If we wan't to expand the list, copy the number of bytes used and the rest will
 	// be blank. If we want to shrink the list then we can only copy as many bytes as we
 	// currently use, otherwise we would go "out of bounds"
-	int CopyBytes = NumElements <= Size ? NewSize : m_BytesUsed;
+	size_t CopyBytes = (size_t)NumElements <= Size ? NewSize : m_BytesUsed;
 	memcpy(m_pBuffer, OldBuffer, CopyBytes);
 	if (OldBuffer)
 	{
@@ -117,7 +117,7 @@ void List<T>::Reserve(int NumElements)
 
 	m_BytesAllocated = NewSize;
 	m_BytesUsed = CopyBytes;
-	if (NumElements <= Size) // If we're shrinking the size of the list
+	if ((size_t)NumElements <= Size) // If we're shrinking the size of the list
 	{
 		Size = NumElements;
 	}
@@ -195,7 +195,7 @@ T& List<T>::operator[](int Index)
 template<typename T>
 int List<T>::IndexOf(const T& Element)
 {
-	for (int i = 0; i < Size; ++i)
+	for (size_t i = 0; i < Size; ++i)
 	{
 		if (memcmp(&m_pBuffer[i], &Element, sizeof(T)) == 0)
 		{

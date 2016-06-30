@@ -7,7 +7,7 @@
 #include "../Engine/Block.h"
 #include "../Engine/Chunk.h"
 #include "../Rendering/RenderingEngine.h"
-#include "../Rendering/GL_shader.h"
+#include "../Rendering/Shader.h"
 #include "../Platform/Platform.h"
 #include "../Game/Player.h"
 
@@ -43,7 +43,7 @@ void ChunkRenderer::SetupChunkRenderer()
 
 void ChunkRenderer::DestroyChunkRenderer()
 {
-	for (int Index = 0; Index < g_ChunksToRender.Size; ++Index)
+	for (size_t Index = 0; Index < g_ChunksToRender.Size; ++Index)
 	{
 		g_RenderDataMemoryPool->Deallocate(g_ChunksToRender[Index]);
 	}
@@ -68,7 +68,7 @@ void ChunkRenderer::RenderAllChunks(Player* CurrentPlayer)
 
 	//List<ChunkRenderData> ChunksToRender = CurrentPlayer->m_pWorldObject->m_pChunkManager->GetVisibleChunks();
 
-	for (int Index = 0; Index < g_ChunksToRender.Size; ++Index)
+	for (size_t Index = 0; Index < g_ChunksToRender.Size; ++Index)
 	{
 		if (!g_ChunksToRender[Index])
 			continue;
@@ -405,7 +405,7 @@ static void GreedyMesh(Chunk* Voxels, ChunkRenderData* RenderData)
 	glDisableVertexAttribArray(3);
 }
 
-ChunkRenderData* ChunkRenderer::CreateRenderData(const glm::vec3& Position, Chunk* Voxels)
+ChunkRenderData* ChunkRenderer::CreateRenderData(const glm::vec3& Position)
 {
 	// Allocate a new RenderData object and zero it out
 	ChunkRenderData* RenderData = g_RenderDataMemoryPool->Allocate();

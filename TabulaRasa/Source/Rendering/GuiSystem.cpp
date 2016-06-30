@@ -15,7 +15,8 @@
 
 #include "GUI/imgui/imgui.h"
 
-#include "GL_shader.h"
+#include "Shader.h"
+#include "Texture.h"
 
 #include "../Platform/Platform.h"
 
@@ -312,7 +313,7 @@ void GUIRenderer::Render()
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	for (int i = 0; i < m_Elements.Size; ++i)
+	for (size_t i = 0; i < m_Elements.Size; ++i)
 	{
 		m_Elements[i]->Render();
 	}
@@ -323,7 +324,7 @@ void GUIRenderer::Render()
 
 void GUIRenderer::UpdateMousePositionAndState(glm::ivec2 MousePosition, bool LMouseDown, bool RMouseDown, bool MMouseDown)
 {
-	for (int i = 0; i < m_Elements.Size; ++i)
+	for (size_t i = 0; i < m_Elements.Size; ++i)
 	{
 		glm::ivec2 ElementPosition = m_Elements[i]->GetPosition();
 		glm::ivec2 FarthestCorner = ElementPosition + m_Elements[i]->m_Dimensions;
@@ -381,7 +382,7 @@ static struct
 	GLuint VAO = 0;
 	GLuint VBO = 0;
 	GLuint IBO = 0;
-	GLuint Texture = 0;
+    Texture TextureAtlas;
 	glm::mat4 ProjectionMatrix;
 } DebugGui;
 
@@ -400,14 +401,12 @@ void RenderDrawLists(ImDrawData* DrawData)
 	glDisable(GL_CULL_FACE);
 	glDisable(GL_DEPTH_TEST);
 	glEnable(GL_SCISSOR_TEST);
-	glActiveTexture(GL_TEXTURE0);
 
     glViewport(0, 0, Width, Height);
     
 	glBindVertexArray(DebugGui.VAO);
 
 	DebugGui.Shader->Bind();
-    DebugGui.Shader->SetDefaultSamplers();
 	DebugGui.Shader->SetProjectionMatrix(DebugGui.ProjectionMatrix);
 
 	for (int i = 0; i < DrawData->CmdListsCount; ++i)
@@ -443,7 +442,7 @@ void RenderDrawLists(ImDrawData* DrawData)
 			}
 			else
 			{
-				// Bind the texture for the
+				// Bind the texture for the drawcommand
                 GLuint TextureId = (GLuint)(intptr_t)DrawCommand->TextureId;
                 glActiveTexture(GL_TEXTURE0);
 				glBindTexture(GL_TEXTURE_2D, TextureId);
@@ -551,20 +550,18 @@ DebugGUIRenderer::DebugGUIRenderer(int ScreenWidth, int ScreenHeight)
 	glGenVertexArrays(1, &DebugGui.VAO);
 	glGenBuffers(1, &DebugGui.VBO);
 	glGenBuffers(1, &DebugGui.IBO);
-	glGenTextures(1, &DebugGui.Texture);
 
 	unsigned char* pixels;
 	int Width;
 	int Height;
 	IO.Fonts->GetTexDataAsRGBA32(&pixels, &Width, &Height);
 
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, DebugGui.Texture);
+    DebugGui.TextureAtlas.LoadFromBuffer(pixels, Width, Height, GL_RGBA);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, Width, Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+	//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, Width, Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
 
-	IO.Fonts->TexID = (void *)(intptr_t)DebugGui.Texture;
+    IO.Fonts->TexID = (void *)(intptr_t)DebugGui.TextureAtlas.GetTextureId();
 
 	// This tells it to send all the draw calls to RenderDrawLists
 	// when ImGui::Render is called
@@ -605,10 +602,6 @@ DebugGUIRenderer::~DebugGUIRenderer()
 	if (DebugGui.IBO)
 	{
 		glDeleteBuffers(1, &DebugGui.IBO);
-	}
-	if (DebugGui.Texture)
-	{
-		glDeleteTextures(1, &DebugGui.Texture);
 	}
 
 	ImGui::Shutdown();

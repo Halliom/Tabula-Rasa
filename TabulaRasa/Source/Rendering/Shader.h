@@ -112,20 +112,12 @@ public:
 private:
 
 	GLint ColorVectorLocation;
-
 	GLint ProjectionMatrixLocation;
-
 	GLint ViewMatrixLocation;
-
 	GLint ProjectionViewMatrixLocation;
-
 	GLint ModelMatrixLocation;
-
 	GLint PositionOffsetLocation;
-
 	GLint TextureSamplers[6];
-
 	GLint SSAOSamplesLocation;
-
 	GLint ScreenDimensionLocation;
 };

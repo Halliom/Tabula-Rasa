@@ -95,9 +95,9 @@ TrueTypeFont FontLibrary::LoadFontFromFile(const char* FontFileName, int Size)
 		NewFont.Glyphs[c].BearingY = LoadedChar->bitmap_top;
 
 		char* Buffer = AllocateTransient<char>(BitmapWidth * BitmapHeight * 3);
-		for (unsigned int i = 0; i < BitmapHeight; ++i)
+		for (int i = 0; i < BitmapHeight; ++i)
 		{
-			for (unsigned int j = 0; j < BitmapHeight; ++j)
+			for (int j = 0; j < BitmapHeight; ++j)
 			{
 				unsigned int BaseIndex = ((j * BitmapWidth) + i);
 				Buffer[BaseIndex * 3]		= LoadedChar->bitmap.buffer[BaseIndex];
