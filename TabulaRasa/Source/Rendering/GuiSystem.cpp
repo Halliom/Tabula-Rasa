@@ -54,7 +54,7 @@ GUIRenderable GUIRenderer::CreateText(const char* Text, size_t StringLength, glm
 	TrueTypeFont FontToUse;
 	if (Font == NULL)
 	{
-		FontToUse = FontLibrary::g_FontLibrary->GetFont(0);
+		FontToUse = g_Engine->g_FontLibrary->GetFont(0);
 	}
 	else
 	{
