@@ -3,13 +3,20 @@
 #include "../Engine/Engine.h"
 #include "../Engine/Core/Memory.h"
 
-FontLibrary* FontLibrary::g_FontLibrary;
-
 static inline int NextPower2(int x)
 {
 	int val = 1;
 	while (val < x) val <<= 1;
 	return val;
+}
+
+FontLibrary::~FontLibrary()
+{
+    for (int i = 0; i < m_LoadedFonts.Size; ++i)
+    {
+        glDeleteTextures(1, &m_LoadedFonts[i].TextureObject);
+    }
+    FT_Done_FreeType(m_pFreeTypeLibrary);
 }
 
 TrueTypeFont FontLibrary::LoadFontFromFile(const char* FontFileName, int Size)
@@ -183,13 +190,4 @@ void FontLibrary::Initialize(std::string& FontLibraryLocation)
 	} while (FindNextFileA(FileHandle, &FindData));
 	FindClose(FileHandle);
 #endif
-}
-
-void FontLibrary::Destroy()
-{
-	for (int i = 0; i < m_LoadedFonts.Size; ++i)
-	{
-		glDeleteTextures(1, &m_LoadedFonts[i].TextureObject);
-	}
-	FT_Done_FreeType(m_pFreeTypeLibrary);
 }

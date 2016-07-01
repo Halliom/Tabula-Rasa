@@ -60,7 +60,7 @@ int main(int argc, char* argv[])
 		// Failure to load memory
 		assert(false);
 	}
-
+    
 	// TODO: Create Settings class
 	Script Preferences = Script("preferences.lua");
 	WindowParams.Title = Preferences.GetStringFromTable("Window", "title").c_str();
@@ -77,16 +77,18 @@ int main(int argc, char* argv[])
 		//TODO: Do something with this
 		Window.GetErrorMessage();
 	}
+    
+    // Loads the font library
+    std::string Directory = PlatformFileSystem::GetAssetDirectory(DT_FONTS);
+    g_Engine->g_FontLibrary = new FontLibrary();
+    g_Engine->g_FontLibrary->Initialize(Directory);
+    g_Engine->g_FontLibrary->LoadFontFromFile("TitilliumWeb-Regular.ttf", 20);
+    g_Engine->g_FontLibrary->LoadFontFromFile("RobotoMono-Regular.ttf", 18);
 
-	// Loads the font library
-	std::string Directory = PlatformFileSystem::GetAssetDirectory(DT_FONTS);
-	FontLibrary::g_FontLibrary = new FontLibrary();
-	FontLibrary::g_FontLibrary->Initialize(Directory);
-	FontLibrary::g_FontLibrary->LoadFontFromFile("TitilliumWeb-Regular.ttf", 20);
-	FontLibrary::g_FontLibrary->LoadFontFromFile("RobotoMono-Regular.ttf", 18);
-
+    // Creates the console
 	g_Engine->g_Console = new Console();
 
+    // Initializes the rendering engine
 	g_Engine->g_RenderingEngine = new RenderingEngine();
 	g_Engine->g_RenderingEngine->Initialize(Window.WindowParams.Width, Window.WindowParams.Height);
 	g_Engine->g_RenderingEngine->AddRendererForBlock(3, "Chest_Model.obj");
@@ -134,12 +136,12 @@ int main(int argc, char* argv[])
 		}
 		g_Engine->g_MemoryManager->ClearTransientMemory();
 	}
-	FontLibrary::g_FontLibrary->Destroy();
 
 	SAFE_DELETE(g_Engine->g_World);
     SAFE_DELETE(g_Engine->g_GUIRenderer);
 	SAFE_DELETE(g_Engine->g_RenderingEngine);
 	SAFE_DELETE(g_Engine->g_Console);
+    SAFE_DELETE(g_Engine->g_FontLibrary);
 	SAFE_DELETE(g_Engine->g_MemoryManager);
     SAFE_DELETE(g_Engine);
 
