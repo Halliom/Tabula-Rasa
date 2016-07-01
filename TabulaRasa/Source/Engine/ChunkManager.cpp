@@ -24,8 +24,7 @@ ChunkManager::~ChunkManager()
 		Chunk* Chunk = (*It).second;
 		if (Chunk != NULL)
 		{
-			// TODO: Free the Chunk->m_pChunkRenderData back aswell
-			g_Engine->g_MemoryManager->m_pChunkAllocator->Deallocate(Chunk);
+			g_Engine->g_MemoryManager->m_pChunkAllocator->DeallocateDelete(Chunk);
 		}
 	}
 }
