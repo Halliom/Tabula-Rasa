@@ -3,6 +3,9 @@
 #include "glm/common.hpp"
 
 #include "../Engine/Core/Memory.h"
+#include "../Engine/Core/List.h"
+
+#include "../Rendering/Texture.h"
 
 template<typename T> class Octree;
 template<typename T> class List;
@@ -18,6 +21,10 @@ struct MultiblockRenderData
 	unsigned int BlockID;
 };
 
+// Make this a separate class which is owned by Chunk and
+// can update itself on invocation from its owning chunk.
+// Then in GetVisibleChunks, just create a list of ChunkRenderDatas
+// and pass them to the ChunkRenderer
 struct ChunkRenderData
 {
 	// The position (in world coordinates) that the chunk is in
@@ -32,8 +39,14 @@ struct ChunkRenderData
 
 	unsigned int NumVertices;
 
-	MultiblockRenderData *MultiblocksToRender;
+	MultiblockRenderData* MultiblocksToRender;
 	unsigned int NumMultiblocksToRender;
+    
+    bool operator==(const ChunkRenderData& Other)
+    {
+        return ChunkPosition == Other.ChunkPosition &&
+               VertexArrayObject == Other.VertexArrayObject;
+    }
 };
 
 enum VoxelSide : uint32_t;
@@ -50,26 +63,25 @@ struct TexturedQuadVertex
 class ChunkRenderer
 {
 public:
+    
+    ChunkRenderer();
+    
+    ~ChunkRenderer();
 
-	static void SetupChunkRenderer();
+	void SetupChunkRenderer();
 
-	static void DestroyChunkRenderer();
+	void RenderAllChunks(class Player* CurrentPlayer);
 
-	static void RenderAllChunks(class Player* CurrentPlayer);
+	ChunkRenderData CreateRenderData(const glm::vec3& Position);
 
-	static ChunkRenderData* CreateRenderData(const glm::vec3& Position);
+    void DeleteRenderData(const glm::vec3& ChunkPosition);
 
-	static void DeleteRenderData(ChunkRenderData* RenderData);
-
-	static void UpdateRenderData(ChunkRenderData* RenderData, Chunk* Voxels);
-
-	static List<ChunkRenderData*> g_ChunksToRender;
-
-	static GLuint g_TextureAtlas;
-
+	void UpdateRenderData(const glm::vec3& ChunkPosition, Chunk* Voxels);
+    
 private:
-
-	static class GLShaderProgram*		g_ChunkRenderShader;
-	static MemoryPool<ChunkRenderData>* g_RenderDataMemoryPool;
-
+    
+    ChunkRenderData* GetRenderData(const glm::vec3& ChunkPosition);
+    
+    class GLShaderProgram*		m_ChunkRenderShader;
+    List<ChunkRenderData>       m_ChunksToRender;
 };
