@@ -65,7 +65,7 @@ void World::Update(float DeltaTime)
 		m_pChunkManager->UnloadChunks(PlayerChunkPosition);
 		m_pChunkManager->LoadNewChunks(PlayerChunkPosition);
 	}
-
+    
 	// Tick the chunks
 	m_pChunkManager->Tick(DeltaTime);
 

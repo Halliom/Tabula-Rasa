@@ -18,9 +18,6 @@ extern Player* g_Player;
 
 RenderingEngine::~RenderingEngine()
 {
-    // Destory the chunk renderer
-	ChunkRenderer::DestroyChunkRenderer();
-
     // Delete the frame buffers
 	glDeleteFramebuffers(1, &m_GeometryFBO);
     glDeleteFramebuffers(1, &m_SSAOFBO);
@@ -42,6 +39,8 @@ RenderingEngine::~RenderingEngine()
     delete m_pLightPassShader;
     delete m_pSSAOShader;
     delete m_pSSAOBlurShader;
+    
+    delete m_pChunkRenderer;
 }
 
 void RenderingEngine::Initialize(const unsigned int& ScreenWidth, const unsigned int& ScreenHeight)
@@ -62,9 +61,17 @@ void RenderingEngine::Initialize(const unsigned int& ScreenWidth, const unsigned
 	glEnable(GL_CULL_FACE);
 
 	glEnable(GL_DEPTH_TEST);
-
-	ChunkRenderer::SetupChunkRenderer();
-
+    
+    // Instantiate and initialize the chunk renderer
+    m_pChunkRenderer = new ChunkRenderer();
+	m_pChunkRenderer->SetupChunkRenderer();
+    
+    // Load the texture atlas for all the blocks textures'
+    unsigned int Width, Height;
+    std::string FileName = PlatformFileSystem::GetAssetDirectory(DT_TEXTURES).append(std::string("textures.png"));
+    GLuint TextureId = PlatformFileSystem::LoadImageFromFile((char*) FileName.c_str(), Width, Height);
+    m_TextureAtlas = Texture(TextureId);
+    
 	SetupQuad();
 
 	SetupGeometryPass();
@@ -88,7 +95,7 @@ void RenderingEngine::PostInitialize()
 
 void RenderingEngine::AddRendererForBlock(unsigned int BlockID, const char *BlockModelFileName)
 {
-	PlatformFileSystem::LoadModel(&CustomBlockRenderers[BlockID], BlockModelFileName);
+	PlatformFileSystem::LoadModel(&m_CustomBlockRenderers[BlockID], BlockModelFileName);
 }
 
 void RenderingEngine::SetupGeometryPass()
@@ -272,10 +279,13 @@ void RenderingEngine::SetupQuad()
 
 void RenderingEngine::RenderFrame(World* RenderWorld, const float& DeltaTime)
 {
-	// Renders all the chunks in the geometry pass
+	// Setup for the geometry pass
 	StartGeometryPass();
-	ChunkRenderer::RenderAllChunks(RenderWorld->m_pCurrentPlayer);
 
+    // Do the geometry pass (render everything)
+	m_pChunkRenderer->RenderAllChunks(RenderWorld->m_pCurrentPlayer);
+    
+    // Do the SSAO
 	SSAOPass();
 
 	LightPass();
@@ -360,7 +370,7 @@ void RenderingEngine::LightPass()
 	glBindTexture(GL_TEXTURE_2D, m_SSAOBlurColorBuffer);
 
 	glActiveTexture(GL_TEXTURE4);
-	glBindTexture(GL_TEXTURE_2D, ChunkRenderer::g_TextureAtlas);
+	glBindTexture(GL_TEXTURE_2D, m_TextureAtlas.GetTextureId());
 
 	// Render a screen quad
 	glBindVertexArray(m_ScreenQuadVAO);

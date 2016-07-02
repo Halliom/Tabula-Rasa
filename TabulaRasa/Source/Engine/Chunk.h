@@ -13,7 +13,7 @@ public:
 
 	~Chunk();
 
-	void Initialize();
+	void Initialize(class ChunkRenderer* ChunkRenderer);
 
 	void Tick(float DeltaTime);
 
@@ -74,12 +74,11 @@ public:
 		}
 	}
 
-	Voxel m_pVoxels[SIZE][SIZE][SIZE];
-
-	int m_ChunkX;
-	int m_ChunkY;
-	int m_ChunkZ;
+	Voxel           m_pVoxels[SIZE][SIZE][SIZE];
+	int             m_ChunkX;
+	int             m_ChunkY;
+	int             m_ChunkZ;
 	
-	bool m_bIsRenderStateDirty;
-	struct ChunkRenderData* m_pChunkRenderData;
+	bool            m_bIsRenderStateDirty;
+	ChunkRenderer*  m_pChunkRenderer;
 };

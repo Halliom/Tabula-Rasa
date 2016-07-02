@@ -27,11 +27,11 @@ public:
 	T Pop();
 
 	T& operator[](int Index);
-
+    
 	int IndexOf(const T& Element);
 
 	void Remove(int Index);
-
+    
 	void Remove(const T& Element);
 
 	T* Data()
@@ -171,7 +171,7 @@ inline T& List<T>::PushEmpty()
 
 	m_BytesUsed = NewSize;
 
-	return *(m_pBuffer + Size++);
+    return m_pBuffer[Size++];
 }
 
 template<typename T>
@@ -197,7 +197,7 @@ int List<T>::IndexOf(const T& Element)
 {
 	for (size_t i = 0; i < Size; ++i)
 	{
-		if (memcmp(&m_pBuffer[i], &Element, sizeof(T)) == 0)
+		if (m_pBuffer[i] == Element)
 		{
 			return i;
 		}
@@ -212,7 +212,7 @@ void List<T>::Remove(int Index)
 
 	int HigerSideElements = Size - Index - 1;
 
-	memcpy(
+	memmove(
 		m_pBuffer + Index, 
 		m_pBuffer + Index + 1, 
 		HigerSideElements * sizeof(T));

@@ -265,8 +265,8 @@ public:
 	void ClearTransientMemory();
 
 	LinearAllocator*			m_pTransientFrameMemory;
-	LinearAllocator*			m_pRenderingMemory;
 	MemoryPool<class Chunk>*	m_pChunkAllocator;
+    FreeList*                   m_pRenderingMemory;
 	FreeList*					m_pGameMemory;
 
 private:
