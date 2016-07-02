@@ -3,7 +3,8 @@
 #ifdef _WIN32
 #include "WindowsPlatformWindow.h"
 #include "WindowsPlatformFilesystem.h"
-#elif __APPLE__
+#endif
+#ifdef __APPLE__
 #include "OSXPlatformWindow.h"
 #include "OSXPlatformFilesystem.h"
 #endif 

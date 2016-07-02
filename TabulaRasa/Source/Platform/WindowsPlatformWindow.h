@@ -5,8 +5,7 @@
 
 #include "SDL2\SDL.h"
 
-#include "GL\glew.h"
-#include "GL\wglew.h"
+#include "GL\gl3w.h"
 
 struct WindowParameters
 {

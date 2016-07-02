@@ -64,11 +64,15 @@ int main(int argc, char* argv[])
 	// TODO: Create Settings class
 	Script Preferences = Script("preferences.lua");
 	WindowParams.Title = Preferences.GetStringFromTable("Window", "title").c_str();
-	WindowParams.Width = Preferences.GetIntFromTable("Window", "width") / 2;
-	WindowParams.Height = Preferences.GetIntFromTable("Window", "height") / 2;
+	WindowParams.Width = Preferences.GetIntFromTable("Window", "width");
+	WindowParams.Height = Preferences.GetIntFromTable("Window", "height");
 	WindowParams.UseVSync = Preferences.GetBoolFromTable("Window", "vsync");
 	//WindowParams.Fullscreen = Preferences.GetBoolFromTable("Window", "full_screen");
 	//WindowParams.StartMaximized = Preferences.GetBoolFromTable("Window", "start_maximized");
+#ifdef __APPLE__
+	WindowParams.Width /= 2;
+	WindowParams.Height /= 2;
+#endif
 
 	PlatformWindow Window = PlatformWindow(WindowParams);
 	bool Success = Window.SetupWindowAndRenderContext();
