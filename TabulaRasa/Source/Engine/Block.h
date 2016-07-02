@@ -7,6 +7,8 @@
 #define BLOCK_ID_GRASS 1
 #define BLOCK_ID_DIRT 2
 #define BLOCK_ID_CHEST 3
+#define BLOCK_ID_REDROCK 4
+#define BLOCK_ID_REDSAND 5
 
 enum BlockType
 {
