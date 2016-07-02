@@ -78,8 +78,7 @@ bool PlatformWindow::SetupWindowAndRenderContext()
 
 	SDL_GL_SetSwapInterval(1);
 
-	glewExperimental = true;
-	glewInit();
+	gl3wInit();
 
 	if (GlobalWindow->WindowParams.UseVSync)
 	{
@@ -187,7 +186,7 @@ bool PlatformWindow::PrepareForRender()
 					}
 					case SDL_SCANCODE_F1:
 					{
-						g_Engine->g_Engine->g_Engine->g_Console->ShowConsole(!g_Engine->g_Console->m_bShowConsole);
+						g_Engine->g_Console->ShowConsole(!g_Engine->g_Console->m_bShowConsole);
 						break;
 					}
 					case SDL_SCANCODE_F10:

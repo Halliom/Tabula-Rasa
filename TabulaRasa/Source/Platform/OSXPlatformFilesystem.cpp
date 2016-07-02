@@ -1,3 +1,4 @@
+#ifdef __APPLE__
 #include "OSXPlatformFilesystem.h"
 
 #include <fstream>
@@ -228,3 +229,4 @@ char* PlatformFileSystem::LoadScript(const char* ScriptName)
     
     return Data;
 }
+#endif
