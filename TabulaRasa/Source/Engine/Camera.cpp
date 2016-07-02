@@ -15,7 +15,7 @@ Camera::Camera() :
 
 void Camera::InitProjection(const float& FOV, const float& NearPlane, const float& FarPlane)
 {
-	m_ProjectionMatrix = glm::perspective(glm::radians(m_FOV), (float) m_WindowWidth / (float) m_WindowHeight, NearPlane, FarPlane);
+	m_ProjectionMatrix = glm::perspective(glm::radians(m_FOV), (float)m_WindowWidth / (float)m_WindowHeight, NearPlane, FarPlane);
 
 	m_FOV = FOV;
 	m_NearPlane = NearPlane;
@@ -23,6 +23,7 @@ void Camera::InitProjection(const float& FOV, const float& NearPlane, const floa
 
 	m_bIsScreenMatrixDirty = true;
 	m_bIsViewMatrixDirty = true;
+    m_bIsProjectionMatrixDirty = true;
 
 	g_ActiveCamera = this;
 }

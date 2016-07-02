@@ -281,12 +281,12 @@ void RenderingEngine::RenderFrame(World* RenderWorld, const float& DeltaTime)
 {
 	// Setup for the geometry pass
 	StartGeometryPass();
-
+    
     // Do the geometry pass (render everything)
 	m_pChunkRenderer->RenderAllChunks(RenderWorld->m_pCurrentPlayer);
     
     // Do the SSAO
-	SSAOPass();
+    SSAOPass();
 
 	LightPass();
 }
@@ -299,7 +299,7 @@ void RenderingEngine::SSAOPass()
 
 	m_pSSAOShader->Bind();
 	m_pSSAOShader->SetDefaultSamplers();
-	m_pSSAOShader->SetProjectionMatrix(*Camera::g_ActiveCamera->GetProjectionMatrix());
+	m_pSSAOShader->SetProjectionMatrix(Camera::g_ActiveCamera->GetProjectionMatrix());
 	m_pSSAOShader->SetScreenDimension(glm::vec2(m_ScreenWidth, m_ScreenHeight));
 
 	// Bind the textures from the gemoetry pass

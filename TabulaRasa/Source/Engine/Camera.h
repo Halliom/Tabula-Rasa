@@ -27,34 +27,34 @@ public:
 
 	Ray GetViewingRay(float Distance = 100000.0f);
 	
-	FORCEINLINE glm::mat4* GetProjectionMatrix()
+	FORCEINLINE glm::mat4& GetProjectionMatrix()
 	{
 		if (m_bIsProjectionMatrixDirty)
 		{
 			m_ProjectionMatrix = glm::perspective(glm::radians(m_FOV), (float)m_WindowWidth / (float)m_WindowHeight, m_NearPlane, m_FarPlane);
 			m_bIsProjectionMatrixDirty = false;
 		}
-		return &m_ProjectionMatrix;
+		return m_ProjectionMatrix;
 	}
 
-	FORCEINLINE glm::mat4* GetScreenMatrix()
+	FORCEINLINE glm::mat4& GetScreenMatrix()
 	{
 		if (m_bIsScreenMatrixDirty)
 		{
 			m_ScreenMatrix = glm::ortho(0.0f, (float) m_WindowWidth, (float) m_WindowHeight, 0.0f);
 			m_bIsScreenMatrixDirty = false;
 		}
-		return &m_ScreenMatrix;
+		return m_ScreenMatrix;
 	}
 
-	FORCEINLINE glm::mat4* GetViewMatrix()
+	FORCEINLINE glm::mat4 GetViewMatrix()
 	{
 		if (m_bIsViewMatrixDirty)
 		{
 			m_ViewMatrix = glm::lookAt(m_Position, m_Position + m_Front, m_Up);
 			m_bIsViewMatrixDirty = false;
 		}
-		return &m_ViewMatrix;
+		return m_ViewMatrix;
 	}
 
 	// The static camera that is active for this client
