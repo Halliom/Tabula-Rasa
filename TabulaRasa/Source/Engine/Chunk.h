@@ -13,17 +13,19 @@ public:
 
 	~Chunk();
 
-	void Initialize();
+	void Initialize(class ChunkRenderer* ChunkRenderer);
 
 	void Tick(float DeltaTime);
 
-	__forceinline Voxel* GetVoxel(unsigned int X, unsigned int Y, unsigned int Z)
+	FORCEINLINE Voxel* GetVoxel(unsigned int X, unsigned int Y, unsigned int Z)
 	{
+        assert(X < SIZE && Y < SIZE && Z < SIZE);
+        
 		Voxel *Result = &m_pVoxels[X][Y][Z];
 		return Result->BlockID > 0 ? Result : NULL; // Only return a value if the block id is not 0
 	}
 
-	__forceinline void RemoveVoxel(World* WorldObject, unsigned int X, unsigned int Y, unsigned int Z)
+	FORCEINLINE void RemoveVoxel(World* WorldObject, unsigned int X, unsigned int Y, unsigned int Z)
 	{
 		m_pVoxels[X][Y][Z].BlockID = 0;
 		m_pVoxels[X][Y][Z].Parent = NULL;
@@ -45,7 +47,7 @@ public:
 		m_bIsRenderStateDirty = true;
 	}
 
-	__forceinline void SetVoxel(World *WorldObject, unsigned int X, unsigned int Y, unsigned int Z, unsigned int BlockID, Voxel* Parent = NULL)
+	FORCEINLINE void SetVoxel(World *WorldObject, unsigned int X, unsigned int Y, unsigned int Z, unsigned int BlockID, Voxel* Parent = NULL)
 	{
 		if (m_pVoxels[X][Y][Z].BlockID == 0)
 		{
@@ -72,12 +74,11 @@ public:
 		}
 	}
 
-	Voxel m_pVoxels[SIZE][SIZE][SIZE];
-
-	int m_ChunkX;
-	int m_ChunkY;
-	int m_ChunkZ;
+	Voxel           m_pVoxels[SIZE][SIZE][SIZE];
+	int             m_ChunkX;
+	int             m_ChunkY;
+	int             m_ChunkZ;
 	
-	bool m_bIsRenderStateDirty;
-	struct ChunkRenderData* m_pChunkRenderData;
+	bool            m_bIsRenderStateDirty;
+	ChunkRenderer*  m_pChunkRenderer;
 };

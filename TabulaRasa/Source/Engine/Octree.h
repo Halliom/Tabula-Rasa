@@ -3,19 +3,21 @@
 #include <unordered_map>
 #include <stdint.h>
 
-#include "glm\common.hpp"
+#include "glm/common.hpp"
 
-__forceinline bool IsWithinBounds(const glm::uvec3& Position, const glm::uvec3& Bounds) //TODO: SIMD optimize from custom vector class
+#include "../Engine/Engine.h"
+
+FORCEINLINE bool IsWithinBounds(const glm::uvec3& Position, const glm::uvec3& Bounds) //TODO: SIMD optimize from custom vector class
 {
-	if ((Position.x < Bounds.x) && (Position.x >= 0) &&
-		(Position.y < Bounds.y) && (Position.y >= 0) &&
-		(Position.z < Bounds.z) && (Position.z >= 0))
+	if ((Position.x < Bounds.x) &&
+		(Position.y < Bounds.y) &&
+		(Position.z < Bounds.z))
 		return true;
 	else
 		return false;
 }
 
-__forceinline bool IsContainedWithin(const glm::uvec3& Position, const glm::uvec3& Min, const glm::uvec3& Max) //TODO: SIMD optimize from custom vector class
+FORCEINLINE bool IsContainedWithin(const glm::uvec3& Position, const glm::uvec3& Min, const glm::uvec3& Max) //TODO: SIMD optimize from custom vector class
 {
 	if ((Position.x < Max.x) && (Position.x >= Min.x) &&
 		(Position.y < Max.y) && (Position.y >= Min.y) &&
@@ -35,7 +37,7 @@ enum VoxelSide : uint32_t
 	SIDE_SOUTH = 32
 };
 
-__forceinline int SideToInt(const VoxelSide& Side)
+FORCEINLINE int SideToInt(const VoxelSide& Side)
 {
 	switch (Side)
 	{
@@ -52,9 +54,9 @@ __forceinline int SideToInt(const VoxelSide& Side)
 template<class T>
 struct OctreeNode
 {
-	__forceinline OctreeNode() : m_pNodeData(NULL), m_Children(0), m_Location(0), m_Size(0) {}
+	FORCEINLINE OctreeNode() : m_pNodeData(NULL), m_Children(0), m_Location(0), m_Size(0) {}
 
-	__forceinline ~OctreeNode() { if (m_pNodeData) { delete m_pNodeData; m_pNodeData = NULL; } }
+	FORCEINLINE ~OctreeNode() { if (m_pNodeData) { delete m_pNodeData; m_pNodeData = NULL; } }
 
 	size_t GetOctantForPosition(const glm::uvec3& Position);
 
@@ -69,10 +71,10 @@ struct OctreeNode
 };
 
 template<typename T>
-__forceinline size_t OctreeNode<T>::GetOctantForPosition(const glm::uvec3& Position)
+FORCEINLINE size_t OctreeNode<T>::GetOctantForPosition(const glm::uvec3& Position)
 {
 	size_t Result = 0;
-	uint32_t HalfSize = m_Size >> 1;
+	//uint32_t HalfSize = m_Size >> 1;
 	if (Position.x >= m_Center.x) Result |= 4;
 	if (Position.y >= m_Center.y) Result |= 2;
 	if (Position.z >= m_Center.z) Result |= 1;
@@ -103,12 +105,12 @@ public:
 
 	~Octree() {	{ Nodes.clear(); m_pRootNode = NULL; } }
 
-	__forceinline void InsertNode(const glm::uvec3& Position, T* NewData)
+	FORCEINLINE void InsertNode(const glm::uvec3& Position, T* NewData)
 	{
 		InsertNode(Position, NewData, m_pRootNode);
 	}
 
-	__forceinline void RemoveNode(const glm::uvec3& Position)
+	FORCEINLINE void RemoveNode(const glm::uvec3& Position)
 	{
 		RemoveNode(Position, m_pRootNode);
 	}
@@ -124,13 +126,13 @@ public:
 
 	void InsertNode(const glm::uvec3& Position, T* NewData, OctreeNode<T>* Node, bool IsNew = true);
 
-	__forceinline T* GetNodeData(const glm::uvec3& Position)
+	FORCEINLINE T* GetNodeData(const glm::uvec3& Position)
 	{
 		OctreeNode<T>* Node = Get(Position, m_pRootNode);
 		return Node ? Node->m_pNodeData : NULL;
 	}
 
-	__forceinline T* GetNodeData(const glm::ivec3& Position)
+	FORCEINLINE T* GetNodeData(const glm::ivec3& Position)
 	{
 		OctreeNode<T>* Node = Get(glm::uvec3(Position.x, Position.y, Position.z), m_pRootNode);
 		return Node ? Node->m_pNodeData : NULL;

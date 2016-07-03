@@ -1,7 +1,5 @@
 #include "Memory.h"
 
-#include <Windows.h>
-
 #include "../Chunk.h"
 
 LinearAllocator::LinearAllocator(unsigned char* StartAddress, size_t MaxByteSize) :
@@ -209,6 +207,10 @@ GameMemoryManager::GameMemoryManager()
 
 GameMemoryManager::~GameMemoryManager()
 {
+    delete m_pTransientFrameMemory;
+    delete m_pRenderingMemory;
+    delete m_pChunkAllocator;
+    
 	delete[] m_pMemoryBuffer;
 }
 
@@ -220,7 +222,7 @@ bool GameMemoryManager::Initialize()
 		return false;
 
 	m_pTransientFrameMemory = new LinearAllocator(m_pMemoryBuffer, MB(8)); // 8 MB total
-	m_pRenderingMemory = new LinearAllocator(m_pMemoryBuffer + MB(8), MB(12)); // 20 MB total
+    m_pRenderingMemory = new FreeList(m_pMemoryBuffer + MB(8), MB(12)); // 20 MB total
 	m_pChunkAllocator = new MemoryPool<Chunk>(m_pMemoryBuffer + MB(20), MB(80)); // 100 MB total
 	m_pGameMemory = new FreeList(m_pMemoryBuffer + MB(100), MB(28)); // 128 MB total
 

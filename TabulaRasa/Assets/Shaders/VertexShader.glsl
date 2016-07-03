@@ -13,6 +13,7 @@ out vec3 frag_normal;
 out vec2 frag_texCoord;
 out vec2 frag_atlasOffset;
 
+// Since the texture atlas contains a 16x16 grid of 'tiles'
 const float TILE_OFFSET = 1.0 / 16.0;
 const vec2 TILE_OFFSETV = vec2(TILE_OFFSET, TILE_OFFSET);
 

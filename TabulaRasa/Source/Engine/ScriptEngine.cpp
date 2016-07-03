@@ -7,43 +7,41 @@
 #include "../Game/World.h"
 #include "../Game/Player.h"
 #include "../Engine/Console.h"
-
-extern Console* g_Console;
-extern World* g_World;
+#include "../Engine/Engine.h"
 
 lua_State* Script::g_State = NULL;
 
 void LogToConsole(std::string Message)
 {
-	g_Console->PrintLine(Message);
+	g_Engine->g_Console->PrintLine(Message);
 }
 
 void WorldWrapper::AddBlock(int X, int Y, int Z, int BlockID)
 {
-	g_World->AddBlock(X, Y, Z, BlockID);
+	g_Engine->g_World->AddBlock(X, Y, Z, BlockID);
 }
 
 void WorldWrapper::RemoveBlock(int X, int Y, int Z)
 {
-	g_World->RemoveBlock(X, Y, Z);
+	g_Engine->g_World->RemoveBlock(X, Y, Z);
 }
 
 void WorldWrapper::AddMultiblock(int X, int Y, int Z, int BlockID)
 {
-	g_World->AddMultiblock(X, Y, Z, BlockID);
+	g_Engine->g_World->AddMultiblock(X, Y, Z, BlockID);
 }
 
 void WorldWrapper::RemoveMultiblock(int X, int Y, int Z)
 {
-	g_World->RemoveMultiblock(X, Y, Z);
+	g_Engine->g_World->RemoveMultiblock(X, Y, Z);
 }
 
 Player* WorldWrapper::GetPlayer()
 {
-	return g_World->m_pCurrentPlayer;
+	return g_Engine->g_World->m_pCurrentPlayer;
 }
 
-Script::Script(char* Filename)
+Script::Script(const char* Filename)
 {
 	m_pScriptName = Filename;
 	char* ScriptSource = PlatformFileSystem::LoadScript(Filename);
@@ -135,7 +133,7 @@ bool Script::ExecuteStringInInterpreter(const char* InputString)
 	}
 }
 
-void Script::CallFunction(char* FunctionName)
+void Script::CallFunction(const char* FunctionName)
 {
 	try
 	{
@@ -148,7 +146,7 @@ void Script::CallFunction(char* FunctionName)
 	}
 }
 
-bool Script::GetBool(char* VariableName)
+bool Script::GetBool(const char* VariableName)
 {
 	bool Result = false;
 	lua_getglobal(g_State, VariableName);
@@ -166,7 +164,7 @@ bool Script::GetBool(char* VariableName)
 	return Result;
 }
 
-bool Script::GetBoolFromTable(char* TableName, char* VariableName)
+bool Script::GetBoolFromTable(const char* TableName, const char* VariableName)
 {
 	bool Result = 0;
 
@@ -202,7 +200,7 @@ bool Script::GetBoolFromTable(char* TableName, char* VariableName)
 	return Result;
 }
 
-int Script::GetInt(char* VariableName)
+int Script::GetInt(const char* VariableName)
 {
 	try
 	{
@@ -222,7 +220,7 @@ int Script::GetInt(char* VariableName)
 	return 0;
 }
 
-int Script::GetIntFromTable(char* TableName, char* VariableName)
+int Script::GetIntFromTable(const char* TableName, const char* VariableName)
 {
 	int Result = 0;
 
@@ -258,7 +256,7 @@ int Script::GetIntFromTable(char* TableName, char* VariableName)
 	return Result;
 }
 
-std::string Script::GetString(char* VariableName)
+std::string Script::GetString(const char* VariableName)
 {
 	try
 	{
@@ -277,7 +275,7 @@ std::string Script::GetString(char* VariableName)
 	return std::string("");
 }
 
-std::string Script::GetStringFromTable(char* TableName, char* VariableName)
+std::string Script::GetStringFromTable(const char* TableName, const char* VariableName)
 {
 	std::string Result = "";
 
@@ -312,7 +310,7 @@ std::string Script::GetStringFromTable(char* TableName, char* VariableName)
 	return Result;
 }
 
-void Script::LogFunctionErrors(char* FunctionName)
+void Script::LogFunctionErrors(const char* FunctionName)
 {
 	// Since the error message always gets pushed to the top of the stack, simply print whats
 	// at the top of the stack and then pop it off

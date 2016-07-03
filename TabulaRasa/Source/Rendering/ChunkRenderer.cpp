@@ -7,96 +7,77 @@
 #include "../Engine/Block.h"
 #include "../Engine/Chunk.h"
 #include "../Rendering/RenderingEngine.h"
-#include "../Rendering/GL_shader.h"
+#include "../Rendering/Shader.h"
 #include "../Platform/Platform.h"
 #include "../Game/Player.h"
 
 #include "glm/gtc/matrix_transform.hpp"
 
+#ifdef _WIN32
 #include "SDL2/SDL.h"
+#elif __APPLE__
+#include "SDL2OSX/SDL.h"
+#endif
 
-// Init the chunk list
-List<ChunkRenderData*>			ChunkRenderer::g_ChunksToRender;
-GLShaderProgram*				ChunkRenderer::g_ChunkRenderShader = NULL;
-MemoryPool<ChunkRenderData>*	ChunkRenderer::g_RenderDataMemoryPool = NULL;
-GLuint							ChunkRenderer::g_TextureAtlas;
+ChunkRenderer::ChunkRenderer() :
+    m_ChunkRenderShader(NULL)
+{
+}
 
-extern RenderingEngine* g_RenderingEngine;
-extern GameMemoryManager* g_MemoryManager;
+ChunkRenderer::~ChunkRenderer()
+{
+    delete m_ChunkRenderShader;
+}
 
 void ChunkRenderer::SetupChunkRenderer()
 {
-	g_ChunksToRender = List<ChunkRenderData*>(g_MemoryManager->m_pGameMemory);
-	// Allocate a memory pool from the rendering memory to hold 512 ChunkRenderDatas
-	g_RenderDataMemoryPool = new MemoryPool<ChunkRenderData>(
-		Allocate<ChunkRenderData>(g_MemoryManager->m_pRenderingMemory, 512), 
-		512 * sizeof(ChunkRenderData));
-	g_ChunksToRender.Reserve(16);
-
-	g_ChunkRenderShader = GLShaderProgram::CreateVertexFragmentShaderFromFile(std::string("VertexShader.glsl"), std::string("FragmentShader.glsl"));
-
-	unsigned int Width, Height;
-	std::string FileName = PlatformFileSystem::GetAssetDirectory(DT_TEXTURES).append(std::string("textures.png"));
-	g_TextureAtlas = PlatformFileSystem::LoadImageFromFile((char*) FileName.c_str(), Width, Height);
+    m_ChunksToRender = List<ChunkRenderData>(g_Engine->g_MemoryManager->m_pRenderingMemory);
+    // Reserve space for 128 ChunkRenderDatas up front
+    m_ChunksToRender.Reserve(128);
+    
+    m_ChunkRenderShader = GLShaderProgram::CreateVertexFragmentShaderFromFile(std::string("VertexShader.glsl"), std::string("FragmentShader.glsl"));
 }
-
-void ChunkRenderer::DestroyChunkRenderer()
-{
-	for (int Index = 0; Index < g_ChunksToRender.Size; ++Index)
-	{
-		g_RenderDataMemoryPool->Deallocate(g_ChunksToRender[Index]);
-	}
-	g_ChunksToRender.Reserve(0);
-
-	delete g_ChunkRenderShader;
-}
-
-#define PI 3.14159265359f
 
 void ChunkRenderer::RenderAllChunks(Player* CurrentPlayer)
 {
 	const static glm::mat4 Identity = glm::mat4(1.0f);
 
-	glm::mat4 Projection = *Camera::g_ActiveCamera->GetProjectionMatrix();
-	glm::mat4 View = *Camera::g_ActiveCamera->GetViewMatrix();
+	glm::mat4 Projection = Camera::g_ActiveCamera->m_ProjectionMatrix;
+	glm::mat4 View = Camera::g_ActiveCamera->m_ViewMatrix;
 
-	g_ChunkRenderShader->Bind();
-	g_ChunkRenderShader->SetProjectionMatrix(Projection);
-	g_ChunkRenderShader->SetViewMatrix(View);
-
+	m_ChunkRenderShader->Bind();
+	m_ChunkRenderShader->SetProjectionMatrix(Projection);
+	m_ChunkRenderShader->SetViewMatrix(View);
+    
 	//List<ChunkRenderData> ChunksToRender = CurrentPlayer->m_pWorldObject->m_pChunkManager->GetVisibleChunks();
 
-	for (int Index = 0; Index < g_ChunksToRender.Size; ++Index)
+	for (size_t Index = 0; Index < m_ChunksToRender.Size; ++Index)
 	{
-		if (!g_ChunksToRender[Index])
-			continue;
-
-		ChunkRenderData* RenderItem = g_ChunksToRender[Index];
+        m_ChunkRenderShader->SetModelMatrix(glm::translate(Identity, m_ChunksToRender[Index].ChunkPosition));
+        
 		for (
 			unsigned int MultiblockID = 0;
-			MultiblockID < g_ChunksToRender[Index]->NumMultiblocksToRender;
+			MultiblockID < m_ChunksToRender[Index].NumMultiblocksToRender;
 			++MultiblockID)
 		{
-			MultiblockRenderData* Multiblock = &g_ChunksToRender[Index]->MultiblocksToRender[MultiblockID];
-			LoadedModel Model = g_RenderingEngine->CustomBlockRenderers[Multiblock->BlockID];
+			MultiblockRenderData* Multiblock = &m_ChunksToRender[Index].MultiblocksToRender[MultiblockID];
+			LoadedModel Model = g_Engine->g_RenderingEngine->m_CustomBlockRenderers[Multiblock->BlockID];
 
-			g_ChunkRenderShader->SetModelMatrix(glm::translate(
-				Identity,
-				glm::vec3(g_ChunksToRender[Index]->ChunkPosition)));
 			glBindVertexArray(Model.m_AssetVAO);
 			glDrawElements(GL_TRIANGLES, Model.m_NumVertices, GL_UNSIGNED_SHORT, 0);
 			glBindVertexArray(0);
 		}
 		
-		g_ChunkRenderShader->SetModelMatrix(glm::translate(Identity, g_ChunksToRender[Index]->ChunkPosition));
+        if (m_ChunksToRender[Index].NumVertices == 0)
+            continue;
 
-		glBindVertexArray(g_ChunksToRender[Index]->VertexArrayObject);
-		glDrawElements(GL_TRIANGLES, g_ChunksToRender[Index]->NumVertices, GL_UNSIGNED_SHORT, 0);
+		glBindVertexArray(m_ChunksToRender[Index].VertexArrayObject);
+		glDrawElements(GL_TRIANGLES, m_ChunksToRender[Index].NumVertices, GL_UNSIGNED_SHORT, 0);
 	}
 	glBindVertexArray(0);
 }
 
-__forceinline int GetVoxelSide(Chunk* Voxels, List<MultiblockRenderData>* AdditionalRenderData, const int& X, const int& Y, const int& Z, const VoxelSide& Side)
+FORCEINLINE int GetVoxelSide(Chunk* Voxels, List<MultiblockRenderData>* AdditionalRenderData, const int& X, const int& Y, const int& Z, const VoxelSide& Side)
 {
 	Voxel* Node = Voxels->GetVoxel(X, Y, Z);
 	if (Node && ((Node->SidesToRender & Side) == Side))
@@ -113,6 +94,11 @@ __forceinline int GetVoxelSide(Chunk* Voxels, List<MultiblockRenderData>* Additi
 				AdditionalRenderData->Push({ X, Y, Z, Block.BlockID });
 				return -1;
 			}
+            case TYPE_STRUCTURE:
+            {
+                // TODO: Add structures
+                break;
+            }
 		}
 	}
 	return -1;
@@ -127,12 +113,12 @@ static glm::vec3 SOUTH_FACE_NORMAL	= glm::vec3(0.0f, 0.0f, -1.0f);
 
 static void GreedyMesh(Chunk* Voxels, ChunkRenderData* RenderData)
 {
-	List<TexturedQuadVertex> Vertices = List<TexturedQuadVertex>(g_MemoryManager->m_pGameMemory);
+	List<TexturedQuadVertex> Vertices = List<TexturedQuadVertex>(g_Engine->g_MemoryManager->m_pGameMemory);
 	Vertices.Reserve(32 * 32 * 32);
-	List<unsigned short> Indices = List<unsigned short>(g_MemoryManager->m_pGameMemory);
+	List<GLushort> Indices = List<GLushort>(g_Engine->g_MemoryManager->m_pGameMemory);
 	Indices.Reserve(32 * 32 * 32);
 
-	List<MultiblockRenderData> AdditionalRenderData = List<MultiblockRenderData>(g_MemoryManager->m_pGameMemory);
+	List<MultiblockRenderData> AdditionalRenderData = List<MultiblockRenderData>(g_Engine->g_MemoryManager->m_pGameMemory);
 	bool Counter = false;
 
 	int ChunkSize = Chunk::SIZE;
@@ -229,7 +215,7 @@ static void GreedyMesh(Chunk* Voxels, ChunkRenderData* RenderData)
 							du[u] = w;
 							dv[v] = h;
 
-							unsigned short StartIndex = (unsigned short) Vertices.Size;
+							GLushort StartIndex = (GLushort) Vertices.Size;
 
 							switch (d)
 							{
@@ -365,10 +351,10 @@ static void GreedyMesh(Chunk* Voxels, ChunkRenderData* RenderData)
 
 	glBindBuffer(GL_ARRAY_BUFFER, RenderData->VertexBufferObject);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(TexturedQuadVertex) * Vertices.Size, Vertices.Data(), GL_STATIC_DRAW);
-
+    
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, RenderData->IndexBufferObject);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned short) * Indices.Size, Indices.Data(), GL_STATIC_DRAW);
-
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLushort) * Indices.Size, Indices.Data(), GL_STATIC_DRAW);
+    
 	glEnableVertexAttribArray(0);
 	glEnableVertexAttribArray(1);
 	glEnableVertexAttribArray(2);
@@ -377,7 +363,7 @@ static void GreedyMesh(Chunk* Voxels, ChunkRenderData* RenderData)
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(TexturedQuadVertex), (void*) offsetof(TexturedQuadVertex, Normal));
 	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(TexturedQuadVertex), (void*) offsetof(TexturedQuadVertex, Dimension));
 	glVertexAttribIPointer(3, 1, GL_UNSIGNED_BYTE, sizeof(TexturedQuadVertex),  (void*) offsetof(TexturedQuadVertex, TextureCoord));
-
+    
 	if (AdditionalRenderData.Size > 0)
 	{
 		RenderData->MultiblocksToRender = new MultiblockRenderData[AdditionalRenderData.Size];
@@ -389,44 +375,60 @@ static void GreedyMesh(Chunk* Voxels, ChunkRenderData* RenderData)
 		RenderData->MultiblocksToRender = NULL;
 		RenderData->NumMultiblocksToRender = 0;
 	}
-
+    
 	// Unbind so nothing else modifies it
 	glBindVertexArray(0);
-
-	glDisableVertexAttribArray(0);
-	glDisableVertexAttribArray(1);
-	glDisableVertexAttribArray(2);
-	glDisableVertexAttribArray(3);
 }
 
-ChunkRenderData* ChunkRenderer::CreateRenderData(const glm::vec3& Position, Chunk* Voxels)
+ChunkRenderData ChunkRenderer::CreateRenderData(const glm::vec3& Position)
 {
 	// Allocate a new RenderData object and zero it out
-	ChunkRenderData* RenderData = g_RenderDataMemoryPool->Allocate();
-	memset(RenderData, NULL, sizeof(ChunkRenderData));
+    ChunkRenderData& RenderData = m_ChunksToRender.PushEmpty();
+	memset(&RenderData, NULL, sizeof(ChunkRenderData));
 
 	// Generate all of the OpenGL buffers
-	glGenVertexArrays(1, &RenderData->VertexArrayObject);
-	glGenBuffers(1, &RenderData->VertexBufferObject);
-	glGenBuffers(1, &RenderData->IndexBufferObject);
+	glGenVertexArrays(1, &RenderData.VertexArrayObject);
+	glGenBuffers(1, &RenderData.VertexBufferObject);
+	glGenBuffers(1, &RenderData.IndexBufferObject);
 
-	// Set the position and add it to the rendering list
-	RenderData->ChunkPosition = Position;
-	g_ChunksToRender.Push(RenderData);
-
+	// Set the position
+	RenderData.ChunkPosition = Position;
+    
 	return RenderData;
 }
 
-void ChunkRenderer::DeleteRenderData(ChunkRenderData* RenderData)
+void ChunkRenderer::DeleteRenderData(const glm::vec3& ChunkPosition)
 {
-	assert(RenderData != NULL);
-
+    ChunkRenderData* RenderData = GetRenderData(ChunkPosition);
+    glDeleteVertexArrays(1, &RenderData->VertexArrayObject);
+    glDeleteBuffers(1, &RenderData->VertexBufferObject);
+    glDeleteBuffers(1, &RenderData->IndexBufferObject);
+    
+    if (RenderData->MultiblocksToRender != NULL)
+    {
+        delete[] RenderData->MultiblocksToRender;
+        RenderData->NumMultiblocksToRender = NULL;
+    }
+    
+    RenderData->NumVertices = 0;
+    RenderData->NumMultiblocksToRender = 0;
+    
 	// Remove it from the list and deallocate it from the memory pool
-	g_ChunksToRender.Remove(RenderData);
-	g_RenderDataMemoryPool->Deallocate(RenderData);
+	m_ChunksToRender.Remove(*RenderData);
 }
 
-void ChunkRenderer::UpdateRenderData(ChunkRenderData* RenderData, Chunk* Voxels)
+void ChunkRenderer::UpdateRenderData(const glm::vec3& ChunkPosition, Chunk* Voxels)
 {
-	GreedyMesh(Voxels, RenderData);
+    ChunkRenderData* Item = GetRenderData(ChunkPosition);
+	GreedyMesh(Voxels, Item);
+}
+
+ChunkRenderData* ChunkRenderer::GetRenderData(const glm::vec3& ChunkPosition)
+{
+    for (size_t i = 0; i < m_ChunksToRender.Size; ++i)
+    {
+        if (m_ChunksToRender[i].ChunkPosition == ChunkPosition)
+            return &m_ChunksToRender[i];
+    }
+    return NULL;
 }

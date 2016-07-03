@@ -2,15 +2,25 @@
 
 #include <algorithm>
 
-#include "SDL2\SDL.h"
-#include "SDL2\SDL_syswm.h"
+#ifdef _WIN32
+#include "SDL2/SDL.h"
+#include "SDL2/SDL_syswm.h"
+#elif __APPLE__
+#include "SDL2OSX/SDL.h"
+#include "SDL2OSX/SDL_syswm.h"
+#endif
 
-#include "GUI\imgui\imgui.h"
+#include "glm/common.hpp"
+#include "GL/gl3w.h"
 
-#include "GL_shader.h"
+#include "GUI/imgui/imgui.h"
+
+#include "Shader.h"
+#include "Texture.h"
 
 #include "../Platform/Platform.h"
 
+#include "../Engine/Engine.h"
 #include "../Engine/Input.h"
 #include "../Engine/Core/Memory.h"
 #include "../Engine/Console.h"
@@ -19,10 +29,6 @@
 #include "../Game/World.h"
 
 #include "../Engine/Noise.h"
-
-extern GameMemoryManager* g_MemoryManager;
-extern Console* g_Console;
-extern World* g_World;
 
 /**
  * Predefined color values
@@ -48,7 +54,7 @@ GUIRenderable GUIRenderer::CreateText(const char* Text, size_t StringLength, glm
 	TrueTypeFont FontToUse;
 	if (Font == NULL)
 	{
-		FontToUse = FontLibrary::g_FontLibrary->GetFont(0);
+		FontToUse = g_Engine->g_FontLibrary->GetFont(0);
 	}
 	else
 	{
@@ -61,9 +67,9 @@ GUIRenderable GUIRenderer::CreateText(const char* Text, size_t StringLength, glm
 	glGenBuffers(1, &Result.VBO);
 	glGenBuffers(1, &Result.IBO);
 
-	List<float> Vertices = List<float>(g_MemoryManager->m_pGameMemory);
+	List<float> Vertices = List<float>(g_Engine->g_MemoryManager->m_pGameMemory);
 	Vertices.Reserve(StringLength * 20);
-	List<unsigned short> Indices = List<unsigned short>(g_MemoryManager->m_pGameMemory);
+	List<unsigned short> Indices = List<unsigned short>(g_Engine->g_MemoryManager->m_pGameMemory);
 	Indices.Reserve(StringLength * 6);
 	unsigned int NumGlyphs = 0;
 
@@ -78,7 +84,7 @@ GUIRenderable GUIRenderer::CreateText(const char* Text, size_t StringLength, glm
 		{
 			OffsetY += FontToUse.Size;
 
-			MaxWidth = max(MaxWidth, (int)OffsetX);
+            MaxWidth = glm::max(MaxWidth, (int)OffsetX);
 			OffsetX = 0.0f;
 			continue;
 		}
@@ -121,7 +127,6 @@ GUIRenderable GUIRenderer::CreateText(const char* Text, size_t StringLength, glm
 		Vertices.Push(CurrentGlyph.TexCoordTopX);
 		Vertices.Push(CurrentGlyph.TexCoordTopY);
 
-		int IndexBase = CurrentChar * 4; // What index we currently are at
 		Indices.Push(BaseIndex + 0); //3
 		Indices.Push(BaseIndex + 1); //2
 		Indices.Push(BaseIndex + 2); //0
@@ -133,7 +138,7 @@ GUIRenderable GUIRenderer::CreateText(const char* Text, size_t StringLength, glm
 		++NumGlyphs;
 	}
 
-	MaxWidth = max(MaxWidth, (int)OffsetX);
+    MaxWidth = glm::max(MaxWidth, (int)OffsetX);
 	MaxHeight = -(int)OffsetY;
 
 	glBindBuffer(GL_ARRAY_BUFFER, Result.VBO);
@@ -277,10 +282,10 @@ void GUIRenderer::RenderAtPosition(GUIRenderable Renderable, glm::vec2 Position)
 }
 
 GUIRenderer::GUIRenderer(int ScreenWidth, int ScreenHeight) :
+    m_bIsMouseActivated(false),
+    m_Elements(List<IGUIElement*>(g_Engine->g_MemoryManager->m_pGameMemory)), // TODO: Should this be moved to the rendering memory?
 	m_ScreenDimensions(glm::ivec2(ScreenWidth, ScreenHeight)),
-	m_MousePosition(glm::ivec2(0, 0)),
-	m_bIsMouseActivated(false),
-	m_Elements(List<IGUIElement*>(g_MemoryManager->m_pGameMemory)) // TODO: Should this be moved to the rendering memory?
+	m_MousePosition(glm::ivec2(0, 0))
 {
 	m_ProjectionMatrix = glm::ortho(0.0f, (float)ScreenWidth, (float)ScreenHeight, 0.0f);
 
@@ -308,7 +313,7 @@ void GUIRenderer::Render()
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	for (int i = 0; i < m_Elements.Size; ++i)
+	for (size_t i = 0; i < m_Elements.Size; ++i)
 	{
 		m_Elements[i]->Render();
 	}
@@ -319,7 +324,7 @@ void GUIRenderer::Render()
 
 void GUIRenderer::UpdateMousePositionAndState(glm::ivec2 MousePosition, bool LMouseDown, bool RMouseDown, bool MMouseDown)
 {
-	for (int i = 0; i < m_Elements.Size; ++i)
+	for (size_t i = 0; i < m_Elements.Size; ++i)
 	{
 		glm::ivec2 ElementPosition = m_Elements[i]->GetPosition();
 		glm::ivec2 FarthestCorner = ElementPosition + m_Elements[i]->m_Dimensions;
@@ -377,7 +382,7 @@ static struct
 	GLuint VAO = 0;
 	GLuint VBO = 0;
 	GLuint IBO = 0;
-	GLuint Texture = 0;
+    Texture TextureAtlas;
 	glm::mat4 ProjectionMatrix;
 } DebugGui;
 
@@ -396,20 +401,12 @@ void RenderDrawLists(ImDrawData* DrawData)
 	glDisable(GL_CULL_FACE);
 	glDisable(GL_DEPTH_TEST);
 	glEnable(GL_SCISSOR_TEST);
-	glActiveTexture(GL_TEXTURE0);
 
+    glViewport(0, 0, Width, Height);
+    
 	glBindVertexArray(DebugGui.VAO);
 
 	DebugGui.Shader->Bind();
-
-	const float ortho_projection[4][4] =
-	{
-		{ 2.0f / IO.DisplaySize.x, 0.0f,                   0.0f, 0.0f },
-		{ 0.0f,                  2.0f / -IO.DisplaySize.y, 0.0f, 0.0f },
-		{ 0.0f,                  0.0f,                  -1.0f, 0.0f },
-		{ -1.0f,                  1.0f,                   0.0f, 1.0f },
-	};
-
 	DebugGui.Shader->SetProjectionMatrix(DebugGui.ProjectionMatrix);
 
 	for (int i = 0; i < DrawData->CmdListsCount; ++i)
@@ -445,8 +442,10 @@ void RenderDrawLists(ImDrawData* DrawData)
 			}
 			else
 			{
-				// Bind the texture for the
-				glBindTexture(GL_TEXTURE_2D, (GLuint)(intptr_t)DrawCommand->TextureId);
+				// Bind the texture for the drawcommand
+                GLuint TextureId = (GLuint)(intptr_t)DrawCommand->TextureId;
+                glActiveTexture(GL_TEXTURE0);
+				glBindTexture(GL_TEXTURE_2D, TextureId);
 
 				// Define a scissor box defined by the ClipRect where anything outside does not get drawn
 				glScissor(
@@ -481,14 +480,16 @@ const char* GetClipboardText()
 	return SDL_GetClipboardText();
 }
 
-#define IMCOLOR(r, g, b) ImVec4(r.0f / 255.0f, g.0f / 255.0f, b.0f / 255.0f, 1.0f)
-#define IMCOLOR_A(r, g, b, a) ImVec4(r.0f / 255.0f, g.0f / 255.0f, b.0f / 255.0f, a.0f / 255.0f)
+#define IMCOLOR(r, g, b) ImVec4((float)r / 255.0f, (float)g / 255.0f, (float)b / 255.0f, 1.0f)
+#define IMCOLOR_A(r, g, b, a) ImVec4((float)r / 255.0f, (float)g / 255.0f, (float)b / 255.0f, (float)a / 255.0f)
 
 DebugGUIRenderer::DebugGUIRenderer(int ScreenWidth, int ScreenHeight)
 {
 	ImGuiIO& IO = ImGui::GetIO();
 
 	IO.DisplaySize = ImVec2((float)ScreenWidth, (float)ScreenHeight);
+    IO.DisplayFramebufferScale = ImVec2(1.0f, 1.0f);
+    
 	DebugGui.ProjectionMatrix = glm::ortho(0.0f, (float)ScreenWidth, (float)ScreenHeight, 0.0f);
 
 	// The padding (space between the window and the elements) and rounding (corners)
@@ -501,7 +502,7 @@ DebugGUIRenderer::DebugGUIRenderer(int ScreenWidth, int ScreenHeight)
 	// The padding (distance inside a slider for example) and the rounding on the slider background
 	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(8, 8));
 	ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 3.0f);
-
+    
 	ImGui::PushStyleColor(ImGuiCol_Border, IMCOLOR(255, 255, 255));
 
 	ImGui::PushStyleColor(ImGuiCol_TitleBg, IMCOLOR(88, 100, 29));
@@ -549,21 +550,18 @@ DebugGUIRenderer::DebugGUIRenderer(int ScreenWidth, int ScreenHeight)
 	glGenVertexArrays(1, &DebugGui.VAO);
 	glGenBuffers(1, &DebugGui.VBO);
 	glGenBuffers(1, &DebugGui.IBO);
-	glGenTextures(1, &DebugGui.Texture);
 
 	unsigned char* pixels;
 	int Width;
 	int Height;
 	IO.Fonts->GetTexDataAsRGBA32(&pixels, &Width, &Height);
 
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, DebugGui.Texture);
+    DebugGui.TextureAtlas.LoadFromBuffer(pixels, Width, Height, GL_RGBA);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, Width, Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+	//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, Width, Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
 
-	IO.Fonts->TexID = (void *)(intptr_t)DebugGui.Texture;
-
+    IO.Fonts->TexID = (void *)(intptr_t)DebugGui.TextureAtlas.GetTextureId();
 
 	// This tells it to send all the draw calls to RenderDrawLists
 	// when ImGui::Render is called
@@ -605,19 +603,15 @@ DebugGUIRenderer::~DebugGUIRenderer()
 	{
 		glDeleteBuffers(1, &DebugGui.IBO);
 	}
-	if (DebugGui.Texture)
-	{
-		glDeleteTextures(1, &DebugGui.Texture);
-	}
 
 	ImGui::Shutdown();
 }
 
 void DebugGUIRenderer::UpdateScreenDimensions(int NewWidth, int NewHeight)
 {
-	ImGuiIO& IO = ImGui::GetIO();
-	IO.DisplaySize = ImVec2(NewWidth, NewHeight);
-	IO.DisplayFramebufferScale = ImVec2(1.0f, 1.0f);
+    ImGuiIO& IO = ImGui::GetIO();
+    IO.DisplaySize = ImVec2(NewWidth, NewHeight);
+    IO.DisplayFramebufferScale = ImVec2(1.0f, 1.0f);
 
 	DebugGui.ProjectionMatrix = glm::ortho(0.0f, (float)NewWidth, (float)NewHeight, 0.0f);
 }
@@ -625,7 +619,7 @@ void DebugGUIRenderer::UpdateScreenDimensions(int NewWidth, int NewHeight)
 void DebugGUIRenderer::BeginFrame()
 {
 	ImGuiIO& IO = ImGui::GetIO();
-
+    
 	// TODO: This should not be gotten from SDL directly rather it should go through the input system
 
 	// Get the mouse state
@@ -655,9 +649,7 @@ void DebugGUIRenderer::BeginFrame()
 
 void DebugGUIRenderer::RenderFrame(int FramesPerSecond, float FrameTime)
 {
-	static bool ShowWindow = true;
-
-	glm::vec3 PlayerPos = g_World->m_pCurrentPlayer->GetPosition();
+	glm::vec3 PlayerPos = g_Engine->g_World->m_pCurrentPlayer->GetPosition();
 	glm::ivec3 PlayerChunkPos = glm::ivec3(PlayerPos) / 32;
 	// Display FPS
 	ImGui::SetNextWindowPos(ImVec2(10, 10));
@@ -669,7 +661,7 @@ void DebugGUIRenderer::RenderFrame(int FramesPerSecond, float FrameTime)
 	ImGui::Text("Chunk Pos: (%d, %d, %d)", PlayerChunkPos.x, PlayerChunkPos.y, PlayerChunkPos.z);
 	ImGui::End();
 
-	g_Console->Draw();
+	g_Engine->g_Console->Draw();
 
 	ImGui::Render();
 }

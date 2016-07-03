@@ -1,7 +1,5 @@
 #include "Octree.h"
 
-#include <intrin.h>
-
 static glm::uvec3 VS_EAST_OFFSET = glm::uvec3(1, 0, 0);
 static glm::uvec3 VS_WEST_OFFSET = glm::uvec3(-1, 0, 0);
 static glm::uvec3 VS_TOP_OFFSET = glm::uvec3(0, 1, 0);
@@ -62,7 +60,7 @@ void Voxel::OnNodeUpdatedAdjacent(const uint8_t& X, const uint8_t& Y, const uint
 }
 
 // Placed means that the original block which called this function was placed not removed
-__forceinline void Voxel::OnNodeUpdatedOnSide(const uint8_t& X, const uint8_t& Y, const uint8_t& Z, const VoxelSide& Side, const bool& Placed)
+FORCEINLINE void Voxel::OnNodeUpdatedOnSide(const uint8_t& X, const uint8_t& Y, const uint8_t& Z, const VoxelSide& Side, const bool& Placed)
 {
 	if (Placed)
 	{

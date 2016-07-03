@@ -1,10 +1,7 @@
 #include "Fonts.h"
 
-#include "windows.h"
-
+#include "../Engine/Engine.h"
 #include "../Engine/Core/Memory.h"
-
-FontLibrary* FontLibrary::g_FontLibrary;
 
 static inline int NextPower2(int x)
 {
@@ -13,7 +10,16 @@ static inline int NextPower2(int x)
 	return val;
 }
 
-TrueTypeFont FontLibrary::LoadFontFromFile(char* FontFileName, int Size)
+FontLibrary::~FontLibrary()
+{
+    for (int i = 0; i < m_LoadedFonts.Size; ++i)
+    {
+        glDeleteTextures(1, &m_LoadedFonts[i].TextureObject);
+    }
+    FT_Done_FreeType(m_pFreeTypeLibrary);
+}
+
+TrueTypeFont FontLibrary::LoadFontFromFile(const char* FontFileName, int Size)
 {
 	FT_Face FontFace;
 
@@ -59,8 +65,10 @@ TrueTypeFont FontLibrary::LoadFontFromFile(char* FontFileName, int Size)
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
+#if 0
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+#endif
 
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, TextureWidth, TextureHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
 
@@ -94,9 +102,9 @@ TrueTypeFont FontLibrary::LoadFontFromFile(char* FontFileName, int Size)
 		NewFont.Glyphs[c].BearingY = LoadedChar->bitmap_top;
 
 		char* Buffer = AllocateTransient<char>(BitmapWidth * BitmapHeight * 3);
-		for (unsigned int i = 0; i < BitmapHeight; ++i)
+		for (int i = 0; i < BitmapHeight; ++i)
 		{
-			for (unsigned int j = 0; j < BitmapHeight; ++j)
+			for (int j = 0; j < BitmapHeight; ++j)
 			{
 				unsigned int BaseIndex = ((j * BitmapWidth) + i);
 				Buffer[BaseIndex * 3]		= LoadedChar->bitmap.buffer[BaseIndex];
@@ -138,9 +146,13 @@ void FontLibrary::Initialize(std::string& FontLibraryLocation)
 		assert(false);
 	}
 
+#ifdef _WIN32
 	m_FontLibraryLocation = FontLibraryLocation.append("\\");
+#else
+    m_FontLibraryLocation = FontLibraryLocation.append("/");
+#endif
 
-	m_LoadedFonts = List<TrueTypeFont>(g_MemoryManager->m_pGameMemory);
+	m_LoadedFonts = List<TrueTypeFont>(g_Engine->g_MemoryManager->m_pGameMemory);
 
 #if 0
 	HANDLE FileHandle;
@@ -178,13 +190,4 @@ void FontLibrary::Initialize(std::string& FontLibraryLocation)
 	} while (FindNextFileA(FileHandle, &FindData));
 	FindClose(FileHandle);
 #endif
-}
-
-void FontLibrary::Destroy()
-{
-	for (int i = 0; i < m_LoadedFonts.Size; ++i)
-	{
-		glDeleteTextures(1, &m_LoadedFonts[i].TextureObject);
-	}
-	FT_Done_FreeType(m_pFreeTypeLibrary);
 }

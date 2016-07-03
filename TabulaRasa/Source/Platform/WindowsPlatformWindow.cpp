@@ -2,6 +2,7 @@
 
 #include "glm/common.hpp"
 
+#include "../Engine/Engine.h"
 #include "../Engine/Input.h"
 #include "../Engine/Camera.h"
 
@@ -12,10 +13,6 @@
 #include "../Rendering/GUI/imgui/imgui.h"
 
 PlatformWindow* PlatformWindow::GlobalWindow = NULL;
-
-extern RenderingEngine* g_RenderingEngine;
-extern DebugGUIRenderer* g_GUIRenderer;
-extern Console* g_Console;
 
 PlatformWindow::PlatformWindow(const WindowParameters& WindowParams) : 
 	WindowParams(WindowParams)
@@ -80,8 +77,7 @@ bool PlatformWindow::SetupWindowAndRenderContext()
 
 	SDL_GL_SetSwapInterval(1);
 
-	glewExperimental = true;
-	glewInit();
+	gl3wInit();
 
 	if (GlobalWindow->WindowParams.UseVSync)
 	{
@@ -134,8 +130,8 @@ bool PlatformWindow::PrepareForRender()
 							Camera::g_ActiveCamera->m_bIsScreenMatrixDirty = true;
 							Camera::g_ActiveCamera->m_bIsProjectionMatrixDirty = true;
 
-							g_RenderingEngine->ScreenDimensionsChanged(Event.window.data1, Event.window.data2);
-							g_GUIRenderer->UpdateScreenDimensions(Event.window.data1, Event.window.data2);
+							g_Engine->g_RenderingEngine->ScreenDimensionsChanged(Event.window.data1, Event.window.data2);
+							g_Engine->g_GUIRenderer->UpdateScreenDimensions(Event.window.data1, Event.window.data2);
 						}
 
 						WindowParams.Width = Event.window.data1;
@@ -168,9 +164,9 @@ bool PlatformWindow::PrepareForRender()
 #ifdef _DEBUG
 					case SDL_SCANCODE_ESCAPE:
 					{
-						if (g_Console->m_bShowConsole)
+						if (g_Engine->g_Console->m_bShowConsole)
 						{
-							g_Console->ShowConsole(false);
+							g_Engine->g_Console->ShowConsole(false);
 						}
 						else
 						{
@@ -189,7 +185,7 @@ bool PlatformWindow::PrepareForRender()
 					}
 					case SDL_SCANCODE_F1:
 					{
-						g_Console->ShowConsole(!g_Console->m_bShowConsole);
+						g_Engine->g_Console->ShowConsole(!g_Engine->g_Console->m_bShowConsole);
 						break;
 					}
 					case SDL_SCANCODE_F10:
