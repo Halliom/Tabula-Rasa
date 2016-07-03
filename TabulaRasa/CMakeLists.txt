@@ -55,19 +55,18 @@ set(SOURCE_FILES
 message(STATUS ${SOURCE_FILES})
 
 if (WIN32)
-    set(GLEW32 ${TB_LIB_DIR}/glew32.lib)
-    set(GLEW32S ${TB_LIB_DIR}/glew32s.lib)
+    message("Target is Windows")
 
-    set(SDL2 ${TB_LIB_DIR}/SDL2.lib)
-    set(SDL2MAIN ${TB_LIB_DIR}/SDL2main.lib)
-    set(SDL2TEST ${TB_LIB_DIR}/SDL2test.lib)
+    set(SDL2 ${TB_LIB_DIR}/SDL2.lib CACHE FILEPATH "SDL2.lib")
+    set(SDL2MAIN ${TB_LIB_DIR}/SDL2main.lib CACHE FILEPATH "SDL2main.lib")
+    set(SDL2TEST ${TB_LIB_DIR}/SDL2test.lib CACHE FILEPATH "SDL2test.lib")
 
-    set(FREETYPE ${TB_LIB_DIR}/freetype.lib)
-    set(FREETYPEBCC ${TB_LIB_DIR}/freetype-bcc.lib)
+    set(FREETYPE ${TB_LIB_DIR}/freetyped.lib CACHE FILEPATH "freetyped.lib")
+    #set(FREETYPEBCC ${TB_LIB_DIR}/freetype-bcc.lib CACHE FILEPATH "freetype-bcc.lib")
 
-    set(LUA52 ${TB_LIB_DIR}/lua52.lib)
+    set(LUA52 ${TB_LIB_DIR}/lua52.lib CACHE FILEPATH "lua52.lib")
 
-    set(ASSIMP ${TB_LIB_DIR}/assimp.lib)
+    set(ASSIMP ${TB_LIB_DIR}/assimp.lib CACHE FILEPATH "assimp.lib")
 
     # Windows compiler flags
     add_definitions("/W0") #disables all warnings
@@ -86,8 +85,13 @@ if (WIN32)
         ${TB_PLATFORM_SRC}
         )
 
+    set(EXTERN_LIBS
+        ${FREETYPEBCC}
+    )
+
     add_executable(TabulaRasa WIN32 ${SOURCE_FILES})
 elseif (APPLE)
+    message("Target is OSX")
     # let the user select where the libraries are
     set(SDL2 “${TB_LIB_DIR}/libSDL2.a” CACHE FILEPATH “libSDL2.a”)
     set(SDL2MAIN “${TB_LIB_DIR}/libSDL2main.a” CACHE FILEPATH “libSDL2main.a”)
@@ -146,6 +150,7 @@ endif()
 
 set(EXTERN_LIBS
     ${EXTERN_LIBS}
+    ${OPENGL_LIBRARIES}
     ${SDL2}
     ${SDL2MAIN}
     ${SDL2TEST}
@@ -155,6 +160,7 @@ set(EXTERN_LIBS
     )
 
 message(STATUS “Architecture: ${CMAKE_SYSTEM_NAME}”)
+message(STATUS ${EXTERN_LIBS})
 
 target_compile_features(TabulaRasa PRIVATE cxx_constexpr)
 
