@@ -149,10 +149,7 @@ bool PlatformWindow::PrepareForRender()
                             WindowParams.Width = Width;
                             WindowParams.Height = Height;
                             
-                            Camera::g_ActiveCamera->m_WindowWidth = WindowParams.Width;
-                            Camera::g_ActiveCamera->m_WindowHeight = WindowParams.Height;
-                            Camera::g_ActiveCamera->m_bIsScreenMatrixDirty = true;
-                            Camera::g_ActiveCamera->m_bIsProjectionMatrixDirty = true;
+                            Camera::g_ActiveCamera->UpdateScreenDimensions(Width, Height);
                             
                             g_Engine->g_RenderingEngine->ScreenDimensionsChanged(WindowParams.Width, WindowParams.Height);
                             g_Engine->g_GUIRenderer->UpdateScreenDimensions(WindowParams.Width, WindowParams.Height);

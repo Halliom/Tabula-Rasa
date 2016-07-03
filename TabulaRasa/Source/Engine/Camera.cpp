@@ -21,9 +21,9 @@ void Camera::InitProjection(const float& FOV, const float& NearPlane, const floa
 	m_NearPlane = NearPlane;
 	m_FarPlane = FarPlane;
 
-	m_bIsScreenMatrixDirty = true;
-	m_bIsViewMatrixDirty = true;
-    m_bIsProjectionMatrixDirty = true;
+    SetScreenMatrixDirty();
+    SetViewMatrixDirty();
+    SetProjectionMatrixDirty();
 
 	g_ActiveCamera = this;
 }
@@ -37,12 +37,21 @@ void Camera::UpdatePosition(glm::vec3 NewPosition)
 	m_Position = NewPosition;
 
 	// The view matrix must be updated since it is the one that deals with the player position
-	m_bIsViewMatrixDirty = true;
+    SetViewMatrixDirty();
 }
 
 Ray Camera::GetViewingRay(float Distance)
 {
 	return { m_Position, m_Front, Distance };
+}
+
+void Camera::UpdateScreenDimensions(unsigned int NewWidth, unsigned int NewHeight)
+{
+    m_WindowWidth = NewWidth;
+    m_WindowHeight = NewHeight;
+    
+    SetViewMatrixDirty();
+    SetScreenMatrixDirty();
 }
 
 void Camera::UpdateCameraRotation(const float& Yaw, const float& Pitch)
@@ -55,5 +64,5 @@ void Camera::UpdateCameraRotation(const float& Yaw, const float& Pitch)
 	this->m_Right = glm::normalize(glm::cross(this->m_Front, this->m_WorldUp));
 	this->m_Up = glm::normalize(glm::cross(this->m_Right, this->m_Front));
 
-	m_bIsViewMatrixDirty = true;
+    SetViewMatrixDirty();
 }

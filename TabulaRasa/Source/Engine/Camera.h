@@ -26,49 +26,26 @@ public:
 	void UpdatePosition(glm::vec3 NewPosition);
 
 	Ray GetViewingRay(float Distance = 100000.0f);
+    
+    void UpdateScreenDimensions(unsigned int NewWidth, unsigned int NewHeight);
 	
-	FORCEINLINE glm::mat4& GetProjectionMatrix()
+	FORCEINLINE void SetProjectionMatrixDirty()
 	{
-		if (m_bIsProjectionMatrixDirty)
-		{
-			m_ProjectionMatrix = glm::perspective(glm::radians(m_FOV), (float)m_WindowWidth / (float)m_WindowHeight, m_NearPlane, m_FarPlane);
-			m_bIsProjectionMatrixDirty = false;
-		}
-		return m_ProjectionMatrix;
+        m_ProjectionMatrix = glm::perspective(glm::radians(m_FOV), (float)m_WindowWidth / (float)m_WindowHeight, m_NearPlane, m_FarPlane);
 	}
 
-	FORCEINLINE glm::mat4& GetScreenMatrix()
+	FORCEINLINE void SetScreenMatrixDirty()
 	{
-		if (m_bIsScreenMatrixDirty)
-		{
-			m_ScreenMatrix = glm::ortho(0.0f, (float) m_WindowWidth, (float) m_WindowHeight, 0.0f);
-			m_bIsScreenMatrixDirty = false;
-		}
-		return m_ScreenMatrix;
+        m_ScreenMatrix = glm::ortho(0.0f, (float) m_WindowWidth, (float) m_WindowHeight, 0.0f);
 	}
 
-	FORCEINLINE glm::mat4 GetViewMatrix()
+	FORCEINLINE void SetViewMatrixDirty()
 	{
-		if (m_bIsViewMatrixDirty)
-		{
-			m_ViewMatrix = glm::lookAt(m_Position, m_Position + m_Front, m_Up);
-			m_bIsViewMatrixDirty = false;
-		}
-		return m_ViewMatrix;
+        m_ViewMatrix = glm::lookAt(m_Position, m_Position + m_Front, m_Up);
 	}
 
 	// The static camera that is active for this client
 	static Camera*	g_ActiveCamera;
-
-	unsigned int	m_WindowWidth;
-	unsigned int	m_WindowHeight;
-	bool			m_bIsProjectionMatrixDirty;
-	bool			m_bIsScreenMatrixDirty;
-	bool			m_bIsViewMatrixDirty;
-
-	float			m_FOV;
-	float			m_NearPlane;
-	float			m_FarPlane;
 
 	glm::vec3		m_Position;
 	glm::vec3		m_OldPosition;
@@ -76,10 +53,17 @@ public:
 	glm::vec3		m_Up;
 	glm::vec3		m_Right;
 	glm::vec3		m_WorldUp;
-
+    
+    glm::mat4		m_ProjectionMatrix;
+    glm::mat4		m_ScreenMatrix;
+    glm::mat4		m_ViewMatrix;
+    
 private:
-
-	glm::mat4		m_ProjectionMatrix;
-	glm::mat4		m_ScreenMatrix;
-	glm::mat4		m_ViewMatrix;
+    
+    unsigned int	m_WindowWidth;
+    unsigned int	m_WindowHeight;
+    
+    float			m_FOV;
+    float			m_NearPlane;
+    float			m_FarPlane;
 };

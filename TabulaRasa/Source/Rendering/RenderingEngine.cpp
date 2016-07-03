@@ -299,7 +299,7 @@ void RenderingEngine::SSAOPass()
 
 	m_pSSAOShader->Bind();
 	m_pSSAOShader->SetDefaultSamplers();
-	m_pSSAOShader->SetProjectionMatrix(Camera::g_ActiveCamera->GetProjectionMatrix());
+	m_pSSAOShader->SetProjectionMatrix(Camera::g_ActiveCamera->m_ProjectionMatrix);
 	m_pSSAOShader->SetScreenDimension(glm::vec2(m_ScreenWidth, m_ScreenHeight));
 
 	// Bind the textures from the gemoetry pass
