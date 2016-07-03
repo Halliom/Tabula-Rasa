@@ -3,4 +3,4 @@
 
  - Lua functions:
    - Set player position
-   
+   - run (run scrips from console)
