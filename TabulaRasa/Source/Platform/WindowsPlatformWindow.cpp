@@ -125,13 +125,14 @@ bool PlatformWindow::PrepareForRender()
 					{
 						if (Camera::g_ActiveCamera)
 						{
-							Camera::g_ActiveCamera->m_WindowWidth = Event.window.data1;
-							Camera::g_ActiveCamera->m_WindowHeight = Event.window.data2;
-							Camera::g_ActiveCamera->m_bIsScreenMatrixDirty = true;
-							Camera::g_ActiveCamera->m_bIsProjectionMatrixDirty = true;
+							unsigned int Width = Event.window.data1;
+							unsigned int Height = Event.window.data2;
+							WindowParams.Width = Width;
+							WindowParams.Height = Height;
 
-							g_Engine->g_RenderingEngine->ScreenDimensionsChanged(Event.window.data1, Event.window.data2);
-							g_Engine->g_GUIRenderer->UpdateScreenDimensions(Event.window.data1, Event.window.data2);
+							Camera::g_ActiveCamera->UpdateScreenDimensions(Width, Height);
+							g_Engine->g_RenderingEngine->UpdateScreenDimensions(Width, Height);
+							g_Engine->g_GUIRenderer->UpdateScreenDimensions(Width, Height);
 						}
 
 						WindowParams.Width = Event.window.data1;

@@ -378,7 +378,7 @@ void RenderingEngine::LightPass()
 	glBindVertexArray(0);
 }
 
-void RenderingEngine::ScreenDimensionsChanged(const unsigned int& NewWidth, const unsigned int& NewHeight)
+void RenderingEngine::UpdateScreenDimensions(const unsigned int& NewWidth, const unsigned int& NewHeight)
 {
 	m_ScreenWidth = NewWidth;
 	m_ScreenHeight = NewHeight;

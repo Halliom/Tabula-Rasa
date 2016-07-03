@@ -43,7 +43,7 @@ public:
 
 	void LightPass();
 
-	void ScreenDimensionsChanged(const unsigned int& NewWidth, const unsigned int& NewHeight);
+	void UpdateScreenDimensions(const unsigned int& NewWidth, const unsigned int& NewHeight);
     
     ChunkRenderer*      m_pChunkRenderer;
     LoadedModel         m_CustomBlockRenderers[MAX_NUM_BLOCKS];
