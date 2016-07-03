@@ -18,7 +18,7 @@ void main(void)
 	{
 		vec3 ssao = vec3(texture(textureSampler3, frag_texCoord).r);
 		vec4 ambientLighting = vec4(ssao, 1.0);
-		frag_color = texture(textureSampler4, texCoord) * ambientLighting;
+		textureColor = texture(textureSampler4, texCoord) * ambientLighting;
 	}
-	//frag_color = vec4(vec3(texture(textureSampler1, frag_texCoord).rgb), 1.0);
+    frag_color = textureColor;
 }
