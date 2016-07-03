@@ -2,7 +2,7 @@
 
 #include <string>
 
-#include "GL\glew.h"
+#include "GL/gl3w.h"
 
 #include <ft2build.h>
 #include FT_FREETYPE_H
@@ -42,16 +42,14 @@ struct TrueTypeFont
 class FontLibrary
 {
 public:
+    
+    ~FontLibrary();
 
 	void Initialize(std::string& FontLibraryLocation);
 
-	void Destroy();
-
-	TrueTypeFont LoadFontFromFile(char* FontFileName, int Size);
+	TrueTypeFont LoadFontFromFile(const char* FontFileName, int Size);
 
 	TrueTypeFont GetFont(int Index);
-
-	static FontLibrary* g_FontLibrary;
 	
 	List<TrueTypeFont> m_LoadedFonts;
 

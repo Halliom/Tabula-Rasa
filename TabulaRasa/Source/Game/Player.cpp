@@ -16,14 +16,14 @@
 Player* g_Player = NULL;
 
 Player::Player() :
-	m_Sensitivity(10.0f),
-	m_MovementSpeed(4.0f),
 	m_Yaw(-90.0f),
 	m_Pitch(0.0f),
-	m_LastMouseX(0),
-	m_LastMouseY(0),
-	m_Position(glm::vec3(0.0f, 0.0f, 0.0f)),
-	m_OldPosition(glm::vec3(0.0f, 0.0f, 0.0f))
+    m_Position(glm::vec3(0.0f, 0.0f, 0.0f)),
+	m_OldPosition(glm::vec3(0.0f, 0.0f, 0.0f)),
+    m_MovementSpeed(4.0f),
+    m_Sensitivity(10.0f),
+    m_LastMouseX(0),
+    m_LastMouseY(0)
 {
 	m_pPlayerCamera = new Camera();
 }

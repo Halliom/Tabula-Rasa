@@ -1,10 +1,14 @@
 #include "ChunkManager.h"
 
 #include "../Rendering/ChunkRenderer.h"
+#include "../Rendering/RenderingEngine.h"
+
+#include "../Engine/Engine.h"
 #include "../Engine/Core/Memory.h"
 #include "../Engine/Core/List.h"
 #include "../Engine/Camera.h"
 #include "../Engine/Chunk.h"
+
 #include "../Game/WorldGenerator.h"
 #include "ScriptEngine.h"
 
@@ -23,8 +27,7 @@ ChunkManager::~ChunkManager()
 		Chunk* Chunk = (*It).second;
 		if (Chunk != NULL)
 		{
-			// TODO: Free the Chunk->m_pChunkRenderData back aswell
-			g_MemoryManager->m_pChunkAllocator->Deallocate(Chunk);
+			g_Engine->g_MemoryManager->m_pChunkAllocator->DeallocateDelete(Chunk);
 		}
 	}
 }
@@ -42,7 +45,7 @@ void ChunkManager::Tick(float DeltaTime)
 
 Chunk* ChunkManager::LoadChunk(glm::ivec3 ChunkPosition)
 {
-	Chunk* Result = g_MemoryManager->m_pChunkAllocator->AllocateNew();
+	Chunk* Result = g_Engine->g_MemoryManager->m_pChunkAllocator->AllocateNew();
 	assert(Result);
 
 	Result->m_ChunkX = ChunkPosition.x;
@@ -51,7 +54,7 @@ Chunk* ChunkManager::LoadChunk(glm::ivec3 ChunkPosition)
 
 	m_pWorldGenerator->GenerateChunk(ChunkPosition, Result);
 
-	Result->Initialize();
+	Result->Initialize(g_Engine->g_RenderingEngine->m_pChunkRenderer);
 
 	return Result;
 }
@@ -79,7 +82,7 @@ void ChunkManager::UnloadChunks(glm::ivec3 PlayerChunkPosition)
 				// The chunk is outside the radius and needs to be removed
 				It = m_LoadedChunks.erase(It);
 
-				g_MemoryManager->m_pChunkAllocator->DeallocateDelete(CurrentChunk);
+				g_Engine->g_MemoryManager->m_pChunkAllocator->DeallocateDelete(CurrentChunk);
 				continue;
 			}
 		}

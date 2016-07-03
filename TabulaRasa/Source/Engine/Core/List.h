@@ -1,6 +1,10 @@
 #pragma once
 
 #include <cstdint>
+#include <stdio.h>
+#include <string.h>
+
+#include "../Engine.h"
 #include "Memory.h"
 
 template <typename T>
@@ -23,11 +27,11 @@ public:
 	T Pop();
 
 	T& operator[](int Index);
-
+    
 	int IndexOf(const T& Element);
 
 	void Remove(int Index);
-
+    
 	void Remove(const T& Element);
 
 	T* Data()
@@ -53,9 +57,9 @@ private:
 };
 
 template<typename T>
-List<T>::List(FreeList* Memory) : 
+List<T>::List(FreeList* Memory) :
+    Size(0),
 	m_pAllocator(Memory),
-	Size(0),
 	m_pBuffer(NULL),
 	m_BytesUsed(0),
 	m_BytesAllocated(0)
@@ -69,8 +73,8 @@ List<T>::List()	:
 	m_BytesUsed(0),
 	m_BytesAllocated(0)
 {
-	if (g_MemoryManager)
-		m_pAllocator = g_MemoryManager->m_pGameMemory;
+	if (g_Engine)
+		m_pAllocator = g_Engine->g_MemoryManager->m_pGameMemory;
 }
 
 template<typename T>
@@ -104,7 +108,7 @@ void List<T>::Reserve(int NumElements)
 	// If we wan't to expand the list, copy the number of bytes used and the rest will
 	// be blank. If we want to shrink the list then we can only copy as many bytes as we
 	// currently use, otherwise we would go "out of bounds"
-	int CopyBytes = NumElements <= Size ? NewSize : m_BytesUsed;
+	size_t CopyBytes = (size_t)NumElements <= Size ? NewSize : m_BytesUsed;
 	memcpy(m_pBuffer, OldBuffer, CopyBytes);
 	if (OldBuffer)
 	{
@@ -113,7 +117,7 @@ void List<T>::Reserve(int NumElements)
 
 	m_BytesAllocated = NewSize;
 	m_BytesUsed = CopyBytes;
-	if (NumElements <= Size) // If we're shrinking the size of the list
+	if ((size_t)NumElements <= Size) // If we're shrinking the size of the list
 	{
 		Size = NumElements;
 	}
@@ -167,7 +171,7 @@ inline T& List<T>::PushEmpty()
 
 	m_BytesUsed = NewSize;
 
-	return *(m_pBuffer + Size++);
+    return m_pBuffer[Size++];
 }
 
 template<typename T>
@@ -191,9 +195,9 @@ T& List<T>::operator[](int Index)
 template<typename T>
 int List<T>::IndexOf(const T& Element)
 {
-	for (int i = 0; i < Size; ++i)
+	for (size_t i = 0; i < Size; ++i)
 	{
-		if (memcmp(&m_pBuffer[i], &Element, sizeof(T)) == 0)
+		if (m_pBuffer[i] == Element)
 		{
 			return i;
 		}
@@ -208,7 +212,7 @@ void List<T>::Remove(int Index)
 
 	int HigerSideElements = Size - Index - 1;
 
-	memcpy(
+	memmove(
 		m_pBuffer + Index, 
 		m_pBuffer + Index + 1, 
 		HigerSideElements * sizeof(T));

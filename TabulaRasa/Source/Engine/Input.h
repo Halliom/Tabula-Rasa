@@ -2,7 +2,11 @@
 
 #include <stdint.h>
 
-#include "SDL2\SDL.h"
+#ifdef _WIN32
+#include "SDL2/SDL.h"
+#elif __APPLE__
+#include "SDL2OSX/SDL.h"
+#endif
 
 #include <unordered_map>
 
@@ -45,7 +49,7 @@ public:
 
 	void ProcessInput(uint32_t KeyCode);
 
-	std::unordered_map<EKey, ActionCallbackFunction> m_ActionMappings;
+	//std::unordered_map<EKey, ActionCallbackFunction> m_ActionMappings;
 
-	std::unordered_map<EAxis, AxisCallbackFunction> m_AxisMappings;
+	//std::unordered_map<EAxis, AxisCallbackFunction> m_AxisMappings;
 };

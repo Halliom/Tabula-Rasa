@@ -1,13 +1,13 @@
 #include "WorldGenerator.h"
 
-#include <Windows.h>
+#include "tinydir.h"
 
-#include "..\Platform\Platform.h"
-#include "..\Engine\Noise.h"
-#include "..\Game\World.h"
-#include "..\Engine\Chunk.h"
-#include "..\Engine\ScriptEngine.h"
-#include "..\Engine\Console.h"
+#include "../Platform/Platform.h"
+#include "../Engine/Noise.h"
+#include "../Game/World.h"
+#include "../Engine/Chunk.h"
+#include "../Engine/ScriptEngine.h"
+#include "../Engine/Console.h"
 
 float WorldGenerator::g_ScaleFactor = 50.0f;
 int WorldGenerator::g_MaxHeatTiers = 50;
@@ -75,6 +75,7 @@ void WorldGenerator::LoadFeature(std::string Name, IFeature* Feature)
 
 void WorldGenerator::LoadFeatures()
 {
+#if 0
 	// TODO: Make platform independent
 	WIN32_FIND_DATA FileFindData;
 	HANDLE FoundFile = NULL;
@@ -117,6 +118,41 @@ void WorldGenerator::LoadFeatures()
 	} while (FindNextFile(FoundFile, &FileFindData)); //Find the next file.
 
 	FindClose(FoundFile); //Always, Always, clean things up!
+#else
+    std::string DirectoryCppString = PlatformFileSystem::GetAssetDirectory(DT_SCRIPTS).c_str();
+#ifdef _WIN32
+    DirectoryCppString.append("WorldGen\\");
+#else
+    DirectoryCppString.append("WorldGen/");
+#endif
+    const char* Directory = DirectoryCppString.c_str();
+    char Path[2048];
+    
+    tinydir_dir dir;
+    tinydir_open(&dir, Directory);
+    
+    while (dir.has_next)
+    {
+        tinydir_file file;
+        tinydir_readfile(&dir, &file);
+        
+        if (!file.is_dir)
+        {
+#ifdef _WIN32
+            sprintf(Path, "WorldGen\\%s", file.name);
+#else
+            sprintf(Path, "WorldGen/%s", file.name);
+#endif
+            
+            // Just create a script object on the stack which will load the
+            // contents of the script file into the public Lua state
+            Script LoadedScript(Path);
+        }
+        tinydir_next(&dir);
+    }
+    
+    tinydir_close(&dir);  /* could not open directory */
+#endif
 
 	// At this point "world_gen.lua" should have been loaded and so we
 	// should have access to the table "Biomes" and each one of those
@@ -146,7 +182,7 @@ void WorldGenerator::GenerateChunk(glm::ivec3 ChunkPosition, Chunk* Result)
 	int Height = ChunkPosition.y * Chunk::SIZE;
 
 	IBiome* ChosenBiome = NULL;
-	for (unsigned int i = 0; i < m_NumBiomes; ++i)
+	for (int i = 0; i < m_NumBiomes; ++i)
 	{
 		IBiome* CurrentBiome = m_Biomes[i];
 		if (Heat >= CurrentBiome->m_MinHeatLevel && Heat <= CurrentBiome->m_MaxHeatLevel)
@@ -180,7 +216,7 @@ void WorldGenerator::AddBiome(IBiome* Biome)
 
 IBiome::IBiome()
 {
-	for (int i = 0; i < ArrayCount(m_Features); ++i)
+	for (unsigned int i = 0; i < ArrayCount(m_Features); ++i)
 	{
 		m_Features[i] = NULL;
 	}
@@ -221,7 +257,7 @@ void IBiome::AddFeatureGenerator(int Order, std::string FeatureName)
 
 void IBiome::Generate(Chunk* Chunk, World* WorldObject, SimplexNoise* NoiseGenerator, glm::ivec3 WorldPosition)
 {
-	for (int i = 0; i < ArrayCount(m_Features); ++i)
+	for (size_t i = 0; i < ArrayCount(m_Features); ++i)
 	{
 		if (m_Features[i])
 		{

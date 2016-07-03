@@ -1,4 +1,4 @@
-#include "GL_shader.h"
+#include "Shader.h"
 
 #include "../Platform/Platform.h"
 
@@ -10,7 +10,7 @@ GLShaderProgram::~GLShaderProgram()
 	}
 }
 
-GLShaderProgram* GLShaderProgram::CreateVertexFragmentShader(std::string& VertexShaderSource, std::string& FragmentShaderSource, bool IsSSAOShader)
+GLShaderProgram* GLShaderProgram::CreateVertexFragmentShader(const std::string& VertexShaderSource, const std::string& FragmentShaderSource, bool IsSSAOShader)
 {
 	GLShaderProgram* Program = new GLShaderProgram();
 
@@ -34,12 +34,14 @@ GLShaderProgram* GLShaderProgram::CreateVertexFragmentShader(std::string& Vertex
 
 	Program->m_bIsSSAOShader = IsSSAOShader;
 
+    // Bind the shader so we can generate the uniform bindings
+    Program->Bind();
 	Program->GenerateUniformBindings();
 
 	return Program;
 }
 
-GLShaderProgram* GLShaderProgram::CreateVertexFragmentShaderFromFile(std::string& VertexShaderFilename, std::string& FragmentShaderFilename, bool IsSSAOShader)
+GLShaderProgram* GLShaderProgram::CreateVertexFragmentShaderFromFile(const std::string& VertexShaderFilename, const std::string& FragmentShaderFilename, bool IsSSAOShader)
 {
 	return CreateVertexFragmentShader(
 		PlatformFileSystem::LoadFile(DT_SHADERS, VertexShaderFilename),
@@ -67,6 +69,8 @@ void GLShaderProgram::GenerateUniformBindings()
 	{
 		SSAOSamplesLocation = GetUniform("g_Samples");
 	}
+    
+    SetDefaultSamplers();
 }
 
 bool GLShaderProgram::AttachShaderSource(const GLShaderSource& Source)

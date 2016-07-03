@@ -1,7 +1,7 @@
 #include "RenderingEngine.h"
 
 #include <random>
-#include "glm\common.hpp"
+#include "glm/common.hpp"
 
 #include "../Platform/Platform.h"
 
@@ -12,21 +12,35 @@
 #include "GuiSystem.h"
 #include "ChunkRenderer.h"
 
-#include "GL\glew.h"
+#include "GL/gl3w.h"
 
 extern Player* g_Player;
 
 RenderingEngine::~RenderingEngine()
 {
-	ChunkRenderer::DestroyChunkRenderer();
-
+    // Delete the frame buffers
 	glDeleteFramebuffers(1, &m_GeometryFBO);
+    glDeleteFramebuffers(1, &m_SSAOFBO);
+    glDeleteFramebuffers(1, &m_SSAOBlurFBO);
+    
+    // Delete all the textures
 	glDeleteTextures(GBUFFER_LAYER_GEOMETRY_NUM, m_GeometryGBufferTextures);
 	glDeleteTextures(1, &m_GeometryDepthTexture);
+    glDeleteTextures(1, &m_SSAONoiseTexture);
+    glDeleteTextures(1, &m_SSAOColorBuffer);
+    glDeleteTextures(1, &m_SSAOBlurColorBuffer);
 
+    // Delete the Quad (for rendering to screen
 	glDeleteVertexArrays(1, &m_ScreenQuadVAO);
 	glDeleteBuffers(1, &m_ScreenQuadVBO);
 	glDeleteBuffers(1, &m_ScreenQuadIBO);
+    
+    // Delete the shaders
+    delete m_pLightPassShader;
+    delete m_pSSAOShader;
+    delete m_pSSAOBlurShader;
+    
+    delete m_pChunkRenderer;
 }
 
 void RenderingEngine::Initialize(const unsigned int& ScreenWidth, const unsigned int& ScreenHeight)
@@ -47,9 +61,17 @@ void RenderingEngine::Initialize(const unsigned int& ScreenWidth, const unsigned
 	glEnable(GL_CULL_FACE);
 
 	glEnable(GL_DEPTH_TEST);
-
-	ChunkRenderer::SetupChunkRenderer();
-
+    
+    // Instantiate and initialize the chunk renderer
+    m_pChunkRenderer = new ChunkRenderer();
+	m_pChunkRenderer->SetupChunkRenderer();
+    
+    // Load the texture atlas for all the blocks textures'
+    unsigned int Width, Height;
+    std::string FileName = PlatformFileSystem::GetAssetDirectory(DT_TEXTURES).append(std::string("textures.png"));
+    GLuint TextureId = PlatformFileSystem::LoadImageFromFile((char*) FileName.c_str(), Width, Height);
+    m_TextureAtlas = Texture(TextureId);
+    
 	SetupQuad();
 
 	SetupGeometryPass();
@@ -64,28 +86,30 @@ void RenderingEngine::PostInitialize()
 	LogF("Renderer: %s", (char*) glGetString(GL_RENDERER));
 	LogF("Verision: %s", (char*) glGetString(GL_VERSION));
 
+#ifdef _WIN32
 	SYSTEM_INFO SystemInfo;
 	GetSystemInfo(&SystemInfo);
 	LogF("Number of processors: %d\n", SystemInfo.dwNumberOfProcessors);
+#endif
 }
 
 void RenderingEngine::AddRendererForBlock(unsigned int BlockID, const char *BlockModelFileName)
 {
-	PlatformFileSystem::LoadModel(&CustomBlockRenderers[BlockID], BlockModelFileName);
+	PlatformFileSystem::LoadModel(&m_CustomBlockRenderers[BlockID], BlockModelFileName);
 }
 
 void RenderingEngine::SetupGeometryPass()
 {
 	glGenFramebuffers(1, &m_GeometryFBO);
 	glBindFramebuffer(GL_FRAMEBUFFER, m_GeometryFBO);
-
+    
 	glGenTextures(GBUFFER_LAYER_GEOMETRY_NUM, m_GeometryGBufferTextures);
 	glGenTextures(1, &m_GeometryDepthTexture);
 
 	// Bind the texures one by one
 	glBindTexture(GL_TEXTURE_2D, m_GeometryGBufferTextures[GBUFFER_LAYER_GEOMETRY_POSITION]);
 	// We only need RGB in the frame buffer
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, m_ScreenWidth, m_ScreenHeight, 0, GL_RGBA, GL_FLOAT, NULL);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_ScreenWidth, m_ScreenHeight, 0, GL_RGBA, GL_FLOAT, NULL);
 	// Nearest filtering since we want raw pixels not interpolations
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -93,25 +117,25 @@ void RenderingEngine::SetupGeometryPass()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	// This binds the texture of m_GeometryGBufferTextures[i] to a color attachment in the framebuffer
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_GeometryGBufferTextures[GBUFFER_LAYER_GEOMETRY_POSITION], 0);
-
+    
 	glBindTexture(GL_TEXTURE_2D, m_GeometryGBufferTextures[GBUFFER_LAYER_GEOMETRY_NORMAL]);
 	// We only need RGB in the frame buffer
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, m_ScreenWidth, m_ScreenHeight, 0, GL_RGB, GL_FLOAT, NULL);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, m_ScreenWidth, m_ScreenHeight, 0, GL_RGB, GL_FLOAT, NULL);
 	// Nearest filtering since we want raw pixels not interpolations
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	// This binds the texture of m_GeometryGBufferTextures[i] to a color attachment in the framebuffer
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, m_GeometryGBufferTextures[GBUFFER_LAYER_GEOMETRY_NORMAL], 0);
-
+    
 	glBindTexture(GL_TEXTURE_2D, m_GeometryGBufferTextures[GBUFFER_LAYER_GEOMETRY_TEXCOORD]);
 	// We only need RGB in the frame buffer
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, m_ScreenWidth, m_ScreenHeight, 0, GL_RGB, GL_FLOAT, NULL);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, m_ScreenWidth, m_ScreenHeight, 0, GL_RGB, GL_FLOAT, NULL);
 	// Nearest filtering since we want raw pixels not interpolations
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	// This binds the texture of m_GeometryGBufferTextures[i] to a color attachment in the framebuffer
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, m_GeometryGBufferTextures[GBUFFER_LAYER_GEOMETRY_TEXCOORD], 0);
-
+    
 	// Do the same as above for the depth texture
 	glBindTexture(GL_TEXTURE_2D, m_GeometryDepthTexture);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32F, m_ScreenWidth, m_ScreenHeight, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
@@ -120,12 +144,12 @@ void RenderingEngine::SetupGeometryPass()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, m_GeometryDepthTexture, 0);
-
+    
 	// Specify which buffers we want to draw to
 	GLenum DrawBuffers[3] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
-
-	glDrawBuffers(3, DrawBuffers);
-
+    
+	glDrawBuffers(ArrayCount(DrawBuffers), DrawBuffers);
+    
 	// Make sure no one else modifies this frame buffer (kinda like VAOs)
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
@@ -247,7 +271,7 @@ void RenderingEngine::SetupQuad()
 
 	glEnableVertexAttribArray(0);
 	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 4, 0);
+	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 4, 0);
 	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 4, (void*)(sizeof(float) * 2));
 
 	glBindVertexArray(0);
@@ -255,11 +279,14 @@ void RenderingEngine::SetupQuad()
 
 void RenderingEngine::RenderFrame(World* RenderWorld, const float& DeltaTime)
 {
-	// Renders all the chunks in the geometry pass
+	// Setup for the geometry pass
 	StartGeometryPass();
-	ChunkRenderer::RenderAllChunks(RenderWorld->m_pCurrentPlayer);
-
-	SSAOPass();
+    
+    // Do the geometry pass (render everything)
+	m_pChunkRenderer->RenderAllChunks(RenderWorld->m_pCurrentPlayer);
+    
+    // Do the SSAO
+    SSAOPass();
 
 	LightPass();
 }
@@ -272,7 +299,7 @@ void RenderingEngine::SSAOPass()
 
 	m_pSSAOShader->Bind();
 	m_pSSAOShader->SetDefaultSamplers();
-	m_pSSAOShader->SetProjectionMatrix(*Camera::g_ActiveCamera->GetProjectionMatrix());
+	m_pSSAOShader->SetProjectionMatrix(Camera::g_ActiveCamera->m_ProjectionMatrix);
 	m_pSSAOShader->SetScreenDimension(glm::vec2(m_ScreenWidth, m_ScreenHeight));
 
 	// Bind the textures from the gemoetry pass
@@ -311,7 +338,7 @@ void RenderingEngine::SSAOPass()
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-__forceinline void RenderingEngine::StartGeometryPass()
+FORCEINLINE void RenderingEngine::StartGeometryPass()
 {
 	glBindFramebuffer(GL_FRAMEBUFFER, m_GeometryFBO);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -343,7 +370,7 @@ void RenderingEngine::LightPass()
 	glBindTexture(GL_TEXTURE_2D, m_SSAOBlurColorBuffer);
 
 	glActiveTexture(GL_TEXTURE4);
-	glBindTexture(GL_TEXTURE_2D, ChunkRenderer::g_TextureAtlas);
+	glBindTexture(GL_TEXTURE_2D, m_TextureAtlas.GetTextureId());
 
 	// Render a screen quad
 	glBindVertexArray(m_ScreenQuadVAO);

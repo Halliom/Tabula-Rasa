@@ -1,6 +1,6 @@
 #include "Noise.h"
 
-#include "Core\Random.h"
+#include "Core/Random.h"
 #include <math.h>
 
 int SimplexNoise::p[] = { 151,160,137,91,90,15,

@@ -65,7 +65,7 @@ void World::Update(float DeltaTime)
 		m_pChunkManager->UnloadChunks(PlayerChunkPosition);
 		m_pChunkManager->LoadNewChunks(PlayerChunkPosition);
 	}
-
+    
 	// Tick the chunks
 	m_pChunkManager->Tick(DeltaTime);
 
@@ -89,10 +89,15 @@ Chunk* World::GetLoadedChunk(const int& ChunkX, const int& ChunkY, const int& Ch
 	}
 }
 
+FORCEINLINE unsigned int SafeMod(const int& Value, const int& Mod)
+{
+    return glm::abs(Value) % Mod;
+}
+
 Voxel* World::GetBlock(const int& X, const int& Y, const int& Z)
 {
 	Chunk* QueriedChunk = GetLoadedChunk(X / Chunk::SIZE, Y / Chunk::SIZE, Z / Chunk::SIZE);
-	return QueriedChunk != NULL ? QueriedChunk->GetVoxel(X % Chunk::SIZE, Y % Chunk::SIZE, Z % Chunk::SIZE) : NULL;;
+    return QueriedChunk != NULL ? QueriedChunk->GetVoxel(SafeMod(X, Chunk::SIZE), SafeMod(Y, Chunk::SIZE), SafeMod(Z, Chunk::SIZE)) : NULL;;
 }
 
 void World::AddBlock(const int& X, const int& Y, const int& Z, const unsigned int& BlockID)
