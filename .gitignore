@@ -62,6 +62,7 @@ TabulaRasa/Debug/TabulaRasa.ilk
 TabulaRasa/Debug/TabulaRasa.lib
 TabulaRasa/TabulaRasa.VC.db
 TabulaRasa/imgui.ini
+TabulaRasa/TabulaRasa.build/**
 *.makeDebug
 
 *.makeMinSizeRel
