@@ -1,4 +1,3 @@
-#ifdef __APPLE__
 #include "OSXPlatformWindow.h"
 
 #include "glm/common.hpp"
@@ -286,4 +285,3 @@ SDL_Window* PlatformWindow::GetWindow()
     
     return MainWindow;
 }
-#endif

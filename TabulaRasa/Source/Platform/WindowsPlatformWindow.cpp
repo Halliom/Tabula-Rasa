@@ -1,4 +1,3 @@
-#ifdef _WIN32
 #include "Platform.h"
 
 #include "glm/common.hpp"
@@ -291,4 +290,3 @@ LRESULT PlatformWindow::WindowProcessMessages(HWND Window, UINT Message, WPARAM 
 	}
 	return 0;
 }
-#endif
