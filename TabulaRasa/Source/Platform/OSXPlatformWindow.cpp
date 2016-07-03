@@ -264,6 +264,12 @@ bool PlatformWindow::PrepareForRender()
                 Input::MouseY += Event.motion.yrel;
                 break;
             }
+            case SDL_FINGERMOTION:
+            {
+                Input::MouseX += Event.tfinger.dx * WindowParams.Width;
+                Input::MouseY += Event.tfinger.dy * WindowParams.Height;
+                break;
+            }
         }
     }
     return true;
