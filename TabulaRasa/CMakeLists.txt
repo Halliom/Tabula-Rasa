@@ -133,13 +133,15 @@ elseif (APPLE)
         ${TB_SOURCE_DIR}/Platform/OSXPlatformFilesystem.*
         ${TB_SOURCE_DIR}/Platform/OSXPlatformWindow.*
         )
-    message(STATUS ${TB_PLATFORM_SRC})
     set(SOURCE_FILES
         ${SOURCE_FILES}
         ${TB_PLATFORM_SRC}
         )
-
-    add_executable(TabulaRasa ${SOURCE_FILES})
+    if (CMAKE_BUILD_TYPE STREQUAL "Release")
+        add_executable(TabulaRasa MACOSX_BUNDLE ${SOURCE_FILES})
+    else()
+        add_executable(TabulaRasa ${SOURCE_FILES})
+    endif()
 endif()
 
 set(EXTERN_LIBS
