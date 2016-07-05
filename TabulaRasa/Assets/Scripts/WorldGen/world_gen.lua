@@ -1,3 +1,4 @@
 Biomes = {
-	"BiomeTest"
+	"BiomeTest",
+	"RedDesert"
 }
