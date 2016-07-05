@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8)
+﻿cmake_minimum_required(VERSION 2.8)
 project(TabulaRasa)
 
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR})
@@ -64,8 +64,7 @@ if (WIN32)
     set(GLEW32 ${TB_LIB_DIR}/glew32.lib CACHE FILEPATH "glew32.lib")
     set(GLEW32S ${TB_LIB_DIR}/glew32s.lib CACHE FILEPATH "glew32s.lib")
 
-    set(FREETYPE ${TB_LIB_DIR}/freetyped.lib CACHE FILEPATH "freetyped.lib")
-    #set(FREETYPEBCC ${TB_LIB_DIR}/freetype-bcc.lib CACHE FILEPATH "freetype-bcc.lib")
+    set(FREETYPE ${TB_LIB_DIR}/freetype.lib CACHE FILEPATH "freetype.lib")
 
     set(LUA52 ${TB_LIB_DIR}/lua52.lib CACHE FILEPATH "lua52.lib")
 
