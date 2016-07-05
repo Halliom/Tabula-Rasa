@@ -14,9 +14,7 @@
 #include "../Game/WorldGenerator.h"
 #include "../Game/Player.h"
 
-#define TOCHUNK_COORD(X, Y, Z) X / Chunk::SIZE, Y / Chunk::SIZE, Z / Chunk::SIZE
-
-extern GameMemoryManager* g_MemoryManager;
+#define TOCHUNK_COORD(X, Y, Z) X >= 0 ? X / Chunk::SIZE : (X / Chunk::SIZE) - 1, Y >= 0 ? Y / Chunk::SIZE : (Y / Chunk::SIZE) - 1, Z >= 0 ? Z / Chunk::SIZE : (Z / Chunk::SIZE) - 1
 
 World::World()
 {
@@ -89,15 +87,15 @@ Chunk* World::GetLoadedChunk(const int& ChunkX, const int& ChunkY, const int& Ch
 	}
 }
 
-FORCEINLINE unsigned int SafeMod(const int& Value, const int& Mod)
+FORCEINLINE unsigned int ChunkMod(const int& Value, const int& Mod)
 {
-    return glm::abs(Value) % Mod;
+	return Value >= 0 ? Value % Mod : (Value % Mod) + Mod - 1;
 }
 
 Voxel* World::GetBlock(const int& X, const int& Y, const int& Z)
 {
-	Chunk* QueriedChunk = GetLoadedChunk(X / Chunk::SIZE, Y / Chunk::SIZE, Z / Chunk::SIZE);
-    return QueriedChunk != NULL ? QueriedChunk->GetVoxel(SafeMod(X, Chunk::SIZE), SafeMod(Y, Chunk::SIZE), SafeMod(Z, Chunk::SIZE)) : NULL;;
+	Chunk* QueriedChunk = GetLoadedChunk(TOCHUNK_COORD(X, Y, Z));
+    return QueriedChunk != NULL ? QueriedChunk->GetVoxel(ChunkMod(X, Chunk::SIZE), ChunkMod(Y, Chunk::SIZE), ChunkMod(Z, Chunk::SIZE)) : NULL;;
 }
 
 void World::AddBlock(const int& X, const int& Y, const int& Z, const unsigned int& BlockID)
@@ -109,24 +107,24 @@ void World::AddBlock(const int& X, const int& Y, const int& Z, const unsigned in
 	{
 		// This gets the local coordinate in the chunks local coordinate
 		// system, which ranges from 0 to 31
-		int LocalX = abs(X) % Chunk::SIZE;
-		int LocalY = abs(Y) % Chunk::SIZE;
-		int LocalZ = abs(Z) % Chunk::SIZE;
+		int LocalX = ChunkMod(X, Chunk::SIZE);
+		int LocalY = ChunkMod(Y, Chunk::SIZE);
+		int LocalZ = ChunkMod(Z, Chunk::SIZE);
 
 		ChunkToAddTo->SetVoxel(this, LocalX, LocalY, LocalZ, BlockID);
 	}
 }
 
-void World::RemoveBlock(const int & X, const int & Y, const int & Z)
+void World::RemoveBlock(const int& X, const int& Y, const int& Z)
 {
 	Chunk* QueriedChunk = GetLoadedChunk(TOCHUNK_COORD(X, Y, Z));
 	if (QueriedChunk)
 	{
 		// This gets the local coordinate in the chunks local coordinate
 		// system, which ranges from 0 to 31
-		int LocalX = X % Chunk::SIZE;
-		int LocalY = Y % Chunk::SIZE;
-		int LocalZ = Z % Chunk::SIZE;
+		int LocalX = ChunkMod(X, Chunk::SIZE);
+		int LocalY = ChunkMod(Y, Chunk::SIZE);
+		int LocalZ = ChunkMod(Z, Chunk::SIZE);
 
 		QueriedChunk->RemoveVoxel(this, LocalX, LocalY, LocalZ);
 	}
@@ -134,18 +132,18 @@ void World::RemoveBlock(const int & X, const int & Y, const int & Z)
 
 Voxel* World::GetMultiblock(const int &X, const int &Y, const int &Z)
 {
-	int ChunkX = X / Chunk::SIZE;
-	int ChunkY = Y / Chunk::SIZE;
-	int ChunkZ = Z / Chunk::SIZE;
+	int ChunkX = X >= 0 ? X / Chunk::SIZE : (X / Chunk::SIZE) - 1;
+	int ChunkY = Y >= 0 ? Y / Chunk::SIZE : (Y / Chunk::SIZE) - 1;
+	int ChunkZ = Z >= 0 ? Z / Chunk::SIZE : (Z / Chunk::SIZE) - 1;
 
 	Chunk* QueriedChunk = GetLoadedChunk(ChunkX, ChunkY, ChunkZ);
 	if (QueriedChunk)
 	{
 		// This gets the local coordinate in the chunks local coordinate
 		// system, which ranges from 0 to 31
-		int LocalX = X % Chunk::SIZE;
-		int LocalY = Y % Chunk::SIZE;
-		int LocalZ = Z % Chunk::SIZE;
+		int LocalX = ChunkMod(X, Chunk::SIZE);
+		int LocalY = ChunkMod(Y, Chunk::SIZE);
+		int LocalZ = ChunkMod(Z, Chunk::SIZE);
 
 		Voxel* QueriedVoxel = QueriedChunk->GetVoxel(LocalX, LocalY, LocalZ);
 		// If we got the child node, set the block operated upon to be the parent (master)
@@ -184,18 +182,18 @@ void World::AddMultiblock(const int &X, const int &Y, const int &Z, const unsign
 		}
 	}
 
-	int ChunkX = X / Chunk::SIZE;
-	int ChunkY = Y / Chunk::SIZE;
-	int ChunkZ = Z / Chunk::SIZE;
+	int ChunkX = X >= 0 ? X / Chunk::SIZE : (X / Chunk::SIZE) - 1;
+	int ChunkY = Y >= 0 ? Y / Chunk::SIZE : (Y / Chunk::SIZE) - 1;
+	int ChunkZ = Z >= 0 ? Z / Chunk::SIZE : (Z / Chunk::SIZE) - 1;
 
 	Chunk *QueriedChunk = GetLoadedChunk(ChunkX, ChunkY, ChunkZ);
 	if (QueriedChunk)
 	{
 		// This gets the local coordinate in the chunks local coordinate
 		// system, which ranges from 0 to 31
-		int LocalX = X % Chunk::SIZE;
-		int LocalY = Y % Chunk::SIZE;
-		int LocalZ = Z % Chunk::SIZE;
+		int LocalX = ChunkMod(X, Chunk::SIZE);
+		int LocalY = ChunkMod(Y, Chunk::SIZE);
+		int LocalZ = ChunkMod(Z, Chunk::SIZE);
 
 		Voxel *Parent = NULL;
 		for (unsigned int XCoord = 0; XCoord < MultiblockWidth; ++XCoord)
@@ -208,19 +206,19 @@ void World::AddMultiblock(const int &X, const int &Y, const int &Z, const unsign
 					{
 						++ChunkX;
 						QueriedChunk =  GetLoadedChunk(ChunkX, ChunkY, ChunkZ);
-						LocalX %= 16;
+						LocalX = ChunkMod(LocalX, Chunk::SIZE);
 					}
 					if (LocalY >= 16)
 					{
 						++ChunkY;
 						QueriedChunk =  GetLoadedChunk(ChunkX, ChunkY, ChunkZ);
-						LocalY %= 16;
+						LocalY = ChunkMod(LocalY, Chunk::SIZE);
 					}
 					if (LocalZ >= 16)
 					{
 						++ChunkZ;
 						QueriedChunk =  GetLoadedChunk(ChunkX, ChunkY, ChunkZ);
-						LocalZ %= 16;
+						LocalZ = ChunkMod(LocalZ, Chunk::SIZE);
 					}
 
 					if (XCoord == 0 && YCoord == 0 && ZCoord == 0)
@@ -244,9 +242,9 @@ void World::RemoveMultiblock(const int& X, const int& Y, const int& Z)
 
 	if (Parent)
 	{
-		int ChunkX = X / Chunk::SIZE;
-		int ChunkY = Y / Chunk::SIZE;
-		int ChunkZ = Z / Chunk::SIZE;
+		int ChunkX = X >= 0 ? X / Chunk::SIZE : (X / Chunk::SIZE) - 1;
+		int ChunkY = Y >= 0 ? Y / Chunk::SIZE : (Y / Chunk::SIZE) - 1;
+		int ChunkZ = Z >= 0 ? Z / Chunk::SIZE : (Z / Chunk::SIZE) - 1;
 
 		Chunk *QueriedChunk = GetLoadedChunk(ChunkX, ChunkY, ChunkZ);
 		if (QueriedChunk)
@@ -272,19 +270,19 @@ void World::RemoveMultiblock(const int& X, const int& Y, const int& Z)
 						{
 							++ChunkX;
 							QueriedChunk =  GetLoadedChunk(ChunkX, ChunkY, ChunkZ);
-							LocalX %= 16;
+							LocalX = ChunkMod(LocalX, Chunk::SIZE);
 						}
 						if (LocalY >= 16)
 						{
 							++ChunkY;
 							QueriedChunk =  GetLoadedChunk(ChunkX, ChunkY, ChunkZ);
-							LocalY %= 16;
+							LocalY = ChunkMod(LocalY, Chunk::SIZE);
 						}
 						if (LocalZ >= 16)
 						{
 							++ChunkZ;
 							QueriedChunk =  GetLoadedChunk(ChunkX, ChunkY, ChunkZ);
-							LocalZ %= 16;
+							LocalZ = ChunkMod(LocalZ, Chunk::SIZE);
 						}
 
 						QueriedChunk->RemoveVoxel(this, LocalX, LocalY, LocalZ);
@@ -297,6 +295,35 @@ void World::RemoveMultiblock(const int& X, const int& Y, const int& Z)
 	}
 }
 
+FORCEINLINE float Mod(float Value, float Mod)
+{
+	return glm::mod((glm::mod(Value, Mod) + Mod), Mod);
+}
+
+// Find t where Direction * t + Origin = integer
+float GetStep(float Origin, float Direction)
+{
+	if (Direction < 0)
+		return GetStep(-Origin, -Direction);
+	else
+	{
+		float Rem = Mod(Origin, 1.0f);
+		return (1.0f - Rem) / Direction;
+	}
+}
+
+FORCEINLINE float intbound(float s, float ds)
+{
+	if (ds < 0) {
+		return intbound(-s, -ds);
+	}
+	else {
+		s = Mod(s, 1);
+		// problem is now s+t*ds = 1
+		return (1 - s) / ds;
+	}
+}
+
 RayHitResult World::RayTraceWorld(const Ray& Ray)
 {
 	RayHitResult Result;
@@ -306,10 +333,97 @@ RayHitResult World::RayTraceWorld(const Ray& Ray)
 		return Result;
 	}
 
-	List<Chunk*>* ChunksInView = m_pChunkManager->GetChunksOnRay(Ray);
-	LogF("#Chunks in view: %d", ChunksInView->Size);
+	glm::vec3 CameraPosition = Ray.Origin;
 
-	delete ChunksInView;
+	// The voxel we're starting in
+	float PositionX = glm::floor(CameraPosition.x);
+	float PositionY = glm::floor(CameraPosition.y);
+	float PositionZ = glm::floor(CameraPosition.z);
+
+	// The direction in which to take a step
+	int stepX = Ray.Direction.x > 0 ? 1 : Ray.Direction.x < 0 ? -1 : 0;
+	int stepY = Ray.Direction.y > 0 ? 1 : Ray.Direction.y < 0 ? -1 : 0;
+	int stepZ = Ray.Direction.z > 0 ? 1 : Ray.Direction.z < 0 ? -1 : 0;
+
+	// How much we need to multiply the Direction vector with to get to an int
+	glm::vec3 tMax(
+		intbound(CameraPosition.x, Ray.Direction.x), 
+		intbound(CameraPosition.y, Ray.Direction.y), 
+		intbound(CameraPosition.z, Ray.Direction.z));
+
+	// How much we need to multiply the direction vector with to get to the next int
+	glm::vec3 tDelta(
+		(float)stepX / Ray.Direction.x, 
+		(float)stepY / Ray.Direction.y, 
+		(float)stepZ / Ray.Direction.y);
+
+	// What face we entered through
+	float FaceX;
+	float FaceY;
+	float FaceZ;
+
+	do 
+	{
+		Voxel* Hit = GetBlock(PositionX, PositionY, PositionZ);
+		if (Hit && Hit->BlockID != 0) 
+		{
+			RemoveBlock(PositionX, PositionY, PositionZ);
+			break;
+		}
+		if (tMax[0] < tMax[1]) 
+		{
+			if (tMax[0] < tMax[2]) 
+			{
+				if (tMax[0] > Ray.Distance) 
+					break;
+
+				PositionX += stepX;
+				tMax[0] += tDelta[0];
+
+				FaceX = -stepX;
+				FaceY = 0;
+				FaceZ = 0;
+			}
+			else {
+				if (tMax[2] > Ray.Distance) 
+					break;
+
+				PositionZ += stepZ;
+				tMax[2] += tDelta[2];
+
+				FaceX = 0;
+				FaceY = 0;
+				FaceZ = -stepZ;
+			}
+		}
+		else 
+		{
+			if (tMax[1] < tMax[2])
+			{
+				if (tMax[1] > Ray.Distance)
+					break;
+
+				PositionY += stepY;
+				tMax[1] += tDelta[1];
+
+				FaceX = 0;
+				FaceY = -stepY;
+				FaceZ = 0;
+			}
+			else 
+			{
+				if (tMax[2] > Ray.Distance) 
+					break;
+
+				PositionZ += stepZ;
+				tMax[2] += tDelta[2];
+
+				FaceX = 0;
+				FaceY = 0;
+				FaceZ = -stepZ;
+			}
+		}
+	} while (true);
 
 	return Result;
 }

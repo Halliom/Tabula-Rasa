@@ -66,7 +66,7 @@ void Player::Update(float DeltaTime)
 	m_LastMouseY = Input::MouseY;
 
 	static bool Previous = false;
-	if (Input::MouseButtons[1] && !Previous)
+	if (!Input::IsGameFrozen && Input::MouseButtons[1] && !Previous)
 	{
 		m_pWorldObject->RayTraceWorld(m_pPlayerCamera->GetViewingRay());
 	}

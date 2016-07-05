@@ -9,26 +9,15 @@
 #include "../Game/Player.h"
 #include "../Engine/Console.h"
 #include "../Engine/Camera.h"
+#include "../Engine/Core/List.h"
 #include "GuiSystem.h"
 #include "ChunkRenderer.h"
 
-#include "GL/gl3w.h"
-
-extern Player* g_Player;
+#include "GL/glew.h"
 
 RenderingEngine::~RenderingEngine()
 {
-    // Delete the frame buffers
-	glDeleteFramebuffers(1, &m_GeometryFBO);
-    glDeleteFramebuffers(1, &m_SSAOFBO);
-    glDeleteFramebuffers(1, &m_SSAOBlurFBO);
-    
-    // Delete all the textures
-	glDeleteTextures(GBUFFER_LAYER_GEOMETRY_NUM, m_GeometryGBufferTextures);
-	glDeleteTextures(1, &m_GeometryDepthTexture);
-    glDeleteTextures(1, &m_SSAONoiseTexture);
-    glDeleteTextures(1, &m_SSAOColorBuffer);
-    glDeleteTextures(1, &m_SSAOBlurColorBuffer);
+	DeleteFrameBuffers();
 
     // Delete the Quad (for rendering to screen
 	glDeleteVertexArrays(1, &m_ScreenQuadVAO);
@@ -48,6 +37,18 @@ void RenderingEngine::Initialize(const unsigned int& ScreenWidth, const unsigned
 	m_ScreenWidth = ScreenWidth;
 	m_ScreenHeight = ScreenHeight;
 
+	// SSAO shader
+	m_pSSAOShader = GLShaderProgram::CreateVertexFragmentShaderFromFile(
+		std::string("VertexPassthrough.glsl"),
+		std::string("FragmentShaderSSAO.glsl"),
+		true);
+
+	// SSAO blur shader
+	m_pSSAOBlurShader = GLShaderProgram::CreateVertexFragmentShaderFromFile(
+		std::string("VertexPassthrough.glsl"),
+		std::string("FragmentShaderSSAOBlur.glsl"));
+
+	// Light pass shader
 	m_pLightPassShader = GLShaderProgram::CreateVertexFragmentShaderFromFile(
 		std::string("VertexPassthrough.glsl"),
 		std::string("FragmentShaderLightPass.glsl"));
@@ -156,11 +157,6 @@ void RenderingEngine::SetupGeometryPass()
 
 void RenderingEngine::SetupSSAOPass()
 {
-	m_pSSAOShader = GLShaderProgram::CreateVertexFragmentShaderFromFile(
-		std::string("VertexPassthrough.glsl"),
-		std::string("FragmentShaderSSAO.glsl"),
-		true);
-
 	glGenFramebuffers(1, &m_SSAOFBO);
 	glBindFramebuffer(GL_FRAMEBUFFER, m_SSAOFBO);
 
@@ -223,10 +219,6 @@ void RenderingEngine::SetupSSAOPass()
 	 * Setup the blur pass
 	 */
 
-	m_pSSAOBlurShader = GLShaderProgram::CreateVertexFragmentShaderFromFile(
-		std::string("VertexPassthrough.glsl"),
-		std::string("FragmentShaderSSAOBlur.glsl"));
-
 	glGenFramebuffers(1, &m_SSAOBlurFBO);
 	glBindFramebuffer(GL_FRAMEBUFFER, m_SSAOBlurFBO);
 
@@ -281,9 +273,20 @@ void RenderingEngine::RenderFrame(World* RenderWorld, const float& DeltaTime)
 {
 	// Setup for the geometry pass
 	StartGeometryPass();
-    
+
     // Do the geometry pass (render everything)
 	m_pChunkRenderer->RenderAllChunks(RenderWorld->m_pCurrentPlayer);
+
+	Ray PlayerRay = RenderWorld->m_pCurrentPlayer->m_pPlayerCamera->GetViewingRay();
+	glm::vec3 End = (PlayerRay.Direction * PlayerRay.Distance) + PlayerRay.Origin;
+
+	glLineWidth(2.5f);
+	glBegin(GL_LINES);
+	{
+		glVertex3f(PlayerRay.Origin.x, PlayerRay.Origin.y, PlayerRay.Origin.z);
+		glVertex3f(End.x, End.y, End.z);
+	}
+	glEnd();
     
     // Do the SSAO
     SSAOPass();
@@ -383,4 +386,25 @@ void RenderingEngine::UpdateScreenDimensions(const unsigned int& NewWidth, const
 	m_ScreenWidth = NewWidth;
 	m_ScreenHeight = NewHeight;
 	glViewport(0, 0, NewWidth, NewHeight);
+
+	DeleteFrameBuffers();
+
+	SetupGeometryPass();
+
+	SetupSSAOPass();
+}
+
+void RenderingEngine::DeleteFrameBuffers()
+{
+	// Delete the frame buffers
+	glDeleteFramebuffers(1, &m_GeometryFBO);
+	glDeleteFramebuffers(1, &m_SSAOFBO);
+	glDeleteFramebuffers(1, &m_SSAOBlurFBO);
+
+	// Delete all the textures
+	glDeleteTextures(GBUFFER_LAYER_GEOMETRY_NUM, m_GeometryGBufferTextures);
+	glDeleteTextures(1, &m_GeometryDepthTexture);
+	glDeleteTextures(1, &m_SSAONoiseTexture);
+	glDeleteTextures(1, &m_SSAOColorBuffer);
+	glDeleteTextures(1, &m_SSAOBlurColorBuffer);
 }

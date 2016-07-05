@@ -59,8 +59,6 @@ public:
 
 	List<Chunk*> GetVisibleChunks(glm::ivec3 PlayerChunkPosition);
 
-	List<Chunk*>* GetChunksOnRay(const struct Ray& Ray);
-
 	int m_ChunkLoadingRadius;
 
 private:

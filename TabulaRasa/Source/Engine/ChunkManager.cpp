@@ -168,24 +168,3 @@ bool FastRayIntersect(const Ray& Ray, glm::vec3 RayInvDir, glm::vec3 Min, glm::v
 
 	return tmax > max(tmin, 0.0f);
 }
-
-List<Chunk*>* ChunkManager::GetChunksOnRay(const Ray& Ray)
-{
-	List<Chunk*>* Result = new List<Chunk*>();
-
-	glm::vec3 RayInvDir = 1.0f / Ray.Direction;
-
-	for (auto It = m_LoadedChunks.begin(); It != m_LoadedChunks.end(); ++It)
-	{
-		glm::ivec3 ChunkPosition = (*It).first;
-		glm::vec3 WorldPosition = glm::vec3(ChunkPosition) * (float)Chunk::SIZE;
-		glm::vec3 UpperPosition = WorldPosition + (float)Chunk::SIZE;
-
-		if (FastRayIntersect(Ray, RayInvDir, WorldPosition, UpperPosition))
-		{
-			Result->Push((*It).second);
-		}
-	}
-
-	return Result;
-}

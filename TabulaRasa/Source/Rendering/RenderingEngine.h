@@ -1,6 +1,6 @@
 #pragma once
 
-#include "GL/gl3w.h"
+#include "GL/glew.h"
 
 #include "../Platform/Platform.h"
 #include "../Engine/Block.h"
@@ -49,7 +49,9 @@ public:
     LoadedModel         m_CustomBlockRenderers[MAX_NUM_BLOCKS];
     
 private:
-    
+
+	void DeleteFrameBuffers();
+
 	unsigned int        m_ScreenWidth;
 	unsigned int        m_ScreenHeight;
 

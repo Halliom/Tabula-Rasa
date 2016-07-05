@@ -13,7 +13,6 @@ uniform mat4 g_ProjectionMatrix;
 uniform vec3 g_Samples[64];
 
 uniform vec2 ScreenDimension;
-//const vec2 noiseScale = vec2(1280.0 / 4.0, 720.0 / 4.0); // screen = 1280x720
 
 const float radius = 1.0;
 
