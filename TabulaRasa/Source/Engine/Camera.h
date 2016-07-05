@@ -36,7 +36,7 @@ public:
 
 	FORCEINLINE void SetScreenMatrixDirty()
 	{
-        m_ScreenMatrix = glm::ortho(0.0f, (float) m_WindowWidth, (float) m_WindowHeight, 0.0f);
+        m_ScreenMatrix = glm::ortho(0.0f, (float)m_WindowWidth, (float)m_WindowHeight, 0.0f);
 	}
 
 	FORCEINLINE void SetViewMatrixDirty()

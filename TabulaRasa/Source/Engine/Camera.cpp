@@ -1,6 +1,7 @@
 #include "Camera.h"
 
 #include "../Platform/Platform.h"
+#include "../Engine/Console.h"
 
 Camera* Camera::g_ActiveCamera = NULL;
 
@@ -50,8 +51,8 @@ void Camera::UpdateScreenDimensions(unsigned int NewWidth, unsigned int NewHeigh
     m_WindowWidth = NewWidth;
     m_WindowHeight = NewHeight;
     
-    SetViewMatrixDirty();
     SetScreenMatrixDirty();
+	SetProjectionMatrixDirty();
 }
 
 void Camera::UpdateCameraRotation(const float& Yaw, const float& Pitch)
