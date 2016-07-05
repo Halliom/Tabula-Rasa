@@ -82,7 +82,8 @@ bool PlatformWindow::SetupWindowAndRenderContext()
 
 	SDL_GL_SetSwapInterval(1);
 
-	gl3wInit();
+	glewExperimental = true;
+	glewInit();
 
 	if (GlobalWindow->WindowParams.UseVSync)
 	{

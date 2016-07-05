@@ -2,7 +2,7 @@
 
 #include <string>
 
-#include "GL/gl3w.h"
+#include "GL/glew.h"
 
 #include <ft2build.h>
 #include FT_FREETYPE_H

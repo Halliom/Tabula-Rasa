@@ -13,9 +13,7 @@
 #include "GuiSystem.h"
 #include "ChunkRenderer.h"
 
-#include "GL/gl3w.h"
-
-extern Player* g_Player;
+#include "GL/glew.h"
 
 RenderingEngine::~RenderingEngine()
 {
@@ -278,6 +276,17 @@ void RenderingEngine::RenderFrame(World* RenderWorld, const float& DeltaTime)
 
     // Do the geometry pass (render everything)
 	m_pChunkRenderer->RenderAllChunks(RenderWorld->m_pCurrentPlayer);
+
+	Ray PlayerRay = RenderWorld->m_pCurrentPlayer->m_pPlayerCamera->GetViewingRay();
+	glm::vec3 End = (PlayerRay.Direction * PlayerRay.Distance) + PlayerRay.Origin;
+
+	glLineWidth(2.5f);
+	glBegin(GL_LINES);
+	{
+		glVertex3f(PlayerRay.Origin.x, PlayerRay.Origin.y, PlayerRay.Origin.z);
+		glVertex3f(End.x, End.y, End.z);
+	}
+	glEnd();
     
     // Do the SSAO
     SSAOPass();

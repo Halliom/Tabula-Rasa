@@ -11,7 +11,7 @@
 #endif
 
 #include "glm/common.hpp"
-#include "GL/gl3w.h"
+#include "GL/glew.h"
 
 #include "GUI/imgui/imgui.h"
 
@@ -84,7 +84,7 @@ GUIRenderable GUIRenderer::CreateText(const char* Text, size_t StringLength, glm
 		{
 			OffsetY += FontToUse.Size;
 
-            MaxWidth = glm::max(MaxWidth, (int)OffsetX);
+            MaxWidth = max(MaxWidth, (int)OffsetX);
 			OffsetX = 0.0f;
 			continue;
 		}
@@ -138,7 +138,7 @@ GUIRenderable GUIRenderer::CreateText(const char* Text, size_t StringLength, glm
 		++NumGlyphs;
 	}
 
-    MaxWidth = glm::max(MaxWidth, (int)OffsetX);
+    MaxWidth = max(MaxWidth, (int)OffsetX);
 	MaxHeight = -(int)OffsetY;
 
 	glBindBuffer(GL_ARRAY_BUFFER, Result.VBO);
