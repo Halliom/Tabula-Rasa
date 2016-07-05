@@ -49,7 +49,9 @@ public:
     LoadedModel         m_CustomBlockRenderers[MAX_NUM_BLOCKS];
     
 private:
-    
+
+	void DeleteFrameBuffers();
+
 	unsigned int        m_ScreenWidth;
 	unsigned int        m_ScreenHeight;
 

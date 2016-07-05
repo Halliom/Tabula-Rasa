@@ -37,7 +37,7 @@ bool PlatformWindow::SetupWindowAndRenderContext()
 
 	if (WindowParams.Fullscreen)
 	{
-		Flags |= SDL_WINDOW_FULLSCREEN;
+		Flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
 	}
 	if (WindowParams.StartMaximized)
 	{
@@ -65,6 +65,11 @@ bool PlatformWindow::SetupWindowAndRenderContext()
 	SDL_StartTextInput();
 
 	SDL_SetRelativeMouseMode(SDL_TRUE);
+
+	int Width, Height;
+	SDL_GL_GetDrawableSize(MainWindow, &Width, &Height);
+	WindowParams.Width = Width;
+	WindowParams.Height = Height;
 
 	// Initializes the input for the mouse
 	int MouseX = 0, MouseY = 0;
@@ -179,7 +184,10 @@ bool PlatformWindow::PrepareForRender()
 					{
 						WindowParams.Fullscreen = !WindowParams.Fullscreen;
 						if (WindowParams.Fullscreen)
-							SDL_SetWindowFullscreen(MainWindow, SDL_WINDOW_FULLSCREEN);
+						{
+							SDL_SetWindowFullscreen(MainWindow, SDL_WINDOW_FULLSCREEN_DESKTOP);
+							
+						}
 						else
 							SDL_SetWindowFullscreen(MainWindow, 0);
 						break;
