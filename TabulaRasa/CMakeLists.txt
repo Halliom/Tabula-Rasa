@@ -61,6 +61,9 @@ if (WIN32)
     set(SDL2MAIN ${TB_LIB_DIR}/SDL2main.lib CACHE FILEPATH "SDL2main.lib")
     set(SDL2TEST ${TB_LIB_DIR}/SDL2test.lib CACHE FILEPATH "SDL2test.lib")
 
+    set(GLEW32 ${TB_LIB_DIR}/glew32.lib CACHE FILEPATH "glew32.lib")
+    set(GLEW32S ${TB_LIB_DIR}/glew32s.lib CACHE FILEPATH "glew32s.lib")
+
     set(FREETYPE ${TB_LIB_DIR}/freetyped.lib CACHE FILEPATH "freetyped.lib")
     #set(FREETYPEBCC ${TB_LIB_DIR}/freetype-bcc.lib CACHE FILEPATH "freetype-bcc.lib")
 
@@ -87,6 +90,8 @@ if (WIN32)
 
     set(EXTERN_LIBS
         ${FREETYPEBCC}
+        ${GLEW32}
+        ${GLEW32S}
     )
 
     add_executable(TabulaRasa WIN32 ${SOURCE_FILES})
