@@ -12,10 +12,6 @@ static inline int NextPower2(int x)
 
 FontLibrary::~FontLibrary()
 {
-    for (int i = 0; i < m_LoadedFonts.Size; ++i)
-    {
-        glDeleteTextures(1, &m_LoadedFonts[i].TextureObject);
-    }
     FT_Done_FreeType(m_pFreeTypeLibrary);
 }
 
@@ -56,21 +52,11 @@ TrueTypeFont FontLibrary::LoadFontFromFile(const char* FontFileName, int Size)
 	int TextureWidth = NextPower2(NumGlyphsPerX * GlyphWidth);
 	int TextureHeight = NextPower2(NumGlyphsPerY * GlyphHeight);
 
-	glActiveTexture(GL_TEXTURE0);
-
-	glGenTextures(1, &NewFont.TextureObject);
-	glBindTexture(GL_TEXTURE_2D, NewFont.TextureObject);
+	NewFont.GlyphBitmap.Use();
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-
-#if 0
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
-#endif
-
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, TextureWidth, TextureHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+	NewFont.GlyphBitmap.LoadFromBuffer((unsigned char*)NULL, TextureWidth, TextureHeight, GL_RGB8, GL_RGB);
+	NewFont.GlyphBitmap.SetFilteringMode(GL_LINEAR);
 
 	for (char c = 0; c < 127; ++c)
 	{
@@ -126,6 +112,8 @@ TrueTypeFont FontLibrary::LoadFontFromFile(const char* FontFileName, int Size)
 	}
 
 	NewFont.Size = Size;
+	// Reset
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
 
 	FT_Done_Face(FontFace);
 	m_LoadedFonts.Push(NewFont);

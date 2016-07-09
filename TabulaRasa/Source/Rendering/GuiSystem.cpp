@@ -155,7 +155,7 @@ GUIRenderable GUIRenderer::CreateText(const char* Text, size_t StringLength, glm
 
 	Result.NumIndices = Indices.Size;
 	//Result.Layer = Layer;
-	Result.Texture = FontToUse.TextureObject;
+	Result.Texture = FontToUse.GlyphBitmap;
 	Result.Color = Color;
 	glBindVertexArray(0);
 
@@ -218,7 +218,6 @@ GUIRenderable GUIRenderer::CreateRect(glm::vec2 Size, Color Color)
 {
 	GUIRenderable Result;
 
-	Result.Texture = 0;
 	Result.Color = Color;
 
 	glGenVertexArrays(1, &Result.VAO);
@@ -254,13 +253,12 @@ GUIRenderable GUIRenderer::CreateRect(glm::vec2 Size, Color Color)
 
 void GUIRenderer::RenderAtPosition(GUIRenderable Renderable, glm::vec2 Position)
 {
-	if (Renderable.Texture != 0)
+	if (Renderable.Texture.m_TextureId != 0)
 	{
 		m_pTextureShader->Bind();
 		glBindVertexArray(Renderable.VAO);
 
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, Renderable.Texture);
+		Renderable.Texture.Use();
 
 		m_pTextureShader->SetColor(Renderable.Color);
 		m_pTextureShader->SetProjectionMatrix(m_ProjectionMatrix);
@@ -556,12 +554,10 @@ DebugGUIRenderer::DebugGUIRenderer(int ScreenWidth, int ScreenHeight)
 	int Height;
 	IO.Fonts->GetTexDataAsRGBA32(&pixels, &Width, &Height);
 
-    DebugGui.TextureAtlas.LoadFromBuffer(pixels, Width, Height, GL_RGBA);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, Width, Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+    DebugGui.TextureAtlas.LoadFromBuffer(pixels, Width, Height, GL_RGBA8, GL_RGBA);
+	DebugGui.TextureAtlas.SetFilteringMode(GL_LINEAR);
 
-    IO.Fonts->TexID = (void *)(intptr_t)DebugGui.TextureAtlas.GetTextureId();
+    IO.Fonts->TexID = (void *)(intptr_t)DebugGui.TextureAtlas.m_TextureId;
 
 	// This tells it to send all the draw calls to RenderDrawLists
 	// when ImGui::Render is called

@@ -11,6 +11,8 @@
 
 #include "../Engine/Core/List.h"
 
+#include "../Rendering/Texture.h"
+
 template<typename T>
 struct MemoryPool;
 class GLShaderProgram;
@@ -64,7 +66,7 @@ struct GUIRenderable
 	GLuint VBO;
 	GLuint IBO;
 
-	GLuint Texture;
+	Texture Texture;
 	Color Color;
 
 	unsigned short NumIndices;

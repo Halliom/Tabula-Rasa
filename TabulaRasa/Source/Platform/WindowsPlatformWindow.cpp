@@ -80,8 +80,6 @@ bool PlatformWindow::SetupWindowAndRenderContext()
 	// Create the OpenGL context to draw to
 	MainContext = SDL_GL_CreateContext(MainWindow);
 
-	SDL_GL_SetSwapInterval(1);
-
 	glewExperimental = true;
 	glewInit();
 

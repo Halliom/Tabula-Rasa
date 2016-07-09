@@ -33,7 +33,7 @@ Texture& Texture::operator=(const Texture& Copy)
     }
     else
     {
-        if (--(*m_ReferenceCount) == 0)
+        if (m_ReferenceCount && --(*m_ReferenceCount) == 0)
         {
             DeleteResource();
             delete m_ReferenceCount;
@@ -55,7 +55,7 @@ Texture::~Texture()
     }
 }
 
-void Texture::LoadFromBuffer(unsigned char* Pixels, unsigned int Width, unsigned int Height, GLenum Format)
+void Texture::LoadFromBuffer(unsigned char* Pixels, unsigned int Width, unsigned int Height, GLint InternalFormat, GLenum Format)
 {
     if (!m_TextureId)
         CreateResource();
@@ -66,7 +66,7 @@ void Texture::LoadFromBuffer(unsigned char* Pixels, unsigned int Width, unsigned
     
     glTexImage2D(GL_TEXTURE_2D,
                  0,
-                 Format,
+                 InternalFormat,
                  Width,
                  Height,
                  0,
@@ -76,7 +76,7 @@ void Texture::LoadFromBuffer(unsigned char* Pixels, unsigned int Width, unsigned
 
 }
 
-void Texture::LoadFromBuffer(float* Pixels, unsigned int Width, unsigned int Height, GLenum Format)
+void Texture::LoadFromBuffer(float* Pixels, unsigned int Width, unsigned int Height, GLint InternalFormat, GLenum Format)
 {
     if (!m_TextureId)
         CreateResource();
@@ -87,13 +87,29 @@ void Texture::LoadFromBuffer(float* Pixels, unsigned int Width, unsigned int Hei
     
     glTexImage2D(GL_TEXTURE_2D,
                  0,
-                 Format,
+                 InternalFormat,
                  Width,
                  Height,
                  0,
                  Format,
                  GL_FLOAT,
                  Pixels);
+}
+
+void Texture::SetFilteringMode(GLint Mode)
+{
+	Use();
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, Mode);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, Mode);
+}
+
+void Texture::SetWrapMode(GLint Mode)
+{
+	Use();
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, Mode);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, Mode);
 }
 
 void Texture::Use()

@@ -28,16 +28,18 @@ public:
     
     ~Texture();
     
-    void LoadFromBuffer(unsigned char* Pixels, unsigned int Width, unsigned int Height, GLenum Format);
+    void LoadFromBuffer(unsigned char* Pixels, unsigned int Width, unsigned int Height, GLint InternalFormat, GLenum Format);
     
-    void LoadFromBuffer(float* Pixels, unsigned int Width, unsigned int Height, GLenum Format);
+    void LoadFromBuffer(float* Pixels, unsigned int Width, unsigned int Height, GLint InternalFormat, GLenum Format);
+
+	void SetFilteringMode(GLint Mode);
+
+	void SetWrapMode(GLint Mode);
     
     void Use();
-    
-    FORCEINLINE GLuint GetTextureId()
-    {
-        return m_TextureId;
-    }
+
+	GLuint          m_TextureId;
+	unsigned int    m_BindingPoint;
     
 private:
     
@@ -45,7 +47,5 @@ private:
     
     void DeleteResource();
     
-    GLuint          m_TextureId;
-    unsigned int    m_BindingPoint;
     ReferenceCount  m_ReferenceCount;
 };

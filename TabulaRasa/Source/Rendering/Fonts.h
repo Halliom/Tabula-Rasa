@@ -9,6 +9,7 @@
 
 #include "../Engine/Core/Memory.h"
 #include "../Engine/Core/List.h"
+#include "../Rendering/Texture.h"
 
 struct TrueTypeGlyph
 {
@@ -29,14 +30,11 @@ struct TrueTypeGlyph
 
 struct TrueTypeFont
 {
-	TrueTypeGlyph Glyphs[128];
-
-	unsigned int Width;
-	unsigned int Height;
-
-	unsigned int Size;
-
-	GLuint TextureObject;
+	TrueTypeGlyph	Glyphs[128];
+	unsigned int	Width;
+	unsigned int	Height;
+	unsigned int	Size;
+	Texture			GlyphBitmap;
 };
 
 class FontLibrary
