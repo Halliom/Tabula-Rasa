@@ -324,6 +324,11 @@ FORCEINLINE float intbound(float s, float ds)
 	}
 }
 
+FORCEINLINE float Floor(float Value)
+{
+	return Value >= 0 ? glm::floor(Value) : -1 * glm::floor(glm::abs(Value));
+}
+
 RayHitResult World::RayTraceWorld(const Ray& Ray)
 {
 	RayHitResult Result;
@@ -336,9 +341,9 @@ RayHitResult World::RayTraceWorld(const Ray& Ray)
 	glm::vec3 CameraPosition = Ray.Origin;
 
 	// The voxel we're starting in
-	float PositionX = glm::floor(CameraPosition.x);
-	float PositionY = glm::floor(CameraPosition.y);
-	float PositionZ = glm::floor(CameraPosition.z);
+	float PositionX = Floor(CameraPosition.x);
+	float PositionY = Floor(CameraPosition.y);
+	float PositionZ = Floor(CameraPosition.z);
 
 	// The direction in which to take a step
 	int stepX = Ray.Direction.x > 0 ? 1 : Ray.Direction.x < 0 ? -1 : 0;
@@ -355,7 +360,7 @@ RayHitResult World::RayTraceWorld(const Ray& Ray)
 	glm::vec3 tDelta(
 		(float)stepX / Ray.Direction.x, 
 		(float)stepY / Ray.Direction.y, 
-		(float)stepZ / Ray.Direction.y);
+		(float)stepZ / Ray.Direction.z);
 
 	// What face we entered through
 	float FaceX;
@@ -368,13 +373,14 @@ RayHitResult World::RayTraceWorld(const Ray& Ray)
 		if (Hit && Hit->BlockID != 0) 
 		{
 			RemoveBlock(PositionX, PositionY, PositionZ);
+			LogF("Hit block (%f, %f, %f)", PositionX, PositionY, PositionZ);
 			break;
 		}
-		if (tMax[0] < tMax[1]) 
+		if (tMax.x < tMax.y) 
 		{
-			if (tMax[0] < tMax[2]) 
+			if (tMax.x < tMax.z) 
 			{
-				if (tMax[0] > Ray.Distance) 
+				if (tMax.x > Ray.Distance) 
 					break;
 
 				PositionX += stepX;
@@ -385,11 +391,11 @@ RayHitResult World::RayTraceWorld(const Ray& Ray)
 				FaceZ = 0;
 			}
 			else {
-				if (tMax[2] > Ray.Distance) 
+				if (tMax.z > Ray.Distance) 
 					break;
 
 				PositionZ += stepZ;
-				tMax[2] += tDelta[2];
+				tMax.z += tDelta.z;
 
 				FaceX = 0;
 				FaceY = 0;
@@ -398,13 +404,13 @@ RayHitResult World::RayTraceWorld(const Ray& Ray)
 		}
 		else 
 		{
-			if (tMax[1] < tMax[2])
+			if (tMax.y < tMax.z)
 			{
-				if (tMax[1] > Ray.Distance)
+				if (tMax.y > Ray.Distance)
 					break;
 
 				PositionY += stepY;
-				tMax[1] += tDelta[1];
+				tMax.y += tDelta.y;
 
 				FaceX = 0;
 				FaceY = -stepY;
@@ -412,11 +418,11 @@ RayHitResult World::RayTraceWorld(const Ray& Ray)
 			}
 			else 
 			{
-				if (tMax[2] > Ray.Distance) 
+				if (tMax.z > Ray.Distance) 
 					break;
 
 				PositionZ += stepZ;
-				tMax[2] += tDelta[2];
+				tMax.z += tDelta.z;
 
 				FaceX = 0;
 				FaceY = 0;
