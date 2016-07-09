@@ -14,13 +14,13 @@ out vec2 frag_texCoord;
 out vec2 frag_atlasOffset;
 
 // Since the texture atlas contains a 16x16 grid of 'tiles'
-const float TILE_OFFSET = 1.0 / 16.0;
-const vec2 TILE_OFFSETV = vec2(TILE_OFFSET, TILE_OFFSET);
+const vec2 TILE_OFFSET = vec2(1.0 / 16.0, 1.0 / 16.0);
 
 vec2 getAtlasOffset()
 {
-	vec2 atlasOffset = vec2(float(textureCoord % uint(16)), floor(float(textureCoord) * TILE_OFFSET));
-	atlasOffset = atlasOffset * TILE_OFFSETV;
+	float xCoord = float(textureCoord % uint(16));
+	float yCoord = float(textureCoord / uint(16));
+	vec2 atlasOffset = vec2(xCoord, yCoord) * TILE_OFFSET;
 	return atlasOffset;
 }
 
