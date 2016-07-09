@@ -143,6 +143,7 @@ int List<T>::Push(const T& Element)
 		m_BytesAllocated = NewSize;
 	}
 	
+	memset(m_pBuffer + Size, 0, sizeof(T));
 	m_pBuffer[Size] = Element;
 	m_BytesUsed = NewSize;
 
