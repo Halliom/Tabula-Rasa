@@ -1,7 +1,7 @@
 #version 330
 
 // Only ouput a float since SSAO is grayscale
-out float FragColor;
+layout(location = 0) out float FragColor;
 
 uniform sampler2D textureSampler0; // Position
 uniform sampler2D textureSampler1; // Normal
