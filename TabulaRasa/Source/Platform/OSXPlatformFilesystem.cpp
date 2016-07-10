@@ -81,7 +81,7 @@ std::string PlatformFileSystem::GetAssetDirectory(const AssetDirectoryType& Dire
     return OutDirectory;
 }
 
-GLuint PlatformFileSystem::LoadImageFromFile(const std::string& FileName, unsigned int& OutWidth, unsigned int& OutHeight)
+Texture PlatformFileSystem::LoadImageFromFile(const std::string& FileName, unsigned int& OutWidth, unsigned int& OutHeight)
 {
     std::ifstream File;
     File.open(FileName, std::ios::binary);
@@ -97,27 +97,26 @@ GLuint PlatformFileSystem::LoadImageFromFile(const std::string& FileName, unsign
     File.read((char*) &(Data[0]), Size);
     File.close();
     
-    std::vector<unsigned char>* Pixels = new std::vector<unsigned char>();
+    std::vector<unsigned char> Pixels;
     unsigned long Width;
     unsigned long Height;
     
-    decodePNG(*Pixels, Width, Height, &(Data[0]), Size);
+    decodePNG(Pixels, Width, Height, &(Data[0]), Size);
     
     OutWidth = Width;
     OutHeight = Height;
     
-    GLuint Result;
-    glGenTextures(1, &Result);
-    glBindTexture(GL_TEXTURE_2D, Result);
+    Texture Result;
+    Result.LoadFromBuffer(Pixels.data(), Width, Height, GL_RGBA, GL_RGBA);
+    Result.SetFilteringMode(GL_LINEAR);
+    Result.SetWrapMode(GL_CLAMP_TO_EDGE);
     
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, Width, Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, Pixels->data());
+    /** glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, Width, Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, Pixels->data());
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    
-    delete Pixels;
-    
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE); */
+        
     return Result;
 }
 

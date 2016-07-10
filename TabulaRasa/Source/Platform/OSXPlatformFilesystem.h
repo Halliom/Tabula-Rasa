@@ -6,6 +6,7 @@
 #include "GL/glew.h"
 
 #include "../Engine/Engine.h"
+#include "../Rendering/Texture.h"
 
 enum AssetDirectoryType
 {
@@ -43,7 +44,7 @@ public:
     
     static std::string GetAssetDirectory(const AssetDirectoryType& Directory);
     
-    static GLuint LoadImageFromFile(const std::string& FileName, unsigned int& OutWidth, unsigned int& OutHeight);
+    static Texture LoadImageFromFile(const std::string& FileName, unsigned int& OutWidth, unsigned int& OutHeight);
     
     static GLuint LoadBitmapFromFile(char* FileName);
     
