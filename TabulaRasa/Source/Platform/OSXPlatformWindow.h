@@ -1,6 +1,6 @@
 #pragma once
 
-#include "GL/gl3w.h"
+#include "GL/glew.h"
 #include "SDL2OSX/SDL.h"
 
 struct WindowParameters

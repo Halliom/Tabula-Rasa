@@ -97,13 +97,17 @@ if (WIN32)
 elseif (APPLE)
     message("Target is OSX")
     # let the user select where the libraries are
-    set(SDL2 “${TB_LIB_DIR}/libSDL2.a” CACHE FILEPATH “libSDL2.a”)
-    set(SDL2MAIN “${TB_LIB_DIR}/libSDL2main.a” CACHE FILEPATH “libSDL2main.a”)
-    set(SDL2TEST “${TB_LIB_DIR}/libSDL2_test.a” CACHE FILEPATH “libSDL2_test.a”)
+    set(SDL2 ${TB_LIB_DIR}/libSDL2.a CACHE FILEPATH “libSDL2.a”)
+    set(SDL2MAIN ${TB_LIB_DIR}/libSDL2main.a CACHE FILEPATH “libSDL2main.a”)
+    set(SDL2TEST ${TB_LIB_DIR}/libSDL2_test.a CACHE FILEPATH “libSDL2_test.a”)
 
-    set(LUA52 “${TB_LIB_DIR}/liblua52.a” CACHE FILEPATH “liblua52.a”)
+    set(GLEW32 ${TB_LIB_DIR}/libGLEW.a CACHE FILEPATH "libGLEW.a")
 
-    set(ASSIMP “${TB_LIB_DIR}/libassimp.3.2.0.dylib” CACHE FILEPATH “libassimp.3.2.0.dylib”)
+    set(LUA52 ${TB_LIB_DIR}/liblua52.a CACHE FILEPATH “liblua52.a”)
+
+    set(ASSIMP ${TB_LIB_DIR}/libassimp.3.2.0.dylib CACHE FILEPATH “libassimp.3.2.0.dylib”)
+
+    set(FREETYPE ${TB_LIB_DIR}/libfreetype.6.dylib CACHE FILEPATH “libfreetype.6.dylib”)
 
     # Find necessary apple libraries
     find_library(CORE_FOUNDATION CoreFoundation)
@@ -120,6 +124,7 @@ elseif (APPLE)
 
     # Add the OS X specific libraries libraries
     set(EXTERN_LIBS
+        ${GLEW32}
         ${CORE_FOUNDATION}
         ${FREETYPE}
         ${FORCE_FEEDBACK}

@@ -85,13 +85,9 @@ bool PlatformWindow::SetupWindowAndRenderContext()
 
     SDL_GL_SetSwapInterval(1);
 
-    // Make sure that OpenGL works
-    if (gl3wInit() != 0 || !gl3wIsSupported(3, 2))
-    {
-        // TODO: Exit/crash with error
-        assert(false);
-    }
-
+    glewExperimental = true;
+    glewInit();
+    
     if (GlobalWindow->WindowParams.UseVSync)
     {
         SDL_GL_SetSwapInterval(1);
