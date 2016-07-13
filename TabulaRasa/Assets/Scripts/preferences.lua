@@ -2,10 +2,10 @@
 
 Window = {
   title = "Tabula Rasa",
-  width = 1280,
-  height = 720,
+  width = 1600,
+  height = 900,
   vsync = true,
-  full_screen = true,
+  full_screen = false,
   start_maximized = true
 }
 

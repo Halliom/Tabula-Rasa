@@ -108,7 +108,7 @@ Texture PlatformFileSystem::LoadImageFromFile(const std::string& FileName, unsig
     
     Texture Result;
     Result.LoadFromBuffer(Pixels.data(), Width, Height, GL_RGBA, GL_RGBA);
-    Result.SetFilteringMode(GL_LINEAR);
+    Result.SetFilteringMode(GL_NEAREST);
     Result.SetWrapMode(GL_CLAMP_TO_EDGE);
     
     /** glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, Width, Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, Pixels->data());
@@ -116,7 +116,7 @@ Texture PlatformFileSystem::LoadImageFromFile(const std::string& FileName, unsig
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE); */
-        
+    
     return Result;
 }
 

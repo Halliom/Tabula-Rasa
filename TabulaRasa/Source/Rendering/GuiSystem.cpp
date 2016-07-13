@@ -484,11 +484,8 @@ const char* GetClipboardText()
 DebugGUIRenderer::DebugGUIRenderer(int ScreenWidth, int ScreenHeight)
 {
 	ImGuiIO& IO = ImGui::GetIO();
-
-	IO.DisplaySize = ImVec2((float)ScreenWidth, (float)ScreenHeight);
-    IO.DisplayFramebufferScale = ImVec2(1.0f, 1.0f);
     
-	DebugGui.ProjectionMatrix = glm::ortho(0.0f, (float)ScreenWidth, (float)ScreenHeight, 0.0f);
+    UpdateScreenDimensions(ScreenWidth, ScreenHeight);
 
 	// The padding (space between the window and the elements) and rounding (corners)
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(10, 10));
@@ -550,11 +547,11 @@ DebugGUIRenderer::DebugGUIRenderer(int ScreenWidth, int ScreenHeight)
 	glGenBuffers(1, &DebugGui.IBO);
 
 	unsigned char* pixels;
-	int Width;
-	int Height;
-	IO.Fonts->GetTexDataAsRGBA32(&pixels, &Width, &Height);
+	int TextureWidth;
+	int TextureHeight;
+	IO.Fonts->GetTexDataAsRGBA32(&pixels, &TextureWidth, &TextureHeight);
 
-    DebugGui.TextureAtlas.LoadFromBuffer(pixels, Width, Height, GL_RGBA8, GL_RGBA);
+    DebugGui.TextureAtlas.LoadFromBuffer(pixels, TextureWidth, TextureHeight, GL_RGBA, GL_RGBA);
 	DebugGui.TextureAtlas.SetFilteringMode(GL_LINEAR);
 
     IO.Fonts->TexID = (void *)(intptr_t)DebugGui.TextureAtlas.m_TextureId;
@@ -606,13 +603,27 @@ DebugGUIRenderer::~DebugGUIRenderer()
 void DebugGUIRenderer::UpdateScreenDimensions(int NewWidth, int NewHeight)
 {
     ImGuiIO& IO = ImGui::GetIO();
+    
+#if 0
     IO.DisplaySize = ImVec2(NewWidth, NewHeight);
     IO.DisplayFramebufferScale = ImVec2(1.0f, 1.0f);
-
-	DebugGui.ProjectionMatrix = glm::ortho(0.0f, (float)NewWidth, (float)NewHeight, 0.0f);
+    
+    DebugGui.ProjectionMatrix = glm::ortho(0.0f, (float)NewWidth, (float)NewHeight, 0.0f);
+#else
+    SDL_Window* MainWindow = PlatformWindow::GlobalWindow->GetWindow();
+    int Width, Height;
+    int DrawWidth, DrawHeight;
+    SDL_GetWindowSize(MainWindow, &Width, &Height);
+    SDL_GL_GetDrawableSize(MainWindow, &DrawWidth, &DrawHeight);
+    
+    IO.DisplaySize = ImVec2((float)Width, (float)Height);
+    IO.DisplayFramebufferScale = ImVec2(Width > 0 ? ((float)DrawWidth / Width) : 0, Height > 0 ? ((float)DrawHeight / Height) : 0);
+    
+    DebugGui.ProjectionMatrix = glm::ortho(0.0f, (float)Width, (float)Height, 0.0f);
+#endif
 }
 
-void DebugGUIRenderer::BeginFrame()
+void DebugGUIRenderer::BeginFrame(float DeltaTime)
 {
 	ImGuiIO& IO = ImGui::GetIO();
     
@@ -622,7 +633,9 @@ void DebugGUIRenderer::BeginFrame()
 	int MouseX;
 	int MouseY;
 	Uint32 MouseState = SDL_GetMouseState(&MouseX, &MouseY);
-
+    
+    IO.DeltaTime = DeltaTime;
+    
 	// Only set the mouse position if the window/mouse is 'focused'
 	if (SDL_GetWindowFlags(PlatformWindow::GlobalWindow->GetWindow()) & SDL_WINDOW_MOUSE_FOCUS)
 		IO.MousePos = ImVec2((float)MouseX, (float)MouseY);   // Mouse position, in pixels (set to -1,-1 if no mouse / on another screen, etc.)

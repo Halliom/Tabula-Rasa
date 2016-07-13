@@ -45,12 +45,12 @@ int main(int argc, char* argv[])
 {
 	WindowParameters WindowParams;
 	WindowParams.Title = "Tabula Rasa";
-	WindowParams.Width = 960;
-	WindowParams.Height = 540;
+	WindowParams.Width = 1280;
+	WindowParams.Height = 720;
 	WindowParams.UseVSync = true;
 	WindowParams.UseDepthTest = false;
 	WindowParams.Fullscreen = false;
-	WindowParams.StartMaximized = false;
+	WindowParams.StartMaximized = true;
 #endif
     g_Engine = new EngineGlobals();
     
@@ -67,8 +67,8 @@ int main(int argc, char* argv[])
 	WindowParams.Width = Preferences.GetIntFromTable("Window", "width");
 	WindowParams.Height = Preferences.GetIntFromTable("Window", "height");
 	WindowParams.UseVSync = Preferences.GetBoolFromTable("Window", "vsync");
-	//WindowParams.Fullscreen = Preferences.GetBoolFromTable("Window", "full_screen");
-	//WindowParams.StartMaximized = Preferences.GetBoolFromTable("Window", "start_maximized");
+	WindowParams.Fullscreen = Preferences.GetBoolFromTable("Window", "full_screen");
+	WindowParams.StartMaximized = Preferences.GetBoolFromTable("Window", "start_maximized");
 #ifdef __APPLE__
 	WindowParams.Width /= 2;
 	WindowParams.Height /= 2;
@@ -112,7 +112,7 @@ int main(int argc, char* argv[])
 	int StaticFPS = 0.0f;
 	while (Window.PrepareForRender())
 	{
-		g_Engine->g_GUIRenderer->BeginFrame();
+		g_Engine->g_GUIRenderer->BeginFrame(DeltaTime);
 
 		// Update the world with the last frames delta time
 		g_Engine->g_World->Update(DeltaTime);

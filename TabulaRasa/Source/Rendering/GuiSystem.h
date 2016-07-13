@@ -202,7 +202,7 @@ public:
 	/**
 	 * Sets up the screen for rendering with ImGui
 	 */	
-	void BeginFrame();
+	void BeginFrame(float DeltaTime);
 
 	/**
 	* Renders a frame of ImGui elements to the screen
