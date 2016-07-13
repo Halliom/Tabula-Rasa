@@ -13,6 +13,9 @@ local j = 1
 -- pungter inom randen
 local list = {}
 
+-- antal pungter som körs åt gången
+local h = 3
+
 -- sublits function
 function coord(x, y, z)
   local result = {}
@@ -74,4 +77,14 @@ for k, g in pairs(list) do
   for h, l in pairs(g) do
     print(h.." : "..l)
   end
+end
+
+j = 1
+while h <= j do
+  if list[j].x and list[j].z > 0 then
+    
+  elseif list[j].z and list[j].y < 0 then
+
+  end
+  j = j + 1
 end
