@@ -56,7 +56,11 @@ void Console::PrintLine(const char* Line, EConsoleMessageType Type, int Length)
 
 	if (m_NumConsoleMessages < MAX_BUFFER_SIZE)
 	{
-		m_pMessageBuffer[m_NumConsoleMessages].Message = Message;
+		// Copy the message over to the 
+		int MessageLength = strlen(Message);
+		m_pMessageBuffer[m_NumConsoleMessages].Message = new char[MessageLength];
+		memcpy((char*)m_pMessageBuffer[m_NumConsoleMessages].Message, Line, MessageLength);
+
 		m_pMessageBuffer[m_NumConsoleMessages].MessageType = Type;
 		++m_NumConsoleMessages;
 	}
