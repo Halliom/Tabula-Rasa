@@ -99,10 +99,10 @@ public:
 			case SIDE_WEST: { return glm::vec3(-1.0f, 0.0f, 0.0f); break; }
 			case SIDE_TOP: { return glm::vec3(0.0f, 1.0f, 0.0f); break; }
 			case SIDE_BOTTOM: { return glm::vec3(0.0f, -1.0f, 0.0f); break; }
-			case SIDE_NORTH: { return glm::vec3(0.0f, 1.0f, 0.0f); break; }
-			case SIDE_SOUTH: { return glm::vec3(0.0f, -1.0f, 0.0f); break; }
+			case SIDE_NORTH: { return glm::vec3(0.0f, 0.0f, 1.0f); break; }
+			case SIDE_SOUTH: { return glm::vec3(0.0f, 0.0f, -1.0f); break; }
 		}
-		return 0; // This won't ever be called but is there to comfort the compiler
+		return glm::vec3(); // This won't ever be called but is there to comfort the compiler
 	}
 
 	/*
