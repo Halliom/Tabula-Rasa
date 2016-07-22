@@ -61,14 +61,16 @@ int main(int argc, char* argv[])
 		assert(false);
 	}
     
+    g_Engine->g_ScriptEngine = new ScriptEngine();
+    g_Engine->g_ScriptEngine->ExecuteScript("preferences.lua");
+    LuaTable* WindowTable = g_Engine->g_ScriptEngine->GetTable("Window");
 	// TODO: Create Settings class
-	Script Preferences = Script("preferences.lua");
-	WindowParams.Title = Preferences.GetStringFromTable("Window", "title").c_str();
-	WindowParams.Width = Preferences.GetIntFromTable("Window", "width");
-	WindowParams.Height = Preferences.GetIntFromTable("Window", "height");
-	WindowParams.UseVSync = Preferences.GetBoolFromTable("Window", "vsync");
-	WindowParams.Fullscreen = Preferences.GetBoolFromTable("Window", "full_screen");
-	WindowParams.StartMaximized = Preferences.GetBoolFromTable("Window", "start_maximized");
+	WindowParams.Title = WindowTable->GetValue("title").String;
+	WindowParams.Width = (int)WindowTable->GetValue("width").Number;
+	WindowParams.Height = (int)WindowTable->GetValue("height").Number;
+	WindowParams.UseVSync = WindowTable->GetValue("vsync").Boolean;
+	WindowParams.Fullscreen = WindowTable->GetValue("full_screen").Boolean;
+	WindowParams.StartMaximized = WindowTable->GetValue("start_maximized").Boolean;
 #ifdef __APPLE__
 	WindowParams.Width /= 2;
 	WindowParams.Height /= 2;
@@ -146,6 +148,7 @@ int main(int argc, char* argv[])
 	SAFE_DELETE(g_Engine->g_RenderingEngine);
 	SAFE_DELETE(g_Engine->g_Console);
     SAFE_DELETE(g_Engine->g_FontLibrary);
+    SAFE_DELETE(g_Engine->g_ScriptEngine);
 	SAFE_DELETE(g_Engine->g_MemoryManager);
     SAFE_DELETE(g_Engine);
 
