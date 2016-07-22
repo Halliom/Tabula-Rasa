@@ -144,9 +144,8 @@ void WorldGenerator::LoadFeatures()
             sprintf(Path, "WorldGen/%s", file.name);
 #endif
             
-            // Just create a script object on the stack which will load the
-            // contents of the script file into the public Lua state
-            Script LoadedScript(Path);
+            // Load the script
+            g_Engine->g_ScriptEngine->ExecuteScript(Path);
         }
         tinydir_next(&dir);
     }
@@ -160,15 +159,10 @@ void WorldGenerator::LoadFeatures()
 
 	// Get a reference to the "Biomes" table and push some values onto the stack to
 	// be able to iterate through the table
-	luabridge::LuaRef BiomesTable = luabridge::getGlobal(Script::g_State, "Biomes");
-	BiomesTable.push(Script::g_State);
-	luabridge::push(Script::g_State, luabridge::Nil());
-
-	for (luabridge::Iterator It(BiomesTable); !It.isNil(); ++It)
+	LuaTable* BiomesTable = g_Engine->g_ScriptEngine->GetTable("Biomes");
+	for (TableIterator It = BiomesTable->GetIterator(); It.HasNext; ++It)
 	{
-		std::string BiomeName = *It;
-
-		lua_pop(Script::g_State, 1);
+        std::string BiomeName = std::string(It.Value().String);
 
 		// Add the biome
 		BiomeScript* Biome = new BiomeScript(BiomeName);
@@ -239,16 +233,9 @@ void IBiome::AddFeatureGenerator(int Order, std::string FeatureName)
 	else
 	{
 		// Otherwise it might not be loaded just yet, it must be a scripted biome
-		luabridge::LuaRef FeatureTable = luabridge::getGlobal(Script::g_State, FeatureName.c_str());
-		if (FeatureTable.isTable())
-		{
-			Feature = new ScriptedFeature(FeatureName);
-			WorldGenerator::LoadFeature(FeatureName, Feature);
-		}
-		else
-		{
-			LogF("Could not find feature generator %s, it does not exist", FeatureName.c_str());
-		}
+        LuaTable* FeatureTable = g_Engine->g_ScriptEngine->GetTable(FeatureName.c_str());
+        Feature = new ScriptedFeature(FeatureName);
+        WorldGenerator::LoadFeature(FeatureName, Feature);
 	}
 
 	// Insert at the specified order
@@ -279,35 +266,28 @@ BiomeGrasslands::BiomeGrasslands(int MinHeat, int MaxHeat, int MinHeight, int Ma
 }
 
 BiomeScript::BiomeScript(std::string BiomeName) :
-	m_BiomeName(BiomeName),
-	m_BiomeInfoTable(Script::g_State) // TODO: Fix this since it gets assigned anyways later (below)
+	m_BiomeName(BiomeName)
 {
-	m_BiomeInfoTable = luabridge::getGlobal(Script::g_State, m_BiomeName.c_str());
+	m_BiomeInfoTable = g_Engine->g_ScriptEngine->GetTable(m_BiomeName.c_str());
 
 	// Set the values for the biome picking part of the WorldGenerator
-	m_MinHeatLevel = m_BiomeInfoTable["min_heat"];
-	m_MaxHeatLevel = m_BiomeInfoTable["max_heat"];
-	m_MinHeight = m_BiomeInfoTable["min_height"];
-	m_MaxHeight = m_BiomeInfoTable["max_height"];
+	m_MinHeatLevel = (int)m_BiomeInfoTable->GetValue("min_heat").Number;
+	m_MaxHeatLevel = (int)m_BiomeInfoTable->GetValue("max_heat").Number;
+	m_MinHeight = (int)m_BiomeInfoTable->GetValue("min_height").Number;
+	m_MaxHeight = (int)m_BiomeInfoTable->GetValue("max_height").Number;
 
-	luabridge::LuaRef Features = m_BiomeInfoTable["features"];
-
-	// No more than 8 features allowed
-	assert(Features.length() <= 8);
+	LuaTable* Features = m_BiomeInfoTable->GetValue("features").Table;
 
 	// Iterate through all of the features listed
-	Features.push(Script::g_State);
-	luabridge::push(Script::g_State, luabridge::Nil());
-	for (luabridge::Iterator It(Features); !It.isNil(); ++It)
+	for (TableIterator It = Features->GetIterator(); It.HasNext; ++It)
 	{
 		// Add the feature generator (by its name), note that It.key()
 		// is not zero-based, therefore we subtract one off it
-		std::string FeatureName = *It;
-		int Key = It.key();
+        std::string FeatureName = std::string(It.Value().String);
+		int Key = (int)It.Key().Number;
 		AddFeatureGenerator(Key - 1, FeatureName);
 		
 		LogF("Biome \"%s\" loaded feature generator \"%s\"", m_BiomeName.c_str(), FeatureName.c_str());
-		lua_pop(Script::g_State, 1);
 	}
 }
 
@@ -315,51 +295,16 @@ BiomeScript::~BiomeScript()
 {
 }
 
-class SimplexNoiseWrapper
-{
-public:
-
-	float Noise(float X, float Y) { return m_pNoise->Noise(X, Y); }
-
-	SimplexNoise* m_pNoise;
-};
-
-class ChunkWrapper
-{
-public:
-
-	void SetBlock(int X, int Y, int Z, int BlockID) { m_pChunk->SetVoxel(m_pWorldObject, X, Y, Z, BlockID, NULL); }
-
-	Chunk* m_pChunk;
-	World* m_pWorldObject;
-};
-
-static bool Initialized = false;
-
 ScriptedFeature::ScriptedFeature(std::string Name) : 
-	IFeature(Name),
-	m_FeatureTable(Script::g_State),
-	m_GenerateFunction(Script::g_State)
+	IFeature(Name)
 {
-	m_FeatureTable = luabridge::getGlobal(Script::g_State, Name.c_str());
+	m_FeatureTable = g_Engine->g_ScriptEngine->GetTable(Name.c_str());
 
-	m_GenerateFunction = m_FeatureTable["generate"];
+	m_GenerateFunction = m_FeatureTable->GetValue("generate");
 }
 
 void ScriptedFeature::GenerateToChunk(Chunk* Chunk, World* WorldObject, SimplexNoise* NoiseGenerator, glm::ivec3 WorldPosition)
 {
-	if (!Initialized)
-	{
-		luabridge::getGlobalNamespace(Script::g_State)
-			.beginClass<SimplexNoiseWrapper>("SimplexNoiseWrapper")
-			.addFunction("noise", &SimplexNoiseWrapper::Noise)
-			.endClass()
-			.beginClass<ChunkWrapper>("ChunkWrapper")
-			.addFunction("set_block", &ChunkWrapper::SetBlock)
-			.endClass();
-		Initialized = true;
-	}
-
 	// Prepare the Noise object wrapper
 	SimplexNoiseWrapper* NoiseObject = new SimplexNoiseWrapper();
 	NoiseObject->m_pNoise = NoiseGenerator;
@@ -369,13 +314,21 @@ void ScriptedFeature::GenerateToChunk(Chunk* Chunk, World* WorldObject, SimplexN
 	ChunkObject->m_pChunk = Chunk;
 	ChunkObject->m_pWorldObject = WorldObject;
 
-	try 
-	{
-		m_GenerateFunction(NoiseObject, ChunkObject, WorldPosition.x, WorldPosition.y, WorldPosition.z);
-	}
-	catch (std::exception e)
-	{
-		LogF("Error running feature-generator %s\nError: %s", m_Name.c_str(), lua_tostring(Script::g_State, -1));
-		lua_pop(Script::g_State, 1);
-	}
+    // TODO: Fix this with userdata support
+    /* Scripts::Call(
+                  m_GenerateFunction.Function,
+                  NoiseObject,
+                  ChunkObject,
+                  WorldPosition.x,
+                  WorldPosition.y,
+                  WorldPosition.z); */
+    
+    g_Engine->g_ScriptEngine->SetupFunction(m_GenerateFunction.Function);
+    luabridge::Stack<SimplexNoiseWrapper*>::push(g_Engine->g_ScriptEngine->L, NoiseObject);
+    luabridge::Stack<ChunkWrapper*>::push(g_Engine->g_ScriptEngine->L, ChunkObject);
+    g_Engine->g_ScriptEngine->PushValue(WorldPosition.x);
+    g_Engine->g_ScriptEngine->PushValue(WorldPosition.y);
+    g_Engine->g_ScriptEngine->PushValue(WorldPosition.z);
+    
+    g_Engine->g_ScriptEngine->CallFunction(5);
 }
