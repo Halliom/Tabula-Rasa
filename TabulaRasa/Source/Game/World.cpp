@@ -332,7 +332,7 @@ FORCEINLINE float Floor(float Value)
 
 RayHitResult World::RayTraceVoxels(const Ray& Ray)
 {
-	RayHitResult Result;
+	RayHitResult Result = { };
 
 	if (Ray.Direction.x == 0 && Ray.Direction.y == 0 && Ray.Direction.z == 0)
 	{
@@ -371,10 +371,10 @@ RayHitResult World::RayTraceVoxels(const Ray& Ray)
 	do 
 	{
 		Voxel* Hit = GetBlock(PositionX, PositionY, PositionZ);
-		if (Hit && Hit->BlockID != 0) 
+		if (Hit && Hit->BlockID != 0)
 		{
-			RemoveBlock(PositionX, PositionY, PositionZ);
 			Result.Position = glm::ivec3(PositionX, PositionY, PositionZ);
+			Result.BlockID = Hit->BlockID;
 			Result.Side = SideHelper::SideFromDirection(FaceX, FaceY, FaceZ);
 			break;
 		}

@@ -10,6 +10,11 @@ struct RayHitResult
 	glm::ivec3		Position;
 
 	/*
+	 * The ID of the block that was hit or 0 if nothing was hit
+	 */
+	unsigned int	BlockID;
+
+	/*
 	 * This shows which side (of the block that was hit) was hit
 	 */
 	enum VoxelSide	Side;
