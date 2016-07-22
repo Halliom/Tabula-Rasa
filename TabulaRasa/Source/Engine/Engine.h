@@ -13,6 +13,7 @@
 struct EngineGlobals
 {
     class GameMemoryManager*    g_MemoryManager;
+    class ScriptEngine*         g_ScriptEngine;
     class FontLibrary*          g_FontLibrary;
     class Console*              g_Console;
     class RenderingEngine*      g_RenderingEngine;
