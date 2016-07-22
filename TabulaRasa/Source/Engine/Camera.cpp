@@ -6,10 +6,10 @@
 Camera* Camera::g_ActiveCamera = NULL;
 
 Camera::Camera() :
+    m_Position(glm::vec3(0.0f, 0.0f, 0.0f)),
+    m_WorldUp(glm::vec3(0.0f, 1.0f, 0.0f)),
     m_WindowWidth(PlatformWindow::GlobalWindow->WindowParams.Width), // Get startup value for width
-    m_WindowHeight(PlatformWindow::GlobalWindow->WindowParams.Height), // Get startup value for height
-	m_Position(glm::vec3(0.0f, 0.0f, 0.0f)),
-	m_WorldUp(glm::vec3(0.0f, 1.0f, 0.0f))
+    m_WindowHeight(PlatformWindow::GlobalWindow->WindowParams.Height) // Get startup value for height
 {
 	UpdateCameraRotation(-90.0f, 0.0f);
 }
