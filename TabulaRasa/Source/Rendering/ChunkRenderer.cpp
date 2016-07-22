@@ -87,7 +87,7 @@ FORCEINLINE int GetVoxelSide(Chunk* Voxels, List<MultiblockRenderData>* Addition
 		{
 			case TYPE_SOLID:
 			{
-				return Block.RenderData.Textures[SideToInt(Side)];
+				return Block.RenderData.Textures[SideHelper::SideToInt(Side)];
 			}
 			case TYPE_MULTIBLOCK:
 			{
