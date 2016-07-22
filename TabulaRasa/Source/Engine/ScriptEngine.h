@@ -36,42 +36,6 @@ public:
     class World* m_pWorldObject;
 };
 
-#if 0
-class Script
-{
-public:
-
-	Script(const char* Filename);
-
-	static bool ExecuteStringInInterpreter(const char* InputString);
-
-	void CallFunction(const char* FunctionName);
-
-	bool GetBool(const char* VariableName);
-
-	bool GetBoolFromTable(const char* TableName, const char* VariableName);
-
-	int GetInt(const char* VariableName);
-
-	int GetIntFromTable(const char* TableName, const char* VariableName);
-
-	std::string GetString(const char* VariableName);
-
-	std::string GetStringFromTable(const char* TableName, const char* VariableName);
-
-	luabridge::LuaRef GetReference(const char* VariableName)
-	{
-		return luabridge::getGlobal(g_State, VariableName);
-	}
-
-	void LogFunctionErrors(const char* FunctionName);
-
-	const char* m_pScriptName;
-
-	static lua_State* g_State;
-};
-#endif
-
 // TODO: Maybe use something other than a list?
 typedef std::unordered_set<std::string> ScriptSet;
 typedef int LuaFunction;
