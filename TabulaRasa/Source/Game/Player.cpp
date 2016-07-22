@@ -5,8 +5,9 @@
 
 #include "../Engine/Input.h"
 #include "../Engine/Camera.h"
+#include "../Engine/Octree.h"
 #include "../Rendering/GuiSystem.h"
-#include "../Game/World.h"
+#include "../Game/World.h""
 
 #define KEY_W 0x57
 #define KEY_S 0x53
@@ -65,12 +66,27 @@ void Player::Update(float DeltaTime)
 	m_LastMouseX = Input::MouseX;
 	m_LastMouseY = Input::MouseY;
 
-	static bool Previous = false;
-	if (!Input::IsGameFrozen && Input::MouseButtons[1] && !Previous)
+	static bool PreviousL = false;
+	static bool PreviousR = false;
+	if (!Input::IsGameFrozen && Input::MouseButtons[1] && !PreviousL)
 	{
-		m_pWorldObject->RayTraceVoxels(m_pPlayerCamera->GetViewingRay(16.0f));
+		RayHitResult TraceResult = m_pWorldObject->RayTraceVoxels(m_pPlayerCamera->GetViewingRay(16.0f));
+		if (TraceResult.BlockID)
+		{
+			m_pWorldObject->RemoveBlock(TraceResult.Position.x, TraceResult.Position.y, TraceResult.Position.z);
+		}
 	}
-	Previous = Input::MouseButtons[1];
+	if (!Input::IsGameFrozen && Input::MouseButtons[3] && !PreviousR)
+	{
+		RayHitResult TraceResult = m_pWorldObject->RayTraceVoxels(m_pPlayerCamera->GetViewingRay(16.0f));
+		if (TraceResult.BlockID)
+		{
+			glm::vec3 Normal = SideHelper::DirectionFromSide(TraceResult.Side);
+			m_pWorldObject->AddBlock(TraceResult.Position.x + Normal.x, TraceResult.Position.y + Normal.y, TraceResult.Position.z + Normal.z, 1);
+		}
+	}
+	PreviousL = Input::MouseButtons[1];
+	PreviousR = Input::MouseButtons[3];
 }
 
 void Player::BeginPlay()
