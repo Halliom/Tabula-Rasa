@@ -10,6 +10,9 @@
 
 #define ArrayCount(Array) sizeof(Array) / sizeof(Array[0])
 
+#define Max(x, y) (((x) > (y)) ? (x) : (y))
+#define Min(x, y) (((x) < (y)) ? (x) : (y))
+
 struct EngineGlobals
 {
     class GameMemoryManager*    g_MemoryManager;
