@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <vector>
 #include <stdarg.h>
 
 #include "../Engine/Engine.h"
@@ -21,6 +22,9 @@ struct ConsoleMessage
 	EConsoleMessageType MessageType;
 	const char*			Message;
 };
+
+// TODO: Add custom bitlist class
+typedef std::vector<unsigned char> BitList;
 
 class Console
 {
@@ -59,6 +63,10 @@ public:
 
 private:
 
+    bool            m_bDisplayScriptsWindow;
+    bool*           m_pSelectedScriptItems;
+    int             m_NumSelectedScriptItems;
+    
 	char			m_pConsoleInputLine[MAX_INPUT_LINE_SIZE];
 	const char*		m_pConsoleTitle;
 
@@ -68,3 +76,4 @@ private:
 
 #define Log(str) g_Engine->g_Console->PrintLine(str)
 #define LogF(fmt, ...) g_Engine->g_Console->PrintLineF(fmt, __VA_ARGS__)
+#define LogError(str) g_Engine->g_Console->PrintLine(str, MESSAGE_TYPE_ERROR)
