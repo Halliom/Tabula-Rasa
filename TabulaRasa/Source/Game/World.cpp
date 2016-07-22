@@ -342,9 +342,9 @@ RayHitResult World::RayTraceVoxels(const Ray& Ray)
 	glm::vec3 CameraPosition = Ray.Origin;
 
 	// The voxel we're starting in
-	float PositionX = Floor(CameraPosition.x);
-	float PositionY = Floor(CameraPosition.y);
-	float PositionZ = Floor(CameraPosition.z);
+	float PositionX = CameraPosition.x >= 0 ? Floor(CameraPosition.x) : Floor(CameraPosition.x - 1.0f);
+	float PositionY = CameraPosition.y >= 0 ? Floor(CameraPosition.y) : Floor(CameraPosition.y - 1.0f);
+	float PositionZ = CameraPosition.z >= 0 ? Floor(CameraPosition.z) : Floor(CameraPosition.z - 1.0f);
 
 	// The direction in which to take a step
 	int stepX = Ray.Direction.x > 0 ? 1 : Ray.Direction.x < 0 ? -1 : 0;
@@ -364,9 +364,9 @@ RayHitResult World::RayTraceVoxels(const Ray& Ray)
 		(float)stepZ / Ray.Direction.z);
 
 	// What face we entered through
-	float FaceX;
-	float FaceY;
-	float FaceZ;
+	int FaceX = 0;
+	int FaceY = 0;
+	int FaceZ = 0;
     
 	do 
 	{
@@ -374,7 +374,8 @@ RayHitResult World::RayTraceVoxels(const Ray& Ray)
 		if (Hit && Hit->BlockID != 0) 
 		{
 			RemoveBlock(PositionX, PositionY, PositionZ);
-			Result.BlockPosition = glm::ivec3(PositionX, PositionY, PositionZ);
+			Result.Position = glm::ivec3(PositionX, PositionY, PositionZ);
+			Result.Side = SideHelper::SideFromDirection(FaceX, FaceY, FaceZ);
 			break;
 		}
 		if (tMax.x < tMax.y) 

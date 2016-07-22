@@ -4,7 +4,15 @@
 
 struct RayHitResult
 {
-	glm::ivec3 BlockPosition;
+	/* 
+	 * This holds the position of the voxel that was hit
+	 */
+	glm::ivec3		Position;
+
+	/*
+	 * This shows which side (of the block that was hit) was hit
+	 */
+	enum VoxelSide	Side;
 };
 
 class World
