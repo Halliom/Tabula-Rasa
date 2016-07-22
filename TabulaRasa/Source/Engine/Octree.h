@@ -401,13 +401,10 @@ public:
 
 	void OnNodeUpdatedOnSide(const uint8_t &X, const uint8_t &Y, const uint8_t &Z, const VoxelSide &Side, const bool &Placed);
 
-	uint8_t SidesToRender;	/* 1 byte aligned */
-
-	uint8_t LocalPosX;		/* 1 byte aligned */
-	uint8_t LocalPosY;		/* 1 byte aligned */
-	uint8_t LocalPosZ;		/* 1 byte aligned */
-
-	unsigned int BlockID;	/* 4 byte aligned */
-
-	Voxel *Parent;			/* 4 byte aligned */
+	uint8_t			SidesToRender;	/* 1 byte aligned */
+	uint8_t			LocalPosX;		/* 1 byte aligned */
+	uint8_t			LocalPosY;		/* 1 byte aligned */
+	uint8_t			LocalPosZ;		/* 1 byte aligned */
+	unsigned int	BlockID;		/* 4 byte aligned */
+	Voxel*			Parent;			/* 4 byte aligned */
 };
