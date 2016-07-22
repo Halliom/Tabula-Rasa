@@ -2,8 +2,8 @@
 
 #include "../Rendering/GUI/imgui/imgui.h"
 
-#include "Input.h"
-#include "ScriptEngine.h"
+#include "../Engine/Input.h"
+#include "../Engine/ScriptEngine.h"
 
 bool IsSingleWord(char* String)
 {
@@ -27,7 +27,10 @@ bool IsSingleWord(char* String)
 	return true;
 }
 
-Console::Console() : 
+Console::Console() :
+    m_bDisplayScriptsWindow(false),
+    m_pSelectedScriptItems(NULL),
+    m_NumSelectedScriptItems(0),
 	m_bShowConsole(false),
     m_pConsoleTitle("Console"),
 	m_NumConsoleMessages(0)
@@ -110,17 +113,31 @@ void Console::Draw()
 {
 	if (m_bShowConsole) // Don't draw the console if we're not supposed to
 	{
+#ifdef __APPLE__
+        // Set smaller window to deal with Retina displays on Macs
+        ImGui::SetNextWindowSize(ImVec2(480, 320), ImGuiSetCond_Once);
+#else
 		// Sets the window size to 520x600, but only the first time
 		ImGui::SetNextWindowSize(ImVec2(520, 600), ImGuiSetCond_Once);
+#endif
 
 		// Starts rendering the console, if the user shut down the console
 		// by clicking the x this will return false and then the rendering
 		// will stop
-		if (!ImGui::Begin(m_pConsoleTitle, &m_bShowConsole))
+		if (!ImGui::Begin(m_pConsoleTitle, &m_bShowConsole, ImGuiWindowFlags_MenuBar))
 		{
 			ImGui::End();
 			return;
 		}
+        
+        if (ImGui::BeginMenuBar())
+        {
+            if (ImGui::MenuItem("Scripts"))
+            {
+                m_bDisplayScriptsWindow = true;
+            }
+            ImGui::EndMenuBar();
+        }
 
 		// Begins a child region within the window for the output
 		ImGui::BeginChild("ScrollingRegion", ImVec2(0, -ImGui::GetItemsLineHeightWithSpacing()), true, ImGuiWindowFlags_HorizontalScrollbar);
@@ -171,10 +188,7 @@ void Console::Draw()
 		{
 			PrintLine(m_pConsoleInputLine, MESSAGE_TYPE_NORMAL);
 
-			if (Script::ExecuteStringInInterpreter(m_pConsoleInputLine))
-			{
-				// TODO: Perhaps add to command history buffer?
-			}
+            g_Engine->g_ScriptEngine->ExecuteInInterpreter(m_pConsoleInputLine);
 
 			// Clear the input line
 			strcpy(m_pConsoleInputLine, "");
@@ -190,4 +204,69 @@ void Console::Draw()
 		// End drawmode
 		ImGui::End();
 	}
+    
+    if (m_bDisplayScriptsWindow)
+    {
+        if (!ImGui::Begin("Script Manager", &m_bDisplayScriptsWindow, ImGuiWindowFlags_MenuBar))
+        {
+            ImGui::End();
+            return;
+        }
+        
+        if (ImGui::BeginMenuBar())
+        {
+            if (ImGui::BeginMenu("File"))
+            {
+                if (ImGui::MenuItem("New"))
+                {
+                    
+                }
+                if (ImGui::MenuItem("Open"))
+                {
+                    
+                }
+                if (ImGui::MenuItem("Save"))
+                {
+                    
+                }
+                if (ImGui::MenuItem("ReloadScripts"))
+                {
+                    Log("Reloading Scripts");
+                    g_Engine->g_ScriptEngine->ReloadAllScripts();
+                }
+                ImGui::EndMenu();
+            }
+            ImGui::EndMenuBar();
+        }
+        
+        ImGui::BeginChild("Script list", ImVec2(0, -ImGui::GetItemsLineHeightWithSpacing()), true, ImGuiWindowFlags_HorizontalScrollbar);
+        {
+            if (m_NumSelectedScriptItems != g_Engine->g_ScriptEngine->m_LoadedScripts.size())
+            {
+                m_NumSelectedScriptItems = g_Engine->g_ScriptEngine->m_LoadedScripts.size();
+                
+                if (m_pSelectedScriptItems)
+                    delete[] m_pSelectedScriptItems;
+                
+                m_pSelectedScriptItems = new bool[m_NumSelectedScriptItems];
+            }
+            auto It = g_Engine->g_ScriptEngine->m_LoadedScripts.begin();
+            for (int i = 0;
+                 i < g_Engine->g_ScriptEngine->m_LoadedScripts.size();
+                 ++i)
+            {
+                const char* ScriptName = (*It).c_str();
+                ImGui::Selectable(ScriptName, &m_pSelectedScriptItems[i]);
+                It++;
+            }
+        }
+        ImGui::EndChild();
+        
+        if (ImGui::Button("Reload selected"))
+        {
+            
+        }
+        
+        ImGui::End();
+    }
 }
