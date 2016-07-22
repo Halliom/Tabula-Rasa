@@ -8,6 +8,7 @@
 #include "LuaBridge/LuaBridge.h"
 
 #include "../Engine/Engine.h"
+#include "../Engine/ScriptEngine.h"
 
 class Chunk;
 class SimplexNoise;
@@ -43,8 +44,8 @@ public:
 
 	virtual void GenerateToChunk(Chunk* Chunk, World* WorldObject, SimplexNoise* NoiseGenerator, glm::ivec3 WorldPosition) override;
 
-	luabridge::LuaRef	m_FeatureTable;
-	luabridge::LuaRef	m_GenerateFunction;
+	LuaTable*     m_FeatureTable;
+	LuaValue      m_GenerateFunction;
 
 };
 
@@ -86,8 +87,8 @@ public:
 
 private:
 
-	std::string			m_BiomeName;
-	luabridge::LuaRef	m_BiomeInfoTable;
+	std::string     m_BiomeName;
+	class LuaTable* m_BiomeInfoTable;
 };
 
 class WorldGenerator
