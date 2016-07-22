@@ -8,9 +8,9 @@
 #include "../Engine/Core/List.h"
 #include "../Engine/Camera.h"
 #include "../Engine/Chunk.h"
+#include "../Engine/ScriptEngine.h"
 
 #include "../Game/WorldGenerator.h"
-#include "ScriptEngine.h"
 
 ChunkManager::ChunkManager(World* WorldObject, WorldGenerator* WorldGen, int ChunkLoadingRadius) : 
 	m_ChunkLoadingRadius(ChunkLoadingRadius),
