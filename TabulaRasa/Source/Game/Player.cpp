@@ -16,7 +16,7 @@
 Player* g_Player = NULL;
 
 Player::Player() :
-	m_Yaw(-90.0f),
+	m_Yaw(0.0f),
 	m_Pitch(0.0f),
     m_Position(glm::vec3(0.0f, 0.0f, 0.0f)),
 	m_OldPosition(glm::vec3(0.0f, 0.0f, 0.0f)),
@@ -68,7 +68,7 @@ void Player::Update(float DeltaTime)
 	static bool Previous = false;
 	if (!Input::IsGameFrozen && Input::MouseButtons[1] && !Previous)
 	{
-		m_pWorldObject->RayTraceWorld(m_pPlayerCamera->GetViewingRay());
+		m_pWorldObject->RayTraceWorld(m_pPlayerCamera->GetViewingRay(16.0f));
 	}
 	Previous = Input::MouseButtons[1];
 }

@@ -366,7 +366,7 @@ RayHitResult World::RayTraceWorld(const Ray& Ray)
 	float FaceX;
 	float FaceY;
 	float FaceZ;
-
+    
 	do 
 	{
 		Voxel* Hit = GetBlock(PositionX, PositionY, PositionZ);
@@ -376,6 +376,7 @@ RayHitResult World::RayTraceWorld(const Ray& Ray)
 			LogF("Hit block (%f, %f, %f)", PositionX, PositionY, PositionZ);
 			break;
 		}
+        //AddBlock(PositionX, PositionY, PositionZ, 4);
 		if (tMax.x < tMax.y) 
 		{
 			if (tMax.x < tMax.z) 
@@ -390,7 +391,8 @@ RayHitResult World::RayTraceWorld(const Ray& Ray)
 				FaceY = 0;
 				FaceZ = 0;
 			}
-			else {
+			else
+            {
 				if (tMax.z > Ray.Distance) 
 					break;
 
@@ -431,5 +433,7 @@ RayHitResult World::RayTraceWorld(const Ray& Ray)
 		}
 	} while (true);
 
+    LogF("(%d, %d, %d)", stepX, stepY, stepZ);
+    
 	return Result;
 }
