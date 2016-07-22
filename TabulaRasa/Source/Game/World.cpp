@@ -87,15 +87,16 @@ Chunk* World::GetLoadedChunk(const int& ChunkX, const int& ChunkY, const int& Ch
 	}
 }
 
-FORCEINLINE unsigned int ChunkMod(const int& Value, const int& Mod)
+FORCEINLINE unsigned int ChunkMod(const int& Value)
 {
-	return Value >= 0 ? Value % Mod : (Value % Mod) + Mod - 1;
+	static constexpr int ModuloMinusOne = Chunk::SIZE - 1;
+	return Value >= 0 ? Value % Chunk::SIZE : ((Value + 1) % Chunk::SIZE) + ModuloMinusOne;
 }
 
 Voxel* World::GetBlock(const int& X, const int& Y, const int& Z)
 {
 	Chunk* QueriedChunk = GetLoadedChunk(TOCHUNK_COORD(X, Y, Z));
-    return QueriedChunk != NULL ? QueriedChunk->GetVoxel(ChunkMod(X, Chunk::SIZE), ChunkMod(Y, Chunk::SIZE), ChunkMod(Z, Chunk::SIZE)) : NULL;;
+    return QueriedChunk != NULL ? QueriedChunk->GetVoxel(ChunkMod(X), ChunkMod(Y), ChunkMod(Z)) : NULL;;
 }
 
 void World::AddBlock(const int& X, const int& Y, const int& Z, const unsigned int& BlockID)
@@ -107,9 +108,9 @@ void World::AddBlock(const int& X, const int& Y, const int& Z, const unsigned in
 	{
 		// This gets the local coordinate in the chunks local coordinate
 		// system, which ranges from 0 to 31
-		int LocalX = ChunkMod(X, Chunk::SIZE);
-		int LocalY = ChunkMod(Y, Chunk::SIZE);
-		int LocalZ = ChunkMod(Z, Chunk::SIZE);
+		int LocalX = ChunkMod(X);
+		int LocalY = ChunkMod(Y);
+		int LocalZ = ChunkMod(Z);
 
 		ChunkToAddTo->SetVoxel(this, LocalX, LocalY, LocalZ, BlockID);
 	}
@@ -122,9 +123,9 @@ void World::RemoveBlock(const int& X, const int& Y, const int& Z)
 	{
 		// This gets the local coordinate in the chunks local coordinate
 		// system, which ranges from 0 to 31
-		int LocalX = ChunkMod(X, Chunk::SIZE);
-		int LocalY = ChunkMod(Y, Chunk::SIZE);
-		int LocalZ = ChunkMod(Z, Chunk::SIZE);
+		int LocalX = ChunkMod(X);
+		int LocalY = ChunkMod(Y);
+		int LocalZ = ChunkMod(Z);
 
 		QueriedChunk->RemoveVoxel(this, LocalX, LocalY, LocalZ);
 	}
@@ -141,9 +142,9 @@ Voxel* World::GetMultiblock(const int &X, const int &Y, const int &Z)
 	{
 		// This gets the local coordinate in the chunks local coordinate
 		// system, which ranges from 0 to 31
-		int LocalX = ChunkMod(X, Chunk::SIZE);
-		int LocalY = ChunkMod(Y, Chunk::SIZE);
-		int LocalZ = ChunkMod(Z, Chunk::SIZE);
+		int LocalX = ChunkMod(X);
+		int LocalY = ChunkMod(Y);
+		int LocalZ = ChunkMod(Z);
 
 		Voxel* QueriedVoxel = QueriedChunk->GetVoxel(LocalX, LocalY, LocalZ);
 		// If we got the child node, set the block operated upon to be the parent (master)
@@ -191,9 +192,9 @@ void World::AddMultiblock(const int &X, const int &Y, const int &Z, const unsign
 	{
 		// This gets the local coordinate in the chunks local coordinate
 		// system, which ranges from 0 to 31
-		int LocalX = ChunkMod(X, Chunk::SIZE);
-		int LocalY = ChunkMod(Y, Chunk::SIZE);
-		int LocalZ = ChunkMod(Z, Chunk::SIZE);
+		int LocalX = ChunkMod(X);
+		int LocalY = ChunkMod(Y);
+		int LocalZ = ChunkMod(Z);
 
 		Voxel *Parent = NULL;
 		for (unsigned int XCoord = 0; XCoord < MultiblockWidth; ++XCoord)
@@ -206,19 +207,19 @@ void World::AddMultiblock(const int &X, const int &Y, const int &Z, const unsign
 					{
 						++ChunkX;
 						QueriedChunk =  GetLoadedChunk(ChunkX, ChunkY, ChunkZ);
-						LocalX = ChunkMod(LocalX, Chunk::SIZE);
+						LocalX = ChunkMod(LocalX);
 					}
 					if (LocalY >= 16)
 					{
 						++ChunkY;
 						QueriedChunk =  GetLoadedChunk(ChunkX, ChunkY, ChunkZ);
-						LocalY = ChunkMod(LocalY, Chunk::SIZE);
+						LocalY = ChunkMod(LocalY);
 					}
 					if (LocalZ >= 16)
 					{
 						++ChunkZ;
 						QueriedChunk =  GetLoadedChunk(ChunkX, ChunkY, ChunkZ);
-						LocalZ = ChunkMod(LocalZ, Chunk::SIZE);
+						LocalZ = ChunkMod(LocalZ);
 					}
 
 					if (XCoord == 0 && YCoord == 0 && ZCoord == 0)
@@ -270,19 +271,19 @@ void World::RemoveMultiblock(const int& X, const int& Y, const int& Z)
 						{
 							++ChunkX;
 							QueriedChunk =  GetLoadedChunk(ChunkX, ChunkY, ChunkZ);
-							LocalX = ChunkMod(LocalX, Chunk::SIZE);
+							LocalX = ChunkMod(LocalX);
 						}
 						if (LocalY >= 16)
 						{
 							++ChunkY;
 							QueriedChunk =  GetLoadedChunk(ChunkX, ChunkY, ChunkZ);
-							LocalY = ChunkMod(LocalY, Chunk::SIZE);
+							LocalY = ChunkMod(LocalY);
 						}
 						if (LocalZ >= 16)
 						{
 							++ChunkZ;
 							QueriedChunk =  GetLoadedChunk(ChunkX, ChunkY, ChunkZ);
-							LocalZ = ChunkMod(LocalZ, Chunk::SIZE);
+							LocalZ = ChunkMod(LocalZ);
 						}
 
 						QueriedChunk->RemoveVoxel(this, LocalX, LocalY, LocalZ);
@@ -329,7 +330,7 @@ FORCEINLINE float Floor(float Value)
 	return Value >= 0 ? glm::floor(Value) : -1 * glm::floor(glm::abs(Value));
 }
 
-RayHitResult World::RayTraceWorld(const Ray& Ray)
+RayHitResult World::RayTraceVoxels(const Ray& Ray)
 {
 	RayHitResult Result;
 
@@ -373,10 +374,9 @@ RayHitResult World::RayTraceWorld(const Ray& Ray)
 		if (Hit && Hit->BlockID != 0) 
 		{
 			RemoveBlock(PositionX, PositionY, PositionZ);
-			LogF("Hit block (%f, %f, %f)", PositionX, PositionY, PositionZ);
+			Result.BlockPosition = glm::ivec3(PositionX, PositionY, PositionZ);
 			break;
 		}
-        //AddBlock(PositionX, PositionY, PositionZ, 4);
 		if (tMax.x < tMax.y) 
 		{
 			if (tMax.x < tMax.z) 

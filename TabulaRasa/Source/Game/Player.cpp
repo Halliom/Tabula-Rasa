@@ -68,7 +68,7 @@ void Player::Update(float DeltaTime)
 	static bool Previous = false;
 	if (!Input::IsGameFrozen && Input::MouseButtons[1] && !Previous)
 	{
-		m_pWorldObject->RayTraceWorld(m_pPlayerCamera->GetViewingRay(16.0f));
+		m_pWorldObject->RayTraceVoxels(m_pPlayerCamera->GetViewingRay(16.0f));
 	}
 	Previous = Input::MouseButtons[1];
 }

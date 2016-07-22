@@ -32,7 +32,7 @@ public:
 
 	void RemoveMultiblock(const int& X, const int& Y, const int& Z);
 
-	RayHitResult RayTraceWorld(const struct Ray& Ray);
+	RayHitResult RayTraceVoxels(const struct Ray& Ray);
 
 	class Player*			m_pCurrentPlayer;
 	class ChunkManager*		m_pChunkManager;
