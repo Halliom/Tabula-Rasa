@@ -2,6 +2,8 @@
 
 #include "../Rendering/GuiSystem.h"
 
+enum VoxelSide : uint32_t;
+
 struct RayHitResult
 {
 	/* 
@@ -17,7 +19,7 @@ struct RayHitResult
 	/*
 	 * This shows which side (of the block that was hit) was hit
 	 */
-	enum VoxelSide	Side;
+    VoxelSide       Side;
 };
 
 class World
