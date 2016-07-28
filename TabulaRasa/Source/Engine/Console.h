@@ -17,6 +17,8 @@ enum EConsoleMessageType
 	MESSAGE_TYPE_INFO
 };
 
+#define MAX_FILE_SIZE 1024 * 16
+
 struct ConsoleMessage
 {
 	EConsoleMessageType MessageType;
@@ -64,8 +66,8 @@ public:
 private:
 
     bool            m_bDisplayScriptsWindow;
-    bool*           m_pSelectedScriptItems;
-    int             m_NumSelectedScriptItems;
+    bool            m_bDisplayEditorWindow;
+    char            m_pEditorBuffer[MAX_FILE_SIZE];
     
 	char			m_pConsoleInputLine[MAX_INPUT_LINE_SIZE];
 	const char*		m_pConsoleTitle;

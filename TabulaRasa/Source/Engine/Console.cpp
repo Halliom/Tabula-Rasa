@@ -4,6 +4,7 @@
 
 #include "../Engine/Input.h"
 #include "../Engine/ScriptEngine.h"
+#include "../Platform/Platform.h"
 
 bool IsSingleWord(char* String)
 {
@@ -28,14 +29,14 @@ bool IsSingleWord(char* String)
 }
 
 Console::Console() :
+    m_bShowConsole(false),
     m_bDisplayScriptsWindow(false),
-    m_pSelectedScriptItems(NULL),
-    m_NumSelectedScriptItems(0),
-	m_bShowConsole(false),
+    m_bDisplayEditorWindow(false),
     m_pConsoleTitle("Console"),
 	m_NumConsoleMessages(0)
 {
 	memset(m_pConsoleInputLine, 0, MAX_INPUT_LINE_SIZE);
+    memset(m_pEditorBuffer, 0, ArrayCount(m_pEditorBuffer));
 }
 
 Console::~Console()
@@ -221,17 +222,9 @@ void Console::Draw()
         {
             if (ImGui::BeginMenu("File"))
             {
-                if (ImGui::MenuItem("New"))
+                if (ImGui::MenuItem("Open Editor"))
                 {
-                    
-                }
-                if (ImGui::MenuItem("Open"))
-                {
-                    
-                }
-                if (ImGui::MenuItem("Save"))
-                {
-                    
+                    m_bDisplayEditorWindow = true;
                 }
                 if (ImGui::MenuItem("ReloadScripts"))
                 {
@@ -245,30 +238,50 @@ void Console::Draw()
         
         ImGui::BeginChild("Script list", ImVec2(0, -ImGui::GetItemsLineHeightWithSpacing()), true, ImGuiWindowFlags_HorizontalScrollbar);
         {
-            if (m_NumSelectedScriptItems != g_Engine->g_ScriptEngine->m_LoadedScripts.size())
-            {
-                m_NumSelectedScriptItems = g_Engine->g_ScriptEngine->m_LoadedScripts.size();
-                
-                if (m_pSelectedScriptItems)
-                    delete[] m_pSelectedScriptItems;
-                
-                m_pSelectedScriptItems = new bool[m_NumSelectedScriptItems];
-            }
             auto It = g_Engine->g_ScriptEngine->m_LoadedScripts.begin();
             for (int i = 0;
                  i < g_Engine->g_ScriptEngine->m_LoadedScripts.size();
                  ++i)
             {
                 const char* ScriptName = (*It).c_str();
-                ImGui::Selectable(ScriptName, &m_pSelectedScriptItems[i]);
+                bool f = false;
+                if (ImGui::Selectable(ScriptName, &f))
+                {
+                    LogF("Reloading script: %s", ScriptName);
+                    g_Engine->g_ScriptEngine->ReloadScript(ScriptName);
+                }
                 It++;
             }
         }
         ImGui::EndChild();
         
-        if (ImGui::Button("Reload selected"))
+        ImGui::End();
+    }
+    
+    if (m_bDisplayEditorWindow)
+    {
+        if (!ImGui::Begin("Script Editor", &m_bDisplayEditorWindow, ImGuiWindowFlags_MenuBar))
         {
-            
+            ImGui::End();
+            return;
+        }
+        
+        ImGui::Text("Load file:");
+        static char file_buf[256];
+        ImGui::InputText("File chooser", file_buf, ArrayCount(file_buf));
+        if (ImGui::Button("Load file"))
+        {
+            std::string Source = PlatformFileSystem::LoadFile(DT_SCRIPTS, file_buf);
+            memcpy(m_pEditorBuffer, Source.c_str(), Source.size());
+        }
+        
+        ImGui::Separator();
+        
+        ImGui::Text("Editor");
+        ImGui::InputTextMultiline("Editor", m_pEditorBuffer, ArrayCount(m_pEditorBuffer));
+        
+        if (ImGui::Button("Save"))
+        {
         }
         
         ImGui::End();

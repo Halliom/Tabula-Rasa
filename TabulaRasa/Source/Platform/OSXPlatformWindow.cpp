@@ -28,13 +28,20 @@ PlatformWindow::~PlatformWindow()
 
 bool PlatformWindow::SetupWindowAndRenderContext()
 {
-    if (SDL_Init(SDL_INIT_EVERYTHING) != 0)
+    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS) != 0)
     {
+        assert(false);
         //TODO: Print to log since rendering isn't initialized yet
         return false;
     }
 
-    uint32_t Flags = SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL | SDL_WINDOW_INPUT_GRABBED | SDL_WINDOW_INPUT_FOCUS | SDL_WINDOW_MOUSE_FOCUS | SDL_WINDOW_MOUSE_CAPTURE | SDL_WINDOW_ALLOW_HIGHDPI ;
+    uint32_t Flags = SDL_WINDOW_SHOWN |
+                    SDL_WINDOW_OPENGL |
+                    SDL_WINDOW_INPUT_GRABBED |
+                    SDL_WINDOW_INPUT_FOCUS |
+                    SDL_WINDOW_MOUSE_FOCUS |
+                    SDL_WINDOW_MOUSE_CAPTURE |
+                    SDL_WINDOW_ALLOW_HIGHDPI;
 
     if (WindowParams.Fullscreen)
     {
@@ -66,6 +73,7 @@ bool PlatformWindow::SetupWindowAndRenderContext()
                                   Flags);
     if (MainWindow == NULL)
     {
+        assert(false);
         //TODO: Print to log since rendering isn't initialized yet
         return false;
     }
