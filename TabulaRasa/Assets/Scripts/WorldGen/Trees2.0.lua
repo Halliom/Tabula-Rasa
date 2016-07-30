@@ -1,9 +1,25 @@
+-- coordlist pungter inom randen
+-- r radien
+-- nub_coord antaet punkter som ska genereras
+local r = 0
+local nub_coord = 0
+local y_high = 1
+local coordlist = {}
+
 function round(num, idp)
   local mult = 10^(idp or 0)
   return math.floor(num * mult + 0.5) / mult
 end
 
-function GeneratTrees(xO, yO, zO, angfunk, radifunk, number_of_iterations, iteration_divider)
+function angfunk(y)
+  return y^2
+end
+
+function radifunk(y)
+  return y^2
+end
+
+function GeneratTrees(xO, yO, zO, number_of_iterations, iteration_divider)
   -- xO, yO, zO utgåns punt för trädet
   -- angfunk beskriver hur den tillåtna vingklen ska öka
   -- radifunk brkriver ökningen av radien
@@ -20,7 +36,6 @@ function GeneratTrees(xO, yO, zO, angfunk, radifunk, number_of_iterations, itera
     return number
   end
 
-  -- sublits function
   local coord = function(x, y, z)
     local result = {}
     result.x = x
@@ -42,9 +57,10 @@ function GeneratTrees(xO, yO, zO, angfunk, radifunk, number_of_iterations, itera
       local x = math.random(-r, r) + xO
       local y = math.random(-r, r) + yO
       local z = math.random(-r, r) + zO
-      if r^2 >= (x)^2 + (y)^2 + (z)^2 and math.acos(y / (math.sqrt(x^2 + y^2 + z^2)) > angfunk(y) then
+      if r^2 >= (x)^2 + (y)^2 + (z)^2 and math.acos(y / (math.sqrt(x^2 + y^2 + z^2))) > angfunk(y) then
         k = coord(x, y, z)
         var = true
+        return k
       end
     end
   end
@@ -63,29 +79,26 @@ function GeneratTrees(xO, yO, zO, angfunk, radifunk, number_of_iterations, itera
     zO = coordlist[number].zn
 
     world.add_block(xO, yO, zO, 5)
+    y_high = y_high + yO
   end
 
   local geraration_funktion = function(iterations)
     for i = 1, iterations do
-      local coordlist = {}
+      coordlist = {}
       r = radius(y_high)
       nub_coord = number_of_coords(y_high)
       for i = 1, nub_coord do
         table.insert(coordlist, coord_generation)
       end
       block_placement()
-      if 50 < math.random(1, 100) then
+      if 60 < math.random(1, 100) then
         geraration_funktion(iterations / iteration_divider)
       end
     end
-
-  -- coordlist pungter inom randen
-  -- r radien
-  -- nub_coord antaet punkter som ska genereras
-  local r = 0
-  local nub_coord = 0
-  local y_high = 1
+  end
 
   geraration_funktion(number_of_iterations)
 
 end
+
+GeneratTrees(3,3,3,50,5)
