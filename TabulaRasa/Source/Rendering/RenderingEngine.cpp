@@ -84,10 +84,15 @@ void RenderingEngine::Initialize(const unsigned int& ScreenWidth, const unsigned
 
 void RenderingEngine::PostInitialize()
 {
+    GLint GLMajor = 0, GLMinor = 0;
+    glGetIntegerv(GL_MAJOR_VERSION, &GLMajor);
+    glGetIntegerv(GL_MINOR_VERSION, &GLMinor);
 	Log("Rendering system initialized on system:");
-	LogF("Vendor: %s", (char*) glGetString(GL_VENDOR));
-	LogF("Renderer: %s", (char*) glGetString(GL_RENDERER));
-	LogF("Verision: %s", (char*) glGetString(GL_VERSION));
+	LogF("[GL] Vendor: %s", (char*) glGetString(GL_VENDOR));
+	LogF("[GL] Renderer: %s", (char*) glGetString(GL_RENDERER));
+	LogF("[GL] Version: %s", (char*) glGetString(GL_VERSION));
+    LogF("[GL] Extensions: %s", (char*) glGetString(GL_EXTENSIONS));
+    LogF("[GL] Rendercontext: %d.%d", GLMajor, GLMinor);
 
 #ifdef _WIN32
 	SYSTEM_INFO SystemInfo;
