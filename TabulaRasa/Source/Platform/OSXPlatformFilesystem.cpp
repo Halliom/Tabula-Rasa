@@ -1,4 +1,4 @@
-#include "OSXPlatformFilesystem.h"
+#include "Platform.h"
 
 #include <fstream>
 #include <streambuf>

@@ -3,7 +3,7 @@
 #include <algorithm>
 
 #include "GL/glew.h"
-#include "GLFW\glfw3.h"
+#include "GLFW/glfw3.h"
 #include "glm/common.hpp"
 #include "GUI/imgui/imgui.h"
 

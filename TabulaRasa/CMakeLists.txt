@@ -95,6 +95,7 @@ if (WIN32)
 elseif (APPLE)
     message("Target is OSX")
     # let the user select where the libraries are
+    set(GLFW3 ${TB_LIB_DIR}/libglfw3.a CACHE FILEPATH "libglfw3.a")
 
     set(GLEW32 ${TB_LIB_DIR}/libGLEW.a CACHE FILEPATH "libGLEW.a")
 
