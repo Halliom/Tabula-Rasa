@@ -57,9 +57,7 @@ message(STATUS ${SOURCE_FILES})
 if (WIN32)
     message("Target is Windows")
 
-    set(SDL2 ${TB_LIB_DIR}/SDL2.lib CACHE FILEPATH "SDL2.lib")
-    set(SDL2MAIN ${TB_LIB_DIR}/SDL2main.lib CACHE FILEPATH "SDL2main.lib")
-    set(SDL2TEST ${TB_LIB_DIR}/SDL2test.lib CACHE FILEPATH "SDL2test.lib")
+    set(GLFW3 ${TB_LIB_DIR}/glfw3.lib CACHE FILEPATH "glfw3.lib")
 
     set(GLEW32 ${TB_LIB_DIR}/glew32.lib CACHE FILEPATH "glew32.lib")
     set(GLEW32S ${TB_LIB_DIR}/glew32s.lib CACHE FILEPATH "glew32s.lib")
@@ -79,8 +77,8 @@ if (WIN32)
 
     # Add the platform dependent code
     file(GLOB TB_PLATFORM_SRC
-        ${TB_SOURCE_DIR}/Platform/WindowsPlatformFilesystem.*
-        ${TB_SOURCE_DIR}/Platform/WindowsPlatformWindow.*
+        ${TB_SOURCE_DIR}/Platform/WindowsPlatformFilesystem.cpp
+        ${TB_SOURCE_DIR}/Platform/WindowsPlatformWindow.cpp
         )
     set(SOURCE_FILES
         ${SOURCE_FILES}
@@ -97,9 +95,6 @@ if (WIN32)
 elseif (APPLE)
     message("Target is OSX")
     # let the user select where the libraries are
-    set(SDL2 ${TB_LIB_DIR}/libSDL2.a CACHE FILEPATH “libSDL2.a”)
-    set(SDL2MAIN ${TB_LIB_DIR}/libSDL2main.a CACHE FILEPATH “libSDL2main.a”)
-    set(SDL2TEST ${TB_LIB_DIR}/libSDL2_test.a CACHE FILEPATH “libSDL2_test.a”)
 
     set(GLEW32 ${TB_LIB_DIR}/libGLEW.a CACHE FILEPATH "libGLEW.a")
 
@@ -143,8 +138,8 @@ elseif (APPLE)
 
     # Add the platform dependent code
     file(GLOB TB_PLATFORM_SRC
-        ${TB_SOURCE_DIR}/Platform/OSXPlatformFilesystem.*
-        ${TB_SOURCE_DIR}/Platform/OSXPlatformWindow.*
+        ${TB_SOURCE_DIR}/Platform/OSXPlatformFilesystem.cpp
+        ${TB_SOURCE_DIR}/Platform/OSXPlatformWindow.cpp
         )
     set(SOURCE_FILES
         ${SOURCE_FILES}
@@ -160,9 +155,7 @@ endif()
 set(EXTERN_LIBS
     ${EXTERN_LIBS}
     ${OPENGL_LIBRARIES}
-    ${SDL2}
-    ${SDL2MAIN}
-    ${SDL2TEST}
+    ${GLFW3}
     ${FREETYPE}
     ${LUA52}
     ${ASSIMP}
