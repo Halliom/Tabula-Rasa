@@ -1,32 +1,9 @@
 #include "Console.h"
 
+#include "../Platform/Platform.h"
 #include "../Rendering/GUI/imgui/imgui.h"
-
 #include "../Engine/Input.h"
 #include "../Engine/ScriptEngine.h"
-#include "../Platform/Platform.h"
-
-bool IsSingleWord(char* String)
-{
-	bool FoundWord = false;
-	unsigned int i = 0;
-	while (String[0] != '\0')
-	{
-		if (String[0] == ' ')
-		{
-			if (FoundWord)
-				return false;
-			FoundWord = true;
-		}
-		++String;
-		++i;
-	}
-	if (FoundWord)
-		return false;
-
-	String -= i;
-	return true;
-}
 
 Console::Console() :
     m_bShowConsole(false),

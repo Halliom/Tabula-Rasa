@@ -1,4 +1,4 @@
-#include "WindowsPlatformFilesystem.h"
+#include "Platform.h"
 
 #include "windows.h"
 #include <fstream>
