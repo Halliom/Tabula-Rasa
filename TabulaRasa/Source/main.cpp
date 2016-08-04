@@ -39,7 +39,6 @@ int CALLBACK WinMain(
 	WindowParams.UseDepthTest = false;
 	WindowParams.Fullscreen = false;
 	WindowParams.StartMaximized = false;
-	WindowParams.Instance = hInstance;
 #else
 int main(int argc, char* argv[])
 {
@@ -107,11 +106,11 @@ int main(int argc, char* argv[])
 
 	g_Engine->g_RenderingEngine->PostInitialize();
 
-	double LastFrameTime = SDL_GetTicks() / 1000.0;
+	double LastFrameTime = glfwGetTime();
 	double DeltaTime = 0.0;
 	double CumulativeFrameTime = 0.0;
 	uint16_t FramesPerSecond = 0;
-	int StaticFPS = 0.0f;
+	int StaticFPS = 0;
 	while (Window.PrepareForRender())
 	{
 		g_Engine->g_GUIRenderer->BeginFrame(DeltaTime);
@@ -128,9 +127,9 @@ int main(int argc, char* argv[])
 		// Swap the buffers
 		Window.PostRender();
 
-		double CurrentTime = SDL_GetTicks() / 1000.0;
+		double CurrentTime = glfwGetTime();
 		DeltaTime = CurrentTime - LastFrameTime;
-		LastFrameTime = SDL_GetTicks() / 1000.0;
+		LastFrameTime = glfwGetTime();
 
 		CumulativeFrameTime = CumulativeFrameTime + DeltaTime;
 		++FramesPerSecond;

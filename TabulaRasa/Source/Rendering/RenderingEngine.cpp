@@ -95,9 +95,9 @@ void RenderingEngine::PostInitialize()
     LogF("[GL] Rendercontext: %d.%d", GLMajor, GLMinor);
 
 #ifdef _WIN32
-	SYSTEM_INFO SystemInfo;
-	GetSystemInfo(&SystemInfo);
-	LogF("Number of processors: %d\n", SystemInfo.dwNumberOfProcessors);
+	//SYSTEM_INFO SystemInfo;
+	//GetSystemInfo(&SystemInfo);
+	//LogF("Number of processors: %d\n", SystemInfo.dwNumberOfProcessors);
 #endif
 }
 

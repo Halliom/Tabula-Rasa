@@ -3,10 +3,10 @@
 #include "glm/common.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 
+#include "../Rendering/GuiSystem.h"
 #include "../Engine/Input.h"
 #include "../Engine/Camera.h"
 #include "../Engine/Octree.h"
-#include "../Rendering/GuiSystem.h"
 #include "../Game/World.h""
 
 #define KEY_W 0x57
@@ -39,19 +39,19 @@ Player::~Player()
 
 void Player::Update(float DeltaTime)
 {
-	if (Input::Keys[SDL_SCANCODE_W])
+	if (Input::Keys[GLFW_KEY_W])
 	{
 		AddMovementInput(MID_FORWARD, DeltaTime);
 	}
-	if (Input::Keys[SDL_SCANCODE_S])
+	if (Input::Keys[GLFW_KEY_S])
 	{
 		AddMovementInput(MID_BACKWARD, DeltaTime);
 	}
-	if (Input::Keys[SDL_SCANCODE_D])
+	if (Input::Keys[GLFW_KEY_D])
 	{
 		AddMovementInput(MID_RIGHT, DeltaTime);
 	}
-	if (Input::Keys[SDL_SCANCODE_A])
+	if (Input::Keys[GLFW_KEY_A])
 	{
 		AddMovementInput(MID_LEFT, DeltaTime);
 	}

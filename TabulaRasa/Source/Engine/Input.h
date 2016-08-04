@@ -2,11 +2,7 @@
 
 #include <stdint.h>
 
-#ifdef _WIN32
-#include "SDL2/SDL.h"
-#elif __APPLE__
-#include "SDL2OSX/SDL.h"
-#endif
+#include "GLFW\glfw3.h"
 
 #include <unordered_map>
 

@@ -13,11 +13,7 @@
 
 #include "glm/gtc/matrix_transform.hpp"
 
-#ifdef _WIN32
-#include "SDL2/SDL.h"
-#elif __APPLE__
-#include "SDL2OSX/SDL.h"
-#endif
+#include "GLFW\glfw3.h"
 
 ChunkRenderer::ChunkRenderer() :
     m_ChunkRenderShader(NULL)

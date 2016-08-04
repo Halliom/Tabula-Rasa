@@ -1,15 +1,11 @@
 #include "Random.h"
 
-#ifdef _WIN32
-#include "SDL2/SDL.h"
-#elif __APPLE__
-#include "SDL2OSX/SDL.h"
-#endif
+#include "GLFW\glfw3.h"
 
 Random::Random()
 {
-	Seed[0] = SDL_GetTicks();
-	Seed[1] = SDL_GetTicks() % 1216124;
+	Seed[0] = glfwGetTime();
+	Seed[1] = (int)glfwGetTime() % 1216124;
 }
 
 Random::Random(int InSeed)

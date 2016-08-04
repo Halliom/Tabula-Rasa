@@ -2,17 +2,9 @@
 
 #include <algorithm>
 
-#ifdef _WIN32
-#include "SDL2/SDL.h"
-#include "SDL2/SDL_syswm.h"
-#elif __APPLE__
-#include "SDL2OSX/SDL.h"
-#include "SDL2OSX/SDL_syswm.h"
-#endif
-
-#include "glm/common.hpp"
 #include "GL/glew.h"
-
+#include "GLFW\glfw3.h"
+#include "glm/common.hpp"
 #include "GUI/imgui/imgui.h"
 
 #include "Shader.h"
@@ -24,11 +16,11 @@
 #include "../Engine/Input.h"
 #include "../Engine/Core/Memory.h"
 #include "../Engine/Console.h"
+#include "../Engine/Camera.h"
+#include "../Engine/Noise.h"
 
 #include "../Game/Player.h"
 #include "../Game/World.h"
-
-#include "../Engine/Noise.h"
 
 /**
  * Predefined color values
@@ -470,12 +462,12 @@ void RenderDrawLists(ImDrawData* DrawData)
 
 void SetClipboardText(const char* Text)
 {
-	SDL_SetClipboardText(Text);
+	glfwSetClipboardString(PlatformWindow::GlobalWindow->GetWindow(), Text);
 }
 
 const char* GetClipboardText()
 {
-	return SDL_GetClipboardText();
+	return glfwGetClipboardString(PlatformWindow::GlobalWindow->GetWindow());
 }
 
 #define IMCOLOR(r, g, b) ImVec4((float)r / 255.0f, (float)g / 255.0f, (float)b / 255.0f, 1.0f)
@@ -521,25 +513,25 @@ DebugGUIRenderer::DebugGUIRenderer(int ScreenWidth, int ScreenHeight)
 	ImGui::PushStyleColor(ImGuiCol_ButtonHovered, IMCOLOR(98, 110, 42));
 	ImGui::PushStyleColor(ImGuiCol_ScrollbarGrabHovered, IMCOLOR(98, 110, 42));
 
-	IO.KeyMap[ImGuiKey_Tab] = SDLK_TAB;
-	IO.KeyMap[ImGuiKey_LeftArrow] = SDL_SCANCODE_LEFT;
-	IO.KeyMap[ImGuiKey_RightArrow] = SDL_SCANCODE_RIGHT;
-	IO.KeyMap[ImGuiKey_UpArrow] = SDL_SCANCODE_UP;
-	IO.KeyMap[ImGuiKey_DownArrow] = SDL_SCANCODE_DOWN;
-	IO.KeyMap[ImGuiKey_PageUp] = SDL_SCANCODE_PAGEUP;
-	IO.KeyMap[ImGuiKey_PageDown] = SDL_SCANCODE_PAGEDOWN;
-	IO.KeyMap[ImGuiKey_Home] = SDL_SCANCODE_HOME;
-	IO.KeyMap[ImGuiKey_End] = SDL_SCANCODE_END;
-	IO.KeyMap[ImGuiKey_Delete] = SDLK_DELETE;
-	IO.KeyMap[ImGuiKey_Backspace] = SDLK_BACKSPACE;
-	IO.KeyMap[ImGuiKey_Enter] = SDLK_RETURN;
-	IO.KeyMap[ImGuiKey_Escape] = SDLK_ESCAPE;
-	IO.KeyMap[ImGuiKey_A] = SDLK_a;
-	IO.KeyMap[ImGuiKey_C] = SDLK_c;
-	IO.KeyMap[ImGuiKey_V] = SDLK_v;
-	IO.KeyMap[ImGuiKey_X] = SDLK_x;
-	IO.KeyMap[ImGuiKey_Y] = SDLK_y;
-	IO.KeyMap[ImGuiKey_Z] = SDLK_z;
+	IO.KeyMap[ImGuiKey_Tab] = GLFW_KEY_TAB;
+	IO.KeyMap[ImGuiKey_LeftArrow] = GLFW_KEY_LEFT;
+	IO.KeyMap[ImGuiKey_RightArrow] = GLFW_KEY_RIGHT;
+	IO.KeyMap[ImGuiKey_UpArrow] = GLFW_KEY_UP;
+	IO.KeyMap[ImGuiKey_DownArrow] = GLFW_KEY_DOWN;
+	IO.KeyMap[ImGuiKey_PageUp] = GLFW_KEY_PAGE_UP;
+	IO.KeyMap[ImGuiKey_PageDown] = GLFW_KEY_PAGE_DOWN;
+	IO.KeyMap[ImGuiKey_Home] = GLFW_KEY_HOME;
+	IO.KeyMap[ImGuiKey_End] = GLFW_KEY_END;
+	IO.KeyMap[ImGuiKey_Delete] = GLFW_KEY_DELETE;
+	IO.KeyMap[ImGuiKey_Backspace] = GLFW_KEY_BACKSPACE;
+	IO.KeyMap[ImGuiKey_Enter] = GLFW_KEY_ENTER;
+	IO.KeyMap[ImGuiKey_Escape] = GLFW_KEY_ESCAPE;
+	IO.KeyMap[ImGuiKey_A] = GLFW_KEY_A;
+	IO.KeyMap[ImGuiKey_C] = GLFW_KEY_C;
+	IO.KeyMap[ImGuiKey_V] = GLFW_KEY_V;
+	IO.KeyMap[ImGuiKey_X] = GLFW_KEY_X;
+	IO.KeyMap[ImGuiKey_Y] = GLFW_KEY_Y;
+	IO.KeyMap[ImGuiKey_Z] = GLFW_KEY_Z;
 
 	// Generate the vertexarrays, vertexbuffers index buffers and texture objects to be used each frame
 	glGenVertexArrays(1, &DebugGui.VAO);
@@ -610,11 +602,11 @@ void DebugGUIRenderer::UpdateScreenDimensions(int NewWidth, int NewHeight)
     
     DebugGui.ProjectionMatrix = glm::ortho(0.0f, (float)NewWidth, (float)NewHeight, 0.0f);
 #else
-    SDL_Window* MainWindow = PlatformWindow::GlobalWindow->GetWindow();
+    GLFWwindow* MainWindow = PlatformWindow::GlobalWindow->GetWindow();
     int Width, Height;
     int DrawWidth, DrawHeight;
-    SDL_GetWindowSize(MainWindow, &Width, &Height);
-    SDL_GL_GetDrawableSize(MainWindow, &DrawWidth, &DrawHeight);
+	glfwGetWindowSize(MainWindow, &Width, &Height);
+	glfwGetFramebufferSize(MainWindow, &DrawWidth, &DrawHeight);
     
     IO.DisplaySize = ImVec2((float)Width, (float)Height);
     IO.DisplayFramebufferScale = ImVec2(Width > 0 ? ((float)DrawWidth / Width) : 0, Height > 0 ? ((float)DrawHeight / Height) : 0);
@@ -626,35 +618,28 @@ void DebugGUIRenderer::UpdateScreenDimensions(int NewWidth, int NewHeight)
 void DebugGUIRenderer::BeginFrame(float DeltaTime)
 {
 	ImGuiIO& IO = ImGui::GetIO();
+	GLFWwindow* MainWindow = PlatformWindow::GlobalWindow->GetWindow();
     
 	// TODO: This should not be gotten from SDL directly rather it should go through the input system
-
-	// Get the mouse state
-	int MouseX;
-	int MouseY;
-	Uint32 MouseState = SDL_GetMouseState(&MouseX, &MouseY);
     
     IO.DeltaTime = DeltaTime;
     
-	// Only set the mouse position if the window/mouse is 'focused'
-	if (SDL_GetWindowFlags(PlatformWindow::GlobalWindow->GetWindow()) & SDL_WINDOW_MOUSE_FOCUS)
-		IO.MousePos = ImVec2((float)MouseX, (float)MouseY);   // Mouse position, in pixels (set to -1,-1 if no mouse / on another screen, etc.)
+	// Only set the mouse position if the window is 'focused'
+	if (glfwGetWindowAttrib(MainWindow, GLFW_FOCUSED))
+		IO.MousePos = ImVec2((float)Input::MouseX, (float)Input::MouseY);
 	else
 		IO.MousePos = ImVec2(-1, -1);
 
-	IO.MouseDown[0] = Input::MouseButtons[0] || (MouseState & SDL_BUTTON(SDL_BUTTON_LEFT)) != 0;
-	IO.MouseDown[1] = Input::MouseButtons[1] || (MouseState & SDL_BUTTON(SDL_BUTTON_RIGHT)) != 0;
-	IO.MouseDown[2] = Input::MouseButtons[2] || (MouseState & SDL_BUTTON(SDL_BUTTON_MIDDLE)) != 0;
+	for (int i = 0; i < 3; ++i)
+	{
+		//IO.MouseDown[i] = Input::MouseButtons[i] || glfwGetMouseButton(MainWindow, i) != 0;
+		IO.MouseDown[i] = Input::MouseButtons[i];
+	}
 
 	IO.MouseWheel = Input::MouseWheel;
 
-	// Hide OS mouse cursor if ImGui is drawing it
-	SDL_ShowCursor(IO.MouseDrawCursor ? 0 : 1);
-
 	ImGui::NewFrame();
 }
-
-#include "../Engine/Camera.h"
 
 void DebugGUIRenderer::RenderFrame(int FramesPerSecond, float FrameTime)
 {
@@ -674,7 +659,7 @@ void DebugGUIRenderer::RenderFrame(int FramesPerSecond, float FrameTime)
 	int CrosshairSize = 6;
 	int WindowWidth;
 	int WindowHeight;
-	SDL_GL_GetDrawableSize(PlatformWindow::GlobalWindow->GetWindow(), &WindowWidth, &WindowHeight);
+	glfwGetFramebufferSize(PlatformWindow::GlobalWindow->GetWindow(), &WindowWidth, &WindowHeight);
 	glEnable(GL_SCISSOR_TEST);
 	glScissor((WindowWidth / 2) - (CrosshairSize / 2), (WindowHeight / 2) - (CrosshairSize / 2), CrosshairSize, CrosshairSize);
 	glClearColor(1.0f, 1.0f, 1.0f, 0.75f);
