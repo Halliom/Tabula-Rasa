@@ -1,11 +1,8 @@
-#include "Octree.h"
+#include "Voxel.h"
 
-static glm::uvec3 VS_EAST_OFFSET = glm::uvec3(1, 0, 0);
-static glm::uvec3 VS_WEST_OFFSET = glm::uvec3(-1, 0, 0);
-static glm::uvec3 VS_TOP_OFFSET = glm::uvec3(0, 1, 0);
-static glm::uvec3 VS_BOTTOM_OFFSET = glm::uvec3(0, -1, 0);
-static glm::uvec3 VS_NORTH_OFFSET = glm::uvec3(0, 0, 1);
-static glm::uvec3 VS_SOUTH_OFFSET = glm::uvec3(0, 0, -1);
+#include "glm\common.hpp"
+
+#include "../Engine/Engine.h"
 
 void Voxel::OnNodeUpdatedAdjacent(const uint8_t& X, const uint8_t& Y, const uint8_t& Z, Voxel* NodeEast, Voxel* NodeWest, Voxel* NodeTop, Voxel* NodeBottom, Voxel* NodeNorth, Voxel* NodeSouth, const bool& Placed)
 {
