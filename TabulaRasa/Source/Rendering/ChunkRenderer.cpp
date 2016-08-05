@@ -51,10 +51,9 @@ void ChunkRenderer::RenderAllChunks(Player* CurrentPlayer)
 	{
         m_ChunkRenderShader->SetModelMatrix(glm::translate(Identity, m_ChunksToRender[Index].ChunkPosition));
         
-		for (
-			unsigned int MultiblockID = 0;
-			MultiblockID < m_ChunksToRender[Index].NumMultiblocksToRender;
-			++MultiblockID)
+		for (unsigned int MultiblockID = 0;
+			 MultiblockID < m_ChunksToRender[Index].NumMultiblocksToRender;
+			 ++MultiblockID)
 		{
 			MultiblockRenderData* Multiblock = &m_ChunksToRender[Index].MultiblocksToRender[MultiblockID];
 			LoadedModel Model = g_Engine->g_RenderingEngine->m_CustomBlockRenderers[Multiblock->BlockID];
@@ -83,7 +82,7 @@ FORCEINLINE int GetVoxelSide(Chunk* Voxels, List<MultiblockRenderData>* Addition
 		{
 			case TYPE_SOLID:
 			{
-				return Block.RenderData.Textures[SideHelper::SideToInt(Side)];
+				return SideHelper::GetRotatedTexture(Block, Side, Node->Rotation);
 			}
 			case TYPE_MULTIBLOCK:
 			{

@@ -72,11 +72,9 @@ public:
 
 	void RenderAllChunks(class Player* CurrentPlayer);
 
-	ChunkRenderData CreateRenderData(const glm::vec3& Position);
-
-    void DeleteRenderData(const glm::vec3& ChunkPosition);
-
-	void UpdateRenderData(const glm::vec3& ChunkPosition, Chunk* Voxels);
+	ChunkRenderData	CreateRenderData(const glm::vec3& Position);
+    void			DeleteRenderData(const glm::vec3& ChunkPosition);
+	void			UpdateRenderData(const glm::vec3& ChunkPosition, Chunk* Voxels);
     
 private:
     
