@@ -1,7 +1,7 @@
 #pragma once
 
 #include "../Game/World.h"
-#include "Octree.h"
+#include "../Rendering/Voxel.h"
 
 class Chunk
 {
@@ -53,10 +53,7 @@ public:
 		{
 			m_pVoxels[X][Y][Z].BlockID = BlockID;
 			m_pVoxels[X][Y][Z].Parent = Parent;
-			m_pVoxels[X][Y][Z].LocalPosX = X;
-			m_pVoxels[X][Y][Z].LocalPosY = Y;
-			m_pVoxels[X][Y][Z].LocalPosZ = Z;
-
+			
 			m_pVoxels[X][Y][Z].OnNodeUpdatedAdjacent(
 				(uint8_t)X,
 				(uint8_t)Y,
