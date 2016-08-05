@@ -250,9 +250,9 @@ void World::RemoveMultiblock(const int& X, const int& Y, const int& Z)
 		Chunk *QueriedChunk = GetLoadedChunk(ChunkX, ChunkY, ChunkZ);
 		if (QueriedChunk)
 		{
-			int LocalX = Parent->LocalPosX;
-			int LocalY = Parent->LocalPosY;
-			int LocalZ = Parent->LocalPosZ;
+			int LocalX = ChunkMod(X);
+			int LocalY = ChunkMod(Y);
+			int LocalZ = ChunkMod(Z);
 
 			BlockInfo BlockIDInfo = BlockManager::LoadedBlocks[Parent->BlockID];
 			unsigned int MultiblockWidth = BlockIDInfo.RenderData.MultiblockRenderData.Width;
