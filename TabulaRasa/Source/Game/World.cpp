@@ -99,38 +99,6 @@ Voxel* World::GetBlock(const int& X, const int& Y, const int& Z)
     return QueriedChunk != NULL ? QueriedChunk->GetVoxel(ChunkMod(X), ChunkMod(Y), ChunkMod(Z)) : NULL;;
 }
 
-void World::AddBlock(const int& X, const int& Y, const int& Z, const unsigned int& BlockID)
-{
-	assert(BlockID != 0);
-
-	Chunk* ChunkToAddTo = GetLoadedChunk(TOCHUNK_COORD(X, Y, Z));
-	if (ChunkToAddTo)
-	{
-		// This gets the local coordinate in the chunks local coordinate
-		// system, which ranges from 0 to 31
-		int LocalX = ChunkMod(X);
-		int LocalY = ChunkMod(Y);
-		int LocalZ = ChunkMod(Z);
-
-		ChunkToAddTo->SetVoxel(this, LocalX, LocalY, LocalZ, BlockID);
-	}
-}
-
-void World::RemoveBlock(const int& X, const int& Y, const int& Z)
-{
-	Chunk* QueriedChunk = GetLoadedChunk(TOCHUNK_COORD(X, Y, Z));
-	if (QueriedChunk)
-	{
-		// This gets the local coordinate in the chunks local coordinate
-		// system, which ranges from 0 to 31
-		int LocalX = ChunkMod(X);
-		int LocalY = ChunkMod(Y);
-		int LocalZ = ChunkMod(Z);
-
-		QueriedChunk->RemoveVoxel(this, LocalX, LocalY, LocalZ);
-	}
-}
-
 Voxel* World::GetMultiblock(const int &X, const int &Y, const int &Z)
 {
 	int ChunkX = X >= 0 ? X / Chunk::SIZE : (X / Chunk::SIZE) - 1;
@@ -157,6 +125,28 @@ Voxel* World::GetMultiblock(const int &X, const int &Y, const int &Z)
 		return QueriedVoxel;
 	}
 	return NULL;
+}
+
+void World::AddBlock(const int& X, const int& Y, const int& Z, const unsigned int& BlockID)
+{
+	AddBlockWithRotation(X, Y, Z, 0, BlockID);
+}
+
+void World::AddBlockWithRotation(const int& X, const int& Y, const int& Z, unsigned char Rotation, const unsigned int& BlockID)
+{
+	assert(BlockID != 0);
+
+	Chunk* ChunkToAddTo = GetLoadedChunk(TOCHUNK_COORD(X, Y, Z));
+	if (ChunkToAddTo)
+	{
+		// This gets the local coordinate in the chunks local coordinate
+		// system, which ranges from 0 to 31
+		int LocalX = ChunkMod(X);
+		int LocalY = ChunkMod(Y);
+		int LocalZ = ChunkMod(Z);
+
+		ChunkToAddTo->SetVoxel(this, LocalX, LocalY, LocalZ, BlockID, Rotation);
+	}
 }
 
 void World::AddMultiblock(const int &X, const int &Y, const int &Z, const unsigned int &BlockID)
@@ -206,19 +196,19 @@ void World::AddMultiblock(const int &X, const int &Y, const int &Z, const unsign
 					if (LocalX >= 16)
 					{
 						++ChunkX;
-						QueriedChunk =  GetLoadedChunk(ChunkX, ChunkY, ChunkZ);
+						QueriedChunk = GetLoadedChunk(ChunkX, ChunkY, ChunkZ);
 						LocalX = ChunkMod(LocalX);
 					}
 					if (LocalY >= 16)
 					{
 						++ChunkY;
-						QueriedChunk =  GetLoadedChunk(ChunkX, ChunkY, ChunkZ);
+						QueriedChunk = GetLoadedChunk(ChunkX, ChunkY, ChunkZ);
 						LocalY = ChunkMod(LocalY);
 					}
 					if (LocalZ >= 16)
 					{
 						++ChunkZ;
-						QueriedChunk =  GetLoadedChunk(ChunkX, ChunkY, ChunkZ);
+						QueriedChunk = GetLoadedChunk(ChunkX, ChunkY, ChunkZ);
 						LocalZ = ChunkMod(LocalZ);
 					}
 
@@ -226,7 +216,7 @@ void World::AddMultiblock(const int &X, const int &Y, const int &Z, const unsign
 					{
 						Parent = QueriedChunk->GetVoxel(LocalX, LocalY, LocalZ);
 					}
-					QueriedChunk->SetVoxel(this, LocalX, LocalY, LocalZ, BlockID, Parent);
+					QueriedChunk->SetVoxel(this, LocalX, LocalY, LocalZ, BlockID, 0, Parent);
 
 					++LocalZ;
 				}
@@ -234,6 +224,21 @@ void World::AddMultiblock(const int &X, const int &Y, const int &Z, const unsign
 			}
 			++LocalZ;
 		}
+	}
+}
+
+void World::RemoveBlock(const int& X, const int& Y, const int& Z)
+{
+	Chunk* QueriedChunk = GetLoadedChunk(TOCHUNK_COORD(X, Y, Z));
+	if (QueriedChunk)
+	{
+		// This gets the local coordinate in the chunks local coordinate
+		// system, which ranges from 0 to 31
+		int LocalX = ChunkMod(X);
+		int LocalY = ChunkMod(Y);
+		int LocalZ = ChunkMod(Z);
+
+		QueriedChunk->RemoveVoxel(this, LocalX, LocalY, LocalZ);
 	}
 }
 

@@ -82,7 +82,12 @@ void Player::Update(float DeltaTime)
 		if (TraceResult.BlockID)
 		{
 			glm::vec3 Normal = SideHelper::DirectionFromSide(TraceResult.Side);
-			m_pWorldObject->AddBlock(TraceResult.Position.x + Normal.x, TraceResult.Position.y + Normal.y, TraceResult.Position.z + Normal.z, 1);
+			m_pWorldObject->AddBlockWithRotation(
+				TraceResult.Position.x + Normal.x, 
+				TraceResult.Position.y + Normal.y, 
+				TraceResult.Position.z + Normal.z, 
+				SideHelper::SideToInt(TraceResult.Side), 
+				1);
 		}
 	}
 	PreviousL = Input::MouseButtons[GLFW_MOUSE_BUTTON_LEFT];

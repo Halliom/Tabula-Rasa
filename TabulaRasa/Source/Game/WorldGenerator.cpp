@@ -28,11 +28,11 @@ void BaseTerrain::GenerateToChunk(Chunk* Chunk, World* WorldObject, SimplexNoise
 			{
 				if ((WorldPosition.y + k) <= Y)
 				{
-					Chunk->SetVoxel(WorldObject, i, k, j, 1);
+					Chunk->SetVoxel(WorldObject, i, k, j, 1, 0);
 				}
 				if (WorldPosition.y + k == 0)
 				{
-					Chunk->SetVoxel(WorldObject, i, k, j, 1);
+					Chunk->SetVoxel(WorldObject, i, k, j, 1, 0);
 				}
 			}
 		}

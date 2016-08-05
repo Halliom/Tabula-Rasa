@@ -36,15 +36,13 @@ public:
 	class Chunk* GetLoadedChunk(const int &ChunkX, const int &ChunkY, const int &ChunkZ);
 
 	class Voxel* GetBlock(const int& X, const int& Y, const int& Z);
-
-	void AddBlock(const int& X, const int& Y, const int& Z, const unsigned int& BlockID);
-
-	void RemoveBlock(const int& X, const int& Y, const int& Z);
-
 	class Voxel* GetMultiblock(const int& X, const int& Y, const int& Z);
 
+	void AddBlock(const int& X, const int& Y, const int& Z, const unsigned int& BlockID);
+	void AddBlockWithRotation(const int& X, const int& Y, const int& Z, unsigned char Rotation, const unsigned int& BlockID);
 	void AddMultiblock(const int& X, const int& Y, const int& Z, const unsigned int& BlockID);
 
+	void RemoveBlock(const int& X, const int& Y, const int& Z);
 	void RemoveMultiblock(const int& X, const int& Y, const int& Z);
 
 	RayHitResult RayTraceVoxels(const struct Ray& Ray);

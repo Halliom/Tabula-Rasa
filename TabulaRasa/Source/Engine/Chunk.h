@@ -47,12 +47,13 @@ public:
 		m_bIsRenderStateDirty = true;
 	}
 
-	FORCEINLINE void SetVoxel(World *WorldObject, unsigned int X, unsigned int Y, unsigned int Z, unsigned int BlockID, Voxel* Parent = NULL)
+	FORCEINLINE void SetVoxel(World *WorldObject, unsigned int X, unsigned int Y, unsigned int Z, unsigned int BlockID, unsigned char Rotation, Voxel* Parent = NULL)
 	{
 		if (m_pVoxels[X][Y][Z].BlockID == 0)
 		{
 			m_pVoxels[X][Y][Z].BlockID = BlockID;
 			m_pVoxels[X][Y][Z].Parent = Parent;
+			m_pVoxels[X][Y][Z].Rotation = Rotation;
 			
 			m_pVoxels[X][Y][Z].OnNodeUpdatedAdjacent(
 				(uint8_t)X,
