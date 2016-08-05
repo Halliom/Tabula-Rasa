@@ -24,13 +24,13 @@ struct BlockInfo
 	{
 	}
 
-	BlockInfo(unsigned int BlockID, BlockType RenderType, unsigned int Textures[6]) :
+	BlockInfo(unsigned short BlockID, BlockType RenderType, unsigned int Textures[6]) :
 		BlockID(BlockID), RenderType(RenderType)
 	{
 		memcpy(RenderData.Textures, Textures, sizeof(unsigned int) * 6);
 	}
 
-	BlockInfo(unsigned int BlockID, BlockType RenderType, unsigned int TextureEast, unsigned int TextureWest, unsigned int TextureTop, unsigned int TextureBottom, unsigned int TextureNorth, unsigned int TextureSouth) :
+	BlockInfo(unsigned short BlockID, BlockType RenderType, unsigned int TextureEast, unsigned int TextureWest, unsigned int TextureTop, unsigned int TextureBottom, unsigned int TextureNorth, unsigned int TextureSouth) :
 		BlockID(BlockID), RenderType(RenderType)
 	{
 		RenderData.Textures[0] = TextureEast;
@@ -41,7 +41,7 @@ struct BlockInfo
 		RenderData.Textures[5] = TextureSouth;
 	}
 
-	BlockInfo(unsigned int BlockID, BlockType RenderType, unsigned int Width, unsigned int Height, unsigned int Depth) :
+	BlockInfo(unsigned short BlockID, BlockType RenderType, unsigned int Width, unsigned int Height, unsigned int Depth) :
 		BlockID(BlockID), RenderType(RenderType)
 	{
 		RenderData.MultiblockRenderData.Width = Width;
@@ -54,7 +54,7 @@ struct BlockInfo
 	 * the block and also goes for blocks that require
 	 * custom rendering
 	 */
-	unsigned int BlockID;
+	unsigned short BlockID;
 
 	/**
 	* The rendertype for this block, if it should
