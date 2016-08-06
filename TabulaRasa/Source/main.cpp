@@ -15,6 +15,7 @@
 
 #include "Rendering/GuiSystem.h"
 #include "Rendering/RenderingEngine.h"
+#include "Engine/Async/Thread.h"
 
 #define SAFE_DELETE(ptr) if (ptr) { delete ptr; }
 
@@ -111,6 +112,9 @@ int main(int argc, char* argv[])
 	double CumulativeFrameTime = 0.0;
 	uint16_t FramesPerSecond = 0;
 	int StaticFPS = 0;
+	Thread TestThread;
+	ThreadSystem::LaunchThread(TestThread);
+
 	while (Window.PrepareForRender())
 	{
 		g_Engine->g_GUIRenderer->BeginFrame(DeltaTime);
