@@ -45,7 +45,6 @@ function GeneratTrees(xO, yO, zO, number_of_iterations, iteration_divider)
     result.xn = 0
     result.yn = 0
     result.zn = 0
-    result.should_be_removed = false
     result.suitability = 0
     return result
   end
