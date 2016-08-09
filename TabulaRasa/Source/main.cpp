@@ -19,6 +19,12 @@
 
 #define SAFE_DELETE(ptr) if (ptr) { delete ptr; }
 
+#define NUM_WORKER_THREADS 1
+
+/*
+ * All of the global singletons reside inside this class which
+ * gets initialized here in the main functon
+ */
 EngineGlobals* g_Engine = NULL;
 
 #ifdef _WIN32
@@ -112,8 +118,8 @@ int main(int argc, char* argv[])
 	double CumulativeFrameTime = 0.0;
 	uint16_t FramesPerSecond = 0;
 	int StaticFPS = 0;
-	Thread TestThread;
-	ThreadSystem::LaunchThread(TestThread);
+	
+	ThreadSystem::InitializeThreads(NUM_WORKER_THREADS);
 
 	while (Window.PrepareForRender())
 	{
@@ -145,6 +151,8 @@ int main(int argc, char* argv[])
 		}
 		g_Engine->g_MemoryManager->ClearTransientMemory();
 	}
+
+	ThreadSystem::DestroyThreads();
 
 	SAFE_DELETE(g_Engine->g_World);
     SAFE_DELETE(g_Engine->g_GUIRenderer);
