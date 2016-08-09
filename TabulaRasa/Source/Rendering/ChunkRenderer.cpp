@@ -1,5 +1,6 @@
 #include "ChunkRenderer.h"
 
+#include "../Engine/Async/ThreadSystem.h"
 #include "../Engine/Core/Memory.h"
 #include "../Engine/Core/List.h"
 #include "../Engine/Octree.h"
@@ -106,8 +107,17 @@ static glm::vec3 BOTTOM_FACE_NORMAL = glm::vec3(0.0f, -1.0f, 0.0f);
 static glm::vec3 NORTH_FACE_NORMAL	= glm::vec3(0.0f, 0.0f, +1.0f);
 static glm::vec3 SOUTH_FACE_NORMAL	= glm::vec3(0.0f, 0.0f, -1.0f);
 
-static void GreedyMesh(Chunk* Voxels, ChunkRenderData* RenderData)
+struct GreedyMeshData
 {
+	Chunk* Voxels;
+	ChunkRenderData* RenderData;
+};
+
+static void GreedyMesh(void* Data)
+{
+	GreedyMeshData* InData = (GreedyMeshData*)Data;
+	Chunk* Voxels = InData->Voxels;
+	ChunkRenderData* RenderData = InData->RenderData;
 	List<TexturedQuadVertex> Vertices = List<TexturedQuadVertex>(g_Engine->g_MemoryManager->m_pGameMemory);
 	Vertices.Reserve(32 * 32 * 32);
 	List<GLushort> Indices = List<GLushort>(g_Engine->g_MemoryManager->m_pGameMemory);
@@ -373,6 +383,8 @@ static void GreedyMesh(Chunk* Voxels, ChunkRenderData* RenderData)
     
 	// Unbind so nothing else modifies it
 	glBindVertexArray(0);
+
+	glFlush();
 }
 
 ChunkRenderData ChunkRenderer::CreateRenderData(const glm::vec3& Position)
@@ -415,7 +427,13 @@ void ChunkRenderer::DeleteRenderData(const glm::vec3& ChunkPosition)
 void ChunkRenderer::UpdateRenderData(const glm::vec3& ChunkPosition, Chunk* Voxels)
 {
     ChunkRenderData* Item = GetRenderData(ChunkPosition);
-	GreedyMesh(Voxels, Item);
+	
+	GreedyMeshData* Data = new GreedyMeshData();
+	Data->Voxels = Voxels;
+	Data->RenderData = Item;
+	//AsyncJob* GreedyMeshJob = new AsyncJob(&GreedyMesh, (void*)Data);
+	//ThreadSystem::ScheduleJob(GreedyMeshJob);
+	GreedyMesh(Data);
 }
 
 ChunkRenderData* ChunkRenderer::GetRenderData(const glm::vec3& ChunkPosition)
