@@ -9,6 +9,9 @@ typedef pthread_t ThreadHandle;
 #endif
 
 #include <vector>
+#include <deque>
+
+#include "CriticalSection.h"
 
 #define JOB_FUNCTION(FunctionName) void FunctionName(void* Data)
 
@@ -31,6 +34,11 @@ public:
 		m_bFinished = true;
 	}
 
+	bool Finished()
+	{
+		return m_bFinished;
+	}
+
 private:
 
 	JobFunction m_Function;
@@ -38,20 +46,31 @@ private:
 	bool		m_bFinished;
 };
 
+typedef std::deque<AsyncJob*> JobQueue;
+
 class ThreadSystem
 {
 public:
 
-	static ThreadHandle LaunchThread(const class Thread& ThreadToLaunch);
-	static void RemoveThread();
+	static void InitializeThreads(int NumWorkerThreads);
+	static void DestroyThreads();
 
-	static int GetCurrentThreadID();
-	static Thread* GetCurrentThread();
+	static ThreadHandle LaunchThread(class Thread& ThreadToLaunch);
+	static void			RemoveThread(Thread* ThreadToRemove);
 
-	static void AddJob(AsyncJob* Job);
-	static void AddJobs(AsyncJob* Jobs, size_t NumJobs);
+	static ThreadHandle GetCurrentGameThreadHandle();
+	static int			GetCurrentGameThreadID();
+	static Thread*		GetCurrentGameThread();
 
-	static Thread* GetNonEmptyThread();
+	static void			ScheduleJob(AsyncJob* Job);
+	static void			ScheduleJobs(AsyncJob* Jobs, size_t NumJobs);
+	static AsyncJob*	GetNextJob();
+	static void			Wait(AsyncJob* Job);
+
+public: // Private?
 
 	static std::vector<Thread*> g_ThreadPool;
+	static Thread*				g_MainThread;
+	static JobQueue				g_JobQueue;
+	static CriticalSection		g_CriticalSection;
 };

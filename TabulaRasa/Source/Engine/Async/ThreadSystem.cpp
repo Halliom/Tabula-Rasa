@@ -1,8 +1,14 @@
 #include "ThreadSystem.h"
 
+#include <algorithm>
+#include <cassert>
+
 #include "Thread.h"
 
-std::vector<Thread*> ThreadSystem::g_ThreadPool;
+std::vector<Thread*>	ThreadSystem::g_ThreadPool;
+Thread*					ThreadSystem::g_MainThread;
+JobQueue				ThreadSystem::g_JobQueue;
+CriticalSection			ThreadSystem::g_CriticalSection;
 
 #ifdef _WIN32
 DWORD WINAPI ThreadProc(LPVOID Param)
@@ -11,14 +17,14 @@ void ThreadProc(void* Param)
 #endif
 {
 	// Get the Thread from the argument and set its ID
-	Thread* ThreadToLaunch = (Thread*)Param;
-	ThreadToLaunch->m_ThreadID = ThreadSystem::GetCurrentThreadID();
+	Thread* ThisThread = (Thread*)Param;
+	ThisThread->m_ThreadID = ThreadSystem::GetCurrentGameThreadID();
 
 	// Add the thread to the list
-	ThreadSystem::g_ThreadPool.push_back(ThreadToLaunch);
+	ThreadSystem::g_ThreadPool.push_back(ThisThread);
 
 	// Run the thread
-	ThreadToLaunch->Run();
+	ThisThread->Run();
 
 #ifdef _WIN32
 	return TRUE;
@@ -27,7 +33,34 @@ void ThreadProc(void* Param)
 #endif
 }
 
-ThreadHandle ThreadSystem::LaunchThread(const Thread& ThreadToLaunch)
+void ThreadSystem::InitializeThreads(int NumWorkerThreads)
+{
+	// Get a reference to the main thread
+	Thread* MainThread = new Thread();
+	MainThread->m_Handle = GetCurrentGameThreadHandle();
+	MainThread->m_ThreadID = GetCurrentGameThreadID();
+	g_MainThread = MainThread;
+
+	// Spawn worker threads
+	for (int i = 0; i < NumWorkerThreads; ++i)
+	{
+		Thread* WorkerThread = new Thread();
+		LaunchThread(*WorkerThread);
+	}
+}
+
+void ThreadSystem::DestroyThreads()
+{
+	for (int i = 0; i < g_ThreadPool.size(); ++i)
+	{
+		delete g_ThreadPool[i];
+	}
+	g_ThreadPool.clear();
+
+	// TODO: What to do about the main thread?
+}
+
+ThreadHandle ThreadSystem::LaunchThread(Thread& ThreadToLaunch)
 {
 #ifdef _WIN32
 	DWORD ThreadID = 0;
@@ -38,6 +71,7 @@ ThreadHandle ThreadSystem::LaunchThread(const Thread& ThreadToLaunch)
 		(void*)(&ThreadToLaunch),
 		0,
 		&ThreadID);
+	ThreadToLaunch.m_Handle = Handle;
 #else
 	ThreadHandle Handle = pthread_create();
 #endif
@@ -45,16 +79,28 @@ ThreadHandle ThreadSystem::LaunchThread(const Thread& ThreadToLaunch)
 	return Handle;
 }
 
-void ThreadSystem::RemoveThread()
+void ThreadSystem::RemoveThread(Thread* ThreadToRemove)
 {
 #ifdef _WIN32
-	CloseHandle(GetCurrentThread()->m_Handle);
+	// Close the handle, no need to remove from the ThreadPool since this only gets called from
+	// DestroyThreads which clears the ThreadPool
+	CloseHandle(ThreadToRemove->m_Handle);
 #else
 	// pthread something
 #endif
 }
 
-int ThreadSystem::GetCurrentThreadID()
+ThreadHandle ThreadSystem::GetCurrentGameThreadHandle()
+{
+#ifdef _WIN32
+	ThreadHandle Handle = GetCurrentThread();
+#else
+	//pthread_self something
+#endif
+	return Handle;
+}
+
+int ThreadSystem::GetCurrentGameThreadID()
 {
 #ifdef _WIN32
 	DWORD ThreadID = GetCurrentThreadId();
@@ -65,37 +111,64 @@ int ThreadSystem::GetCurrentThreadID()
 	return ThreadID;
 }
 
-Thread* ThreadSystem::GetCurrentThread()
+Thread* ThreadSystem::GetCurrentGameThread()
 {
-	int CurrentThreadID = GetCurrentThreadID();
-	for (auto& Thread : g_ThreadPool)
+	int CurrentThreadID = GetCurrentGameThreadID();
+	for (int i = 0; i < g_ThreadPool.size(); ++i)
 	{
-		if (Thread->m_ThreadID == CurrentThreadID)
-			return Thread;
+		if (g_ThreadPool[i]->m_ThreadID == CurrentThreadID)
+			return g_ThreadPool[i];
 	}
 	return NULL;
 }
 
-void ThreadSystem::AddJob(AsyncJob* Job)
+void ThreadSystem::ScheduleJob(AsyncJob* Job)
 {
-	GetCurrentThread()->QueueJob(Job);
+	assert(Job != NULL);
+
+	SCOPED_CS(g_CriticalSection);
+
+	// Push it to the back since the Run function processes these
+	// in order from back to front so it becomes a LIFO queue
+	g_JobQueue.push_back(Job);
 }
 
-void ThreadSystem::AddJobs(AsyncJob* Jobs, size_t NumJobs)
+void ThreadSystem::ScheduleJobs(AsyncJob* Jobs, size_t NumJobs)
 {
-	size_t NumThreads = g_ThreadPool.size();
-	for (size_t i = 0; i < NumJobs; ++i)
+	assert(Jobs != NULL);
+
+	SCOPED_CS(g_CriticalSection);
+
+	// Push it to the back since the Run function processes these
+	// in order from back to front so it becomes a LIFO queue
+	for (int i = 0; i < NumJobs; ++i)
+		g_JobQueue.push_back(Jobs + i);
+}
+
+AsyncJob* ThreadSystem::GetNextJob()
+{
+	SCOPED_CS(g_CriticalSection);
+
+	if (g_JobQueue.size() > 0)
 	{
-		g_ThreadPool[i % NumThreads]->QueueJob(Jobs + i);
+		AsyncJob* NextJob = g_JobQueue.back();
+		g_JobQueue.pop_back();
+		return NextJob;
+	}
+	else
+	{
+		return NULL;
 	}
 }
 
-Thread* ThreadSystem::GetNonEmptyThread()
+void ThreadSystem::Wait(AsyncJob* Job)
 {
-	for (auto& Thread : g_ThreadPool)
+	while (!Job->Finished())
 	{
-		if (Thread->GetJobCount() > 0)
-			return Thread;
+		AsyncJob* NextJob = GetNextJob();
+		if (NextJob)
+		{
+			NextJob->Execute();
+		}
 	}
-	return NULL;
 }
