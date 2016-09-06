@@ -2,55 +2,60 @@
 
 #ifdef _WIN32
 #include <Windows.h>
+#else
+#include <pthread.h>
 #endif
 
-class CriticalSection
+#include "Async.h"
+
+class TicketMutex
 {
 public:
 
-	CriticalSection()
+	TicketMutex()
 	{
-		InitializeCriticalSection(&m_CriticalSection);
+        m_Ticket = m_NowServing = 0;
+	}
+    
+	~TicketMutex()
+	{
 	}
 
-	~CriticalSection()
+    void Enter()
 	{
-		DeleteCriticalSection(&m_CriticalSection);
-	}
-
-	void Enter()
-	{
-		EnterCriticalSection(&m_CriticalSection);
+        int Ticket = Async::Increment(&m_Ticket);
+        while (m_NowServing != Ticket);
 	}
 
 	void Leave()
 	{
-		LeaveCriticalSection(&m_CriticalSection);
+        ++m_NowServing;
 	}
 
 private:
 
-	CRITICAL_SECTION m_CriticalSection;
+    int volatile m_Ticket;
+    int volatile m_NowServing;
 };
 
-class ScopedCriticalSection
+class ScopedMutex
 {
 public:
 
-	ScopedCriticalSection(const CriticalSection& CriticalSection) :
-		m_CriticalSection(CriticalSection)
+	ScopedMutex(const TicketMutex& Mutex) :
+		m_Mutex(Mutex)
 	{
-		m_CriticalSection.Enter();
+		m_Mutex.Enter();
 	}
 
 	~ScopedCriticalSection()
 	{
-		m_CriticalSection.Leave();
+		m_Mutex.Leave();
 	}
 
 private:
 
-	CriticalSection m_CriticalSection;
+	TicketMutex m_Mutex;
 };
 
-#define SCOPED_CS(cs) ScopedCriticalSection _ScopedCriticalSection(cs)
+#define SCOPED_MUTEX(mutex) ScopedMute _ScopedMutexLock(mutex)
