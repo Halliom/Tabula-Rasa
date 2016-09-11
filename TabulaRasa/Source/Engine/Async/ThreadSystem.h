@@ -11,7 +11,7 @@ typedef pthread_t ThreadHandle;
 #include <vector>
 #include <deque>
 
-#include "CriticalSection.h"
+#include "Mutex.h"
 
 #define JOB_FUNCTION(FunctionName) void FunctionName(void* Data)
 
@@ -72,5 +72,5 @@ public: // Private?
 	static std::vector<Thread*> g_ThreadPool;
 	static Thread*				g_MainThread;
 	static JobQueue				g_JobQueue;
-	static CriticalSection		g_CriticalSection;
+	static TicketMutex			g_TicketMutex;
 };

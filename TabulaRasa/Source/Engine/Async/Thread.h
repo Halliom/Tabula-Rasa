@@ -1,7 +1,7 @@
 #pragma once
 
 #include "ThreadSystem.h"
-#include "CriticalSection.h"
+#include "Mutex.h"
 
 class Thread
 {
@@ -14,5 +14,5 @@ public:
 
 	int				m_ThreadID;
 	ThreadHandle	m_Handle;
-	CriticalSection m_CriticalSection;
+	TicketMutex		m_TicketMutex;
 };
