@@ -88,3 +88,6 @@ TabulaRasa/TabulaRasa.build/**
 *.xcbkptlist
 
 TabulaRasa/TabulaRasa.vcxproj.user
+
+*.DS_Store
+
