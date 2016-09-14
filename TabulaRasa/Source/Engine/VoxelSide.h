@@ -1,6 +1,6 @@
 #pragma once
 
-#include "glm\common.hpp"
+#include "glm/common.hpp"
 #include "Block.h"
 
 enum VoxelSide : unsigned int
@@ -103,20 +103,20 @@ public:
 	 */
 	static int GetRotatedTexture(const BlockInfo& Info, const VoxelSide& Side, const unsigned char& Rotation)
 	{
+        /*
+         * The rotation transforms that rotates the texture
+         */
+        static constexpr int RotationTransformations[6][6] =
+        {
+            { 0, 1, 2, 3, 4, 5 }, // If rotation is 0 don't change anything
+            { 1, 0, 2, 3, 4, 5 }, // Switch the east and west sides
+            { 2, 3, 0, 1, 4, 5 }, // 1, 0 are now up and down
+            { 3, 2, 1, 0, 5, 4 }, // Switch up and down
+            { 4, 5, 2, 3, 1, 0 }, // Switch east/west with north/south
+            { 5, 4, 2, 3, 0, 1 }  // Switch north and south
+        };
+        
 		int CompactSide = SideToInt(Side);
 		return Info.RenderData.Textures[RotationTransformations[Rotation][CompactSide]];
 	}
-
-	/*
-	 * The rotation transforms that rotates the texture
-	 */
-	static constexpr int RotationTransformations[6][6] = 
-	{
-		{ 0, 1, 2, 3, 4, 5 }, // If rotation is 0 don't change anything
-		{ 1, 0, 2, 3, 4, 5 }, // Switch the east and west sides
-		{ 2, 3, 0, 1, 4, 5 }, // 1, 0 are now up and down
-		{ 3, 2, 1, 0, 5, 4 }, // Switch up and down
-		{ 4, 5, 2, 3, 1, 0 }, // Switch east/west with north/south
-		{ 5, 4, 2, 3, 0, 1 }  // Switch north and south
-	};
 };

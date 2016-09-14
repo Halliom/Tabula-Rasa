@@ -1,6 +1,6 @@
 #include "Voxel.h"
 
-#include "glm\common.hpp"
+#include "glm/common.hpp"
 
 #include "../Engine/Engine.h"
 

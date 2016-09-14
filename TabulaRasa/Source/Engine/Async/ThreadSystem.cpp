@@ -8,12 +8,12 @@
 std::vector<Thread*>	ThreadSystem::g_ThreadPool;
 Thread*					ThreadSystem::g_MainThread;
 JobQueue				ThreadSystem::g_JobQueue;
-CriticalSection			ThreadSystem::g_CriticalSection;
+TicketMutex             ThreadSystem::g_TicketMutex;
 
 #ifdef _WIN32
 DWORD WINAPI ThreadProc(LPVOID Param)
 #else
-void ThreadProc(void* Param)
+void* ThreadProc(void* Param)
 #endif
 {
 	// Get the Thread from the argument and set its ID
@@ -29,7 +29,7 @@ void ThreadProc(void* Param)
 #ifdef _WIN32
 	return TRUE;
 #else
-	return
+    return NULL;
 #endif
 }
 
@@ -73,7 +73,8 @@ ThreadHandle ThreadSystem::LaunchThread(Thread& ThreadToLaunch)
 		&ThreadID);
 	ThreadToLaunch.m_Handle = Handle;
 #else
-	ThreadHandle Handle = pthread_create();
+    ThreadHandle Handle;
+	pthread_create(&Handle, NULL, ThreadProc, &ThreadToLaunch);
 #endif
 
 	return Handle;
@@ -95,7 +96,7 @@ ThreadHandle ThreadSystem::GetCurrentGameThreadHandle()
 #ifdef _WIN32
 	ThreadHandle Handle = GetCurrentThread();
 #else
-	//pthread_self something
+    ThreadHandle Handle = pthread_self();
 #endif
 	return Handle;
 }
@@ -105,8 +106,8 @@ int ThreadSystem::GetCurrentGameThreadID()
 #ifdef _WIN32
 	DWORD ThreadID = GetCurrentThreadId();
 #else
-	/*pthread_id_np_t   tid;
-	tid = pthread_getthreadid_np();*/
+    ThreadHandle ThisThread = pthread_self();
+    int ThreadID = (int)((size_t)ThisThread);
 #endif
 	return ThreadID;
 }
@@ -126,7 +127,7 @@ void ThreadSystem::ScheduleJob(AsyncJob* Job)
 {
 	assert(Job != NULL);
 
-	SCOPED_CS(g_CriticalSection);
+	SCOPED_LOCK(g_TicketMutex);
 
 	// Push it to the back since the Run function processes these
 	// in order from back to front so it becomes a LIFO queue
@@ -137,7 +138,7 @@ void ThreadSystem::ScheduleJobs(AsyncJob* Jobs, size_t NumJobs)
 {
 	assert(Jobs != NULL);
 
-	SCOPED_CS(g_CriticalSection);
+	SCOPED_LOCK(g_TicketMutex);
 
 	// Push it to the back since the Run function processes these
 	// in order from back to front so it becomes a LIFO queue
@@ -147,7 +148,7 @@ void ThreadSystem::ScheduleJobs(AsyncJob* Jobs, size_t NumJobs)
 
 AsyncJob* ThreadSystem::GetNextJob()
 {
-	SCOPED_CS(g_CriticalSection);
+	SCOPED_LOCK(g_TicketMutex);
 
 	if (g_JobQueue.size() > 0)
 	{
