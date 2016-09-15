@@ -1,6 +1,11 @@
 #include "ChunkRenderer.h"
 
+#include "GLFW/glfw3.h"
+
+#include "glm/gtc/matrix_transform.hpp"
+
 #include "../Engine/Async/ThreadSystem.h"
+#include "../Engine/Async/Job.h"
 #include "../Engine/Core/Memory.h"
 #include "../Engine/Core/List.h"
 #include "../Engine/Octree.h"
@@ -11,10 +16,6 @@
 #include "../Rendering/Shader.h"
 #include "../Platform/Platform.h"
 #include "../Game/Player.h"
-
-#include "glm/gtc/matrix_transform.hpp"
-
-#include "GLFW/glfw3.h"
 
 ChunkRenderer::ChunkRenderer() :
     m_ChunkRenderShader(NULL)
@@ -424,6 +425,7 @@ void ChunkRenderer::UpdateRenderData(const glm::vec3& ChunkPosition, Chunk* Voxe
                         Chunk*, Voxels,
                         ChunkRenderData*, Item,
                         GreedyMesh(Voxels, Item););
+    
 	ThreadSystem::ScheduleJob(GreedyMeshJob);
 }
 

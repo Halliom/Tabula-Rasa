@@ -1,5 +1,7 @@
 #include "Thread.h"
 
+#include "Job.h"
+
 Thread::Thread() :
 	m_ThreadID(0)
 {

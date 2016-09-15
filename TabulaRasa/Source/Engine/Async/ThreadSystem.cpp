@@ -1,9 +1,9 @@
 #include "ThreadSystem.h"
 
-#include <algorithm>
 #include <cassert>
 
 #include "Thread.h"
+#include "Job.h"
 
 std::vector<Thread*>	ThreadSystem::g_ThreadPool;
 Thread*					ThreadSystem::g_MainThread;

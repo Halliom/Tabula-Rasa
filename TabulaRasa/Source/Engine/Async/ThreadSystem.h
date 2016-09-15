@@ -12,7 +12,8 @@ typedef pthread_t ThreadHandle;
 #include <deque>
 
 #include "Mutex.h"
-#include "Job.h"
+
+class IJob;
 
 typedef std::deque<IJob*> JobQueue;
 
