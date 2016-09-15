@@ -13,8 +13,8 @@ Thread::~Thread()
 void Thread::Run()
 {
 	while (true)
-	{
-		AsyncJob* NextJob = ThreadSystem::GetNextJob();
+    {
+		IJob* NextJob = ThreadSystem::GetNextJob();
 		if (NextJob)
 		{
 			NextJob->Execute();

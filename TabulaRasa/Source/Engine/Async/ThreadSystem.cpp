@@ -75,6 +75,7 @@ ThreadHandle ThreadSystem::LaunchThread(Thread& ThreadToLaunch)
 #else
     ThreadHandle Handle;
 	pthread_create(&Handle, NULL, ThreadProc, &ThreadToLaunch);
+    ThreadToLaunch.m_Handle = Handle;
 #endif
 
 	return Handle;
@@ -123,7 +124,7 @@ Thread* ThreadSystem::GetCurrentGameThread()
 	return NULL;
 }
 
-void ThreadSystem::ScheduleJob(AsyncJob* Job)
+void ThreadSystem::ScheduleJob(IJob* Job)
 {
 	assert(Job != NULL);
 
@@ -134,7 +135,7 @@ void ThreadSystem::ScheduleJob(AsyncJob* Job)
 	g_JobQueue.push_back(Job);
 }
 
-void ThreadSystem::ScheduleJobs(AsyncJob* Jobs, size_t NumJobs)
+void ThreadSystem::ScheduleJobs(IJob* Jobs, size_t NumJobs)
 {
 	assert(Jobs != NULL);
 
@@ -146,13 +147,13 @@ void ThreadSystem::ScheduleJobs(AsyncJob* Jobs, size_t NumJobs)
 		g_JobQueue.push_back(Jobs + i);
 }
 
-AsyncJob* ThreadSystem::GetNextJob()
+IJob* ThreadSystem::GetNextJob()
 {
 	SCOPED_LOCK(g_TicketMutex);
 
 	if (g_JobQueue.size() > 0)
 	{
-		AsyncJob* NextJob = g_JobQueue.back();
+		IJob* NextJob = g_JobQueue.back();
 		g_JobQueue.pop_back();
 		return NextJob;
 	}
@@ -162,11 +163,11 @@ AsyncJob* ThreadSystem::GetNextJob()
 	}
 }
 
-void ThreadSystem::Wait(AsyncJob* Job)
+void ThreadSystem::Wait(IJob* Job)
 {
 	while (!Job->Finished())
 	{
-		AsyncJob* NextJob = GetNextJob();
+		IJob* NextJob = GetNextJob();
 		if (NextJob)
 		{
 			NextJob->Execute();

@@ -12,41 +12,9 @@ typedef pthread_t ThreadHandle;
 #include <deque>
 
 #include "Mutex.h"
+#include "Job.h"
 
-#define JOB_FUNCTION(FunctionName) void FunctionName(void* Data)
-
-typedef void(*JobFunction)(void*);
-
-class AsyncJob
-{
-public:
-	AsyncJob(JobFunction JobFunc, void* Data) :
-		m_Function(JobFunc),
-		m_pData(Data),
-		m_bFinished(false)
-	{
-	}
-
-	void Execute()
-	{
-		// Call the function with the data
-		(*m_Function)(m_pData);
-		m_bFinished = true;
-	}
-
-	bool Finished()
-	{
-		return m_bFinished;
-	}
-
-private:
-
-	JobFunction     m_Function;
-	void*           m_pData;
-	volatile bool	m_bFinished;
-};
-
-typedef std::deque<AsyncJob*> JobQueue;
+typedef std::deque<IJob*> JobQueue;
 
 class ThreadSystem
 {
@@ -62,10 +30,10 @@ public:
 	static int			GetCurrentGameThreadID();
 	static Thread*		GetCurrentGameThread();
 
-	static void			ScheduleJob(AsyncJob* Job);
-	static void			ScheduleJobs(AsyncJob* Jobs, size_t NumJobs);
-	static AsyncJob*	GetNextJob();
-	static void			Wait(AsyncJob* Job);
+	static void			ScheduleJob(IJob* Job);
+	static void			ScheduleJobs(IJob* Jobs, size_t NumJobs);
+	static IJob*        GetNextJob();
+	static void			Wait(IJob* Job);
 
 public: // Private?
 

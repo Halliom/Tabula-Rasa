@@ -17,7 +17,7 @@ public:
 		m_Ticket = new unsigned int;
 		m_NowServing = new unsigned int;
 		*m_Ticket = 0;
-		*m_NowServing = 1;
+		*m_NowServing = 0;
 	}
     
 	~TicketMutex()

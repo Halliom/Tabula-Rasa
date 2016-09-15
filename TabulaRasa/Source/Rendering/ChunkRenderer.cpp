@@ -107,17 +107,8 @@ static glm::vec3 BOTTOM_FACE_NORMAL = glm::vec3(0.0f, -1.0f, 0.0f);
 static glm::vec3 NORTH_FACE_NORMAL	= glm::vec3(0.0f, 0.0f, +1.0f);
 static glm::vec3 SOUTH_FACE_NORMAL	= glm::vec3(0.0f, 0.0f, -1.0f);
 
-struct GreedyMeshData
+static void GreedyMesh(Chunk* Voxels, ChunkRenderData* RenderData)
 {
-	Chunk* Voxels;
-	ChunkRenderData* RenderData;
-};
-
-static void GreedyMesh(void* Data)
-{
-	GreedyMeshData* InData = (GreedyMeshData*)Data;
-	Chunk* Voxels = InData->Voxels;
-	ChunkRenderData* RenderData = InData->RenderData;
 	List<TexturedQuadVertex> Vertices = List<TexturedQuadVertex>(g_Engine->g_MemoryManager->m_pGameMemory);
 	Vertices.Reserve(32 * 32 * 32);
 	List<GLushort> Indices = List<GLushort>(g_Engine->g_MemoryManager->m_pGameMemory);
@@ -427,13 +418,13 @@ void ChunkRenderer::DeleteRenderData(const glm::vec3& ChunkPosition)
 void ChunkRenderer::UpdateRenderData(const glm::vec3& ChunkPosition, Chunk* Voxels)
 {
     ChunkRenderData* Item = GetRenderData(ChunkPosition);
-	
-	GreedyMeshData* Data = new GreedyMeshData();
-	Data->Voxels = Voxels;
-	Data->RenderData = Item;
-	//AsyncJob* GreedyMeshJob = new AsyncJob(&GreedyMesh, (void*)Data);
-	//ThreadSystem::ScheduleJob(GreedyMeshJob);
-	GreedyMesh(Data);
+    
+    CREATE_JOB_TWOPARAM(
+                        GreedyMeshJob,
+                        Chunk*, Voxels,
+                        ChunkRenderData*, Item,
+                        GreedyMesh(Voxels, Item););
+	ThreadSystem::ScheduleJob(GreedyMeshJob);
 }
 
 ChunkRenderData* ChunkRenderer::GetRenderData(const glm::vec3& ChunkPosition)

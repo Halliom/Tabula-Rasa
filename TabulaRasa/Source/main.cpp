@@ -119,7 +119,7 @@ int main(int argc, char* argv[])
 	uint16_t FramesPerSecond = 0;
 	int StaticFPS = 0;
 	
-	ThreadSystem::InitializeThreads(NUM_WORKER_THREADS);
+	ThreadSystem::InitializeThreads(1);
 
 	while (Window.PrepareForRender())
 	{

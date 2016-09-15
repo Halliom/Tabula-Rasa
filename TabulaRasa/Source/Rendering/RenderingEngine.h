@@ -25,15 +25,15 @@ public:
 
 	void SetupSSAOPass();
 
-	void SetupQuad();
-
-	void RenderFrame(class World* RenderWorld, const float& DeltaTime);
+    void SetupQuad();
 
 	void StartGeometryPass();
 
 	void SSAOPass();
 
 	void LightPass();
+    
+    void RenderFrame(class World* RenderWorld, const float& DeltaTime);
 
 	void UpdateScreenDimensions(const unsigned int& NewWidth, const unsigned int& NewHeight);
     

@@ -19,7 +19,7 @@ public:
 	static T Increment(volatile T* Destination)
 	{
 #ifdef _WIN32
-		return InterlockedIncrement(Destination); // return the previous value
+		return InterlockedIncrement(Destination) - 1; // -1 since we want the old value
 #else
 		return __sync_fetch_and_add(Destination, 1);
 #endif
@@ -32,7 +32,7 @@ public:
 	static T Decrement(volatile T* Destination)
 	{
 #ifdef _WIN32
-		return InterlockedDecrement(Destination); // return the previous value
+		return InterlockedDecrement(Destination) + 1; // +1 since we want the old value
 #else
 		return __sync_fetch_and_sub(Destination, 1);
 #endif
