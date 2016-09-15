@@ -41,9 +41,9 @@ public:
 
 private:
 
-	JobFunction m_Function;
-	void*		m_pData;
-	bool		m_bFinished;
+	JobFunction     m_Function;
+	void*           m_pData;
+	volatile bool	m_bFinished;
 };
 
 typedef std::deque<AsyncJob*> JobQueue;
