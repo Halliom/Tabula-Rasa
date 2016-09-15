@@ -368,6 +368,9 @@ static void GreedyMesh(Chunk* Voxels, ChunkRenderData* RenderData)
         glVertexAttribIPointer(3, 1, GL_UNSIGNED_BYTE, sizeof(TexturedQuadVertex),  (void*) offsetof(TexturedQuadVertex, TextureCoord));
         
         glBindVertexArray(0);
+        
+        delete Vertices;
+        delete Indices;
     });
     
     // Send it to the render thread
