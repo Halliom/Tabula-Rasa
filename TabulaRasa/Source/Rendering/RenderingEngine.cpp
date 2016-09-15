@@ -7,6 +7,7 @@
 
 #include "../Game/World.h"
 #include "../Game/Player.h"
+#include "../Engine/Async/Job.h"
 #include "../Engine/Console.h"
 #include "../Engine/Camera.h"
 #include "../Engine/Core/List.h"
@@ -104,6 +105,13 @@ void RenderingEngine::PostInitialize()
 void RenderingEngine::AddRendererForBlock(unsigned int BlockID, const char *BlockModelFileName)
 {
 	PlatformFileSystem::LoadModel(&m_CustomBlockRenderers[BlockID], BlockModelFileName);
+}
+
+void RenderingEngine::ScheduleRenderJob(IJob* RenderJob)
+{
+    SCOPED_LOCK(m_QueueMutex);
+    
+    m_RenderJobs.push_back(RenderJob);
 }
 
 void RenderingEngine::SetupGeometryPass()
@@ -255,6 +263,26 @@ void RenderingEngine::SetupQuad()
 
 void RenderingEngine::RenderFrame(World* RenderWorld, const float& DeltaTime)
 {
+    // Enter mutex so access to m_RenderJobs is locked
+    m_QueueMutex.Enter();
+    
+    while(!m_RenderJobs.empty())
+    {
+        // Get the next available render job
+        IJob* NextRenderJob = m_RenderJobs.back();
+        m_RenderJobs.pop_back();
+        
+        // Hand the mutex back
+        m_QueueMutex.Leave();
+        
+        NextRenderJob->Execute();
+        
+        m_QueueMutex.Enter();
+    }
+    
+    // Whenever we fall out we are always in a mutex so leave
+    m_QueueMutex.Leave();
+    
 	// Setup for the geometry pass
 	StartGeometryPass();
 

@@ -3,6 +3,8 @@
 #include "GL/glew.h"
 
 #include "../Platform/Platform.h"
+#include "../Engine/Async/ThreadSystem.h"
+#include "../Engine/Async/Mutex.h"
 #include "../Engine/Block.h"
 #include "../Rendering/Shader.h"
 #include "../Rendering/Texture.h"
@@ -20,6 +22,8 @@ public:
 	void PostInitialize();
 
 	void AddRendererForBlock(unsigned int BlockID, const char *BlockModelFileName);
+    
+    void ScheduleRenderJob(IJob* RenderJob);
 
 	void SetupGeometryPass();
 
@@ -47,6 +51,9 @@ private:
 	unsigned int        m_ScreenWidth;
 	unsigned int        m_ScreenHeight;
 	bool				m_bWireframeRender;
+    
+    JobQueue            m_RenderJobs;
+    TicketMutex         m_QueueMutex;
 
 	GLuint              m_GeometryFBO;
 	Texture				m_GeomPassPositionTexture;

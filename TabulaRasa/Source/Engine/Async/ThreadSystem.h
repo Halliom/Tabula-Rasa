@@ -32,7 +32,7 @@ public:
 	static Thread*		GetCurrentGameThread();
 
 	static void			ScheduleJob(IJob* Job);
-	static void			ScheduleJobs(IJob* Jobs, size_t NumJobs);
+    static void			ScheduleJobs(IJob* Jobs, size_t NumJobs);
 	static IJob*        GetNextJob();
 	static void			Wait(IJob* Job);
 
