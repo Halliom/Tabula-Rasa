@@ -87,6 +87,24 @@ Param2Type Param2Name; \
 Param3Type Param3Name; \
 };
 
+#define DECLARE_JOB_FOURPARAM(JobName, Param1Type, Param1Name, Param2Type, Param2Name, Param3Type, Param3Name, Param4Type, Param4Name, ExecutableCode) \
+class JobFourParam##JobName : public IJob \
+{ \
+public:\
+JobFourParam##JobName(Param1Type Param1, Param2Type Param2, Param3Type Param3, Param4Type Param4) : Param1Name(Param1), Param2Name(Param2), Param3Name(Param3), Param4Name(Param4) { } \
+\
+virtual void Execute() override \
+{ \
+ExecutableCode; \
+m_bFinished = true; \
+} \
+private: \
+Param1Type Param1Name; \
+Param2Type Param2Name; \
+Param3Type Param3Name; \
+Param4Type Param4Name \
+};
+
 #define CREATE_JOB_NOPARAM(JobName, ExecutableCode) \
 DECLARE_JOB_NOPARAM(JobName, ExecutableCode) \
 JobNoParam##JobName* JobName = new JobNoParam##JobName();
@@ -99,6 +117,10 @@ JobOneParam##JobName* JobName = new JobOneParam##JobName(Param1Name)
 DECLARE_JOB_TWOPARAM(JobName, Param1Type, Param1Name, Param2Type, Param2Name, ExecutableCode) \
 JobTwoParam##JobName* JobName = new JobTwoParam##JobName(Param1Name, Param2Name)
 
-#define CREATE_JOB_THREEEPARAM(JobName, Param1Type, Param1Name, Param2Type, Param2Name, Param3Type, Param3Name, ExecutableCode) \
+#define CREATE_JOB_THREEPARAM(JobName, Param1Type, Param1Name, Param2Type, Param2Name, Param3Type, Param3Name, ExecutableCode) \
 DECLARE_JOB_THREEPARAM(JobName, Param1Type, Param1Name, Param2Type, Param2Name, Param3Type, Param3Name, ExecutableCode) \
 JobThreeParam##JobName* JobName = new JobThreeParam##JobName(Param1Name, Param2Name, Param3Name)
+
+#define CREATE_JOB_FOURPARAM(JobName, Param1Type, Param1Name, Param2Type, Param2Name, Param3Type, Param3Name, Param4Type, Param4Name, ExecutableCode) \
+DECLARE_JOB_FOURPARAM(JobName, Param1Type, Param1Name, Param2Type, Param2Name, Param3Type, Param3Name, Param4Type, Param4Name, ExecutableCode) \
+JobFourParam##JobName* JobName = new JobFourParam##JobName(Param1Name, Param2Name, Param3Name, Param4Name)

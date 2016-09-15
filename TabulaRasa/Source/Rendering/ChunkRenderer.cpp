@@ -110,10 +110,10 @@ static glm::vec3 SOUTH_FACE_NORMAL	= glm::vec3(0.0f, 0.0f, -1.0f);
 
 static void GreedyMesh(Chunk* Voxels, ChunkRenderData* RenderData)
 {
-	List<TexturedQuadVertex> Vertices = List<TexturedQuadVertex>(g_Engine->g_MemoryManager->m_pGameMemory);
-	Vertices.Reserve(32 * 32 * 32);
-	List<GLushort> Indices = List<GLushort>(g_Engine->g_MemoryManager->m_pGameMemory);
-	Indices.Reserve(32 * 32 * 32);
+	List<TexturedQuadVertex>* Vertices = new List<TexturedQuadVertex>(g_Engine->g_MemoryManager->m_pGameMemory);
+	Vertices->Reserve(32 * 32 * 32);
+	List<GLushort>* Indices = new List<GLushort>(g_Engine->g_MemoryManager->m_pGameMemory);
+	Indices->Reserve(32 * 32 * 32);
 
 	List<MultiblockRenderData> AdditionalRenderData = List<MultiblockRenderData>(g_Engine->g_MemoryManager->m_pGameMemory);
 	bool Counter = false;
@@ -212,31 +212,31 @@ static void GreedyMesh(Chunk* Voxels, ChunkRenderData* RenderData)
 							du[u] = w;
 							dv[v] = h;
 
-							GLushort StartIndex = (GLushort) Vertices.Size;
+							GLushort StartIndex = (GLushort) Vertices->Size;
 
 							switch (d)
 							{
 								case 0:
 								{
-									Vertices.Push({
+									Vertices->Push({
 										glm::vec3(x[0],					x[1],					x[2]),
 										glm::vec3(BackFace ? WEST_FACE_NORMAL : EAST_FACE_NORMAL),
 										glm::vec2((float)h, (float)w),
 										(unsigned char)CurrentBlock });
 
-									Vertices.Push({
+									Vertices->Push({
 										glm::vec3(x[0] + du[0],			x[1] + du[1],			x[2] + du[2]),
 										glm::vec3(BackFace ? WEST_FACE_NORMAL : EAST_FACE_NORMAL),
 										glm::vec2((float)h, 0.0f),
 										(unsigned char)CurrentBlock });
 
-									Vertices.Push({ 
+									Vertices->Push({
 										glm::vec3(x[0] + du[0] + dv[0],	x[1] + du[1] + dv[1],	x[2] + du[2] + dv[2]),
 										glm::vec3(BackFace ? WEST_FACE_NORMAL : EAST_FACE_NORMAL),
 										glm::vec2(0.0f, 0.0f),
 										(unsigned char)CurrentBlock });
 
-									Vertices.Push({ 
+									Vertices->Push({
 										glm::vec3(x[0] + dv[0],	x[1] + dv[1],	x[2] + dv[2]),
 										glm::vec3(BackFace ? WEST_FACE_NORMAL : EAST_FACE_NORMAL),
 										glm::vec2(0.0f, (float)w),
@@ -245,25 +245,25 @@ static void GreedyMesh(Chunk* Voxels, ChunkRenderData* RenderData)
 								}
 								case 1:
 								{
-									Vertices.Push({
+									Vertices->Push({
 										glm::vec3(x[0],					x[1],					x[2]),
 										glm::vec3(BackFace ? BOTTOM_FACE_NORMAL : TOP_FACE_NORMAL),
 										glm::vec2((float)h, (float)w),
 										(unsigned char)CurrentBlock });
 
-									Vertices.Push({ 
+									Vertices->Push({
 										glm::vec3(x[0] + du[0],			x[1] + du[1],			x[2] + du[2]),
 										glm::vec3(BackFace ? BOTTOM_FACE_NORMAL : TOP_FACE_NORMAL),
 										glm::vec2((float)h, 0.0f),
 										(unsigned char)CurrentBlock });
 
-									Vertices.Push({ 
+									Vertices->Push({
 										glm::vec3(x[0] + du[0] + dv[0],	x[1] + du[1] + dv[1],	x[2] + du[2] + dv[2]),
 										glm::vec3(BackFace ? BOTTOM_FACE_NORMAL : TOP_FACE_NORMAL),
 										glm::vec2(0.0f, 0.0f),
 										(unsigned char)CurrentBlock });
 
-									Vertices.Push({ 
+									Vertices->Push({
 										glm::vec3(x[0] + dv[0],	x[1] + dv[1],	x[2] + dv[2]),
 										glm::vec3(BackFace ? BOTTOM_FACE_NORMAL : TOP_FACE_NORMAL),
 										glm::vec2(0.0f, (float)w),
@@ -272,25 +272,25 @@ static void GreedyMesh(Chunk* Voxels, ChunkRenderData* RenderData)
 								}
 								case 2:
 								{
-									Vertices.Push({
+									Vertices->Push({
 										glm::vec3(x[0],					x[1],					x[2]),
 										glm::vec3(BackFace ? SOUTH_FACE_NORMAL : NORTH_FACE_NORMAL),
 										glm::vec2(0.0f, (float) h),
 										(unsigned char)CurrentBlock });
 
-									Vertices.Push({
+									Vertices->Push({
 										glm::vec3(x[0] + du[0],			x[1] + du[1],			x[2] + du[2]),
 										glm::vec3(BackFace ? SOUTH_FACE_NORMAL : NORTH_FACE_NORMAL),
 										glm::vec2((float)w, (float)h),
 										(unsigned char)CurrentBlock });
 
-									Vertices.Push({
+									Vertices->Push({
 										glm::vec3(x[0] + du[0] + dv[0],	x[1] + du[1] + dv[1],	x[2] + du[2] + dv[2]),
 										glm::vec3(BackFace ? SOUTH_FACE_NORMAL : NORTH_FACE_NORMAL),
 										glm::vec2((float)w, 0.0f),
 										(unsigned char)CurrentBlock });
 
-									Vertices.Push({
+									Vertices->Push({
 										glm::vec3(x[0] + dv[0],	x[1] + dv[1],	x[2] + dv[2]),
 										glm::vec3(BackFace ? SOUTH_FACE_NORMAL : NORTH_FACE_NORMAL),
 										glm::vec2(0.0f, 0.0f),
@@ -301,21 +301,21 @@ static void GreedyMesh(Chunk* Voxels, ChunkRenderData* RenderData)
 
 							if (BackFace)
 							{
-								Indices.Push(StartIndex);
-								Indices.Push(StartIndex + 1);
-								Indices.Push(StartIndex + 2);
-								Indices.Push(StartIndex + 0);
-								Indices.Push(StartIndex + 2);
-								Indices.Push(StartIndex + 3);
+								Indices->Push(StartIndex);
+								Indices->Push(StartIndex + 1);
+								Indices->Push(StartIndex + 2);
+								Indices->Push(StartIndex + 0);
+								Indices->Push(StartIndex + 2);
+								Indices->Push(StartIndex + 3);
 							}
 							else
 							{
-								Indices.Push(StartIndex + 3);
-								Indices.Push(StartIndex + 2);
-								Indices.Push(StartIndex + 0);
-								Indices.Push(StartIndex + 2);
-								Indices.Push(StartIndex + 1);
-								Indices.Push(StartIndex);
+								Indices->Push(StartIndex + 3);
+								Indices->Push(StartIndex + 2);
+								Indices->Push(StartIndex + 0);
+								Indices->Push(StartIndex + 2);
+								Indices->Push(StartIndex + 1);
+								Indices->Push(StartIndex);
 							}
 
 							// Reset mask memory
@@ -342,24 +342,36 @@ static void GreedyMesh(Chunk* Voxels, ChunkRenderData* RenderData)
 		}
 	}
 
-	RenderData->NumVertices = Indices.Size;
-
-	glBindVertexArray(RenderData->VertexArrayObject);
-
-	glBindBuffer(GL_ARRAY_BUFFER, RenderData->VertexBufferObject);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(TexturedQuadVertex) * Vertices.Size, Vertices.Data(), GL_STATIC_DRAW);
+	RenderData->NumVertices = Indices->Size;
     
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, RenderData->IndexBufferObject);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLushort) * Indices.Size, Indices.Data(), GL_STATIC_DRAW);
+    CREATE_JOB_THREEPARAM(
+                          GreedyMeshRenderUpdate,
+                          List<TexturedQuadVertex>*, Vertices,
+                          List<GLushort>*, Indices,
+                          ChunkRenderData*, RenderData,
+    {
+        glBindVertexArray(RenderData->VertexArrayObject);
+        
+        glBindBuffer(GL_ARRAY_BUFFER, RenderData->VertexBufferObject);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(TexturedQuadVertex) * Vertices->Size, Vertices->Data(), GL_STATIC_DRAW);
+        
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, RenderData->IndexBufferObject);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLushort) * Indices->Size, Indices->Data(), GL_STATIC_DRAW);
+        
+        glEnableVertexAttribArray(0);
+        glEnableVertexAttribArray(1);
+        glEnableVertexAttribArray(2);
+        glEnableVertexAttribArray(3);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(TexturedQuadVertex), (void*) offsetof(TexturedQuadVertex, Position));
+        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(TexturedQuadVertex), (void*) offsetof(TexturedQuadVertex, Normal));
+        glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(TexturedQuadVertex), (void*) offsetof(TexturedQuadVertex, Dimension));
+        glVertexAttribIPointer(3, 1, GL_UNSIGNED_BYTE, sizeof(TexturedQuadVertex),  (void*) offsetof(TexturedQuadVertex, TextureCoord));
+        
+        glBindVertexArray(0);
+    });
     
-	glEnableVertexAttribArray(0);
-	glEnableVertexAttribArray(1);
-	glEnableVertexAttribArray(2);
-	glEnableVertexAttribArray(3);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(TexturedQuadVertex), (void*) offsetof(TexturedQuadVertex, Position));
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(TexturedQuadVertex), (void*) offsetof(TexturedQuadVertex, Normal));
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(TexturedQuadVertex), (void*) offsetof(TexturedQuadVertex, Dimension));
-	glVertexAttribIPointer(3, 1, GL_UNSIGNED_BYTE, sizeof(TexturedQuadVertex),  (void*) offsetof(TexturedQuadVertex, TextureCoord));
+    // Send it to the render thread
+    g_Engine->g_RenderingEngine->ScheduleRenderJob(GreedyMeshRenderUpdate);
     
 	if (AdditionalRenderData.Size > 0)
 	{
@@ -372,11 +384,6 @@ static void GreedyMesh(Chunk* Voxels, ChunkRenderData* RenderData)
 		RenderData->MultiblocksToRender = NULL;
 		RenderData->NumMultiblocksToRender = 0;
 	}
-    
-	// Unbind so nothing else modifies it
-	glBindVertexArray(0);
-
-	glFlush();
 }
 
 ChunkRenderData ChunkRenderer::CreateRenderData(const glm::vec3& Position)
