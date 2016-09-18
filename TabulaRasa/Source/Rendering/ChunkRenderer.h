@@ -80,6 +80,6 @@ private:
     
     ChunkRenderData* GetRenderData(const glm::vec3& ChunkPosition);
     
-    class GLShaderProgram*		m_ChunkRenderShader;
+    class ChunkRenderShader*	m_pChunkRenderShader;
     List<ChunkRenderData>       m_ChunksToRender;
 };

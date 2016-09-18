@@ -13,18 +13,18 @@
 #include "../Engine/Block.h"
 #include "../Engine/Chunk.h"
 #include "../Rendering/RenderingEngine.h"
-#include "../Rendering/Shader.h"
+#include "../Rendering/Shaders/ChunkRenderShader.h"
 #include "../Platform/Platform.h"
 #include "../Game/Player.h"
 
 ChunkRenderer::ChunkRenderer() :
-    m_ChunkRenderShader(NULL)
+    m_pChunkRenderShader(NULL)
 {
 }
 
 ChunkRenderer::~ChunkRenderer()
 {
-    delete m_ChunkRenderShader;
+    delete m_pChunkRenderShader;
 }
 
 void ChunkRenderer::SetupChunkRenderer()
@@ -33,7 +33,8 @@ void ChunkRenderer::SetupChunkRenderer()
     // Reserve space for 128 ChunkRenderDatas up front
     m_ChunksToRender.Reserve(128);
     
-    m_ChunkRenderShader = GLShaderProgram::CreateVertexFragmentShaderFromFile(std::string("VertexShader.glsl"), std::string("FragmentShader.glsl"));
+    m_pChunkRenderShader = new ChunkRenderShader();
+    m_pChunkRenderShader->Initialize();
 }
 
 void ChunkRenderer::RenderAllChunks(Player* CurrentPlayer)
@@ -43,16 +44,16 @@ void ChunkRenderer::RenderAllChunks(Player* CurrentPlayer)
 	glm::mat4 Projection = Camera::g_ActiveCamera->m_ProjectionMatrix;
 	glm::mat4 View = Camera::g_ActiveCamera->m_ViewMatrix;
 
-	m_ChunkRenderShader->Bind();
-	m_ChunkRenderShader->SetProjectionMatrix(Projection);
-	m_ChunkRenderShader->SetViewMatrix(View);
+	m_pChunkRenderShader->m_ProjectionMatrix = Projection;
+	m_pChunkRenderShader->m_ViewMatrix = View;
     
 	//List<ChunkRenderData> ChunksToRender = CurrentPlayer->m_pWorldObject->m_pChunkManager->GetVisibleChunks();
 
 	for (size_t Index = 0; Index < m_ChunksToRender.Size; ++Index)
 	{
-        m_ChunkRenderShader->SetModelMatrix(glm::translate(Identity, m_ChunksToRender[Index].ChunkPosition));
+        m_pChunkRenderShader->m_ModelMatrix = glm::translate(Identity, m_ChunksToRender[Index].ChunkPosition);
         
+        m_pChunkRenderShader->Use();
 		for (unsigned int MultiblockID = 0;
 			 MultiblockID < m_ChunksToRender[Index].NumMultiblocksToRender;
 			 ++MultiblockID)
