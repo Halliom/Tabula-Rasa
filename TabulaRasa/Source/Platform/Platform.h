@@ -77,7 +77,9 @@ class PlatformFileSystem
 public:
 
 	static std::string LoadFile(const AssetDirectoryType& Directory, const char* FileName);
-
+    
+    static char* LoadFileIntoBuffer(const AssetDirectoryType& Directory, const char* FileName);
+    
 	//static void WriteToFile(const AssetDirectoryType& Directory, const char* FileName, const std::string& Content);
 
 	static FORCEINLINE std::string LoadFile(const AssetDirectoryType& Directory, const std::string& FileName)
