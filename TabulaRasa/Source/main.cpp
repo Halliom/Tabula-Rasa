@@ -19,7 +19,7 @@
 
 #define SAFE_DELETE(ptr) if (ptr) { delete ptr; }
 
-#define NUM_WORKER_THREADS 1
+#define NUM_WORKER_THREADS 7
 
 /*
  * All of the global singletons reside inside this class which
@@ -119,7 +119,7 @@ int main(int argc, char* argv[])
 	uint16_t FramesPerSecond = 0;
 	int StaticFPS = 0;
 	
-	ThreadSystem::InitializeThreads(1);
+	ThreadSystem::InitializeThreads(NUM_WORKER_THREADS);
 
 	while (Window.PrepareForRender())
 	{

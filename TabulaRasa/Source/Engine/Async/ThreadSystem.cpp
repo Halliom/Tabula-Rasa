@@ -9,6 +9,7 @@ std::vector<Thread*>	ThreadSystem::g_ThreadPool;
 Thread*					ThreadSystem::g_MainThread;
 JobQueue				ThreadSystem::g_JobQueue;
 TicketMutex             ThreadSystem::g_TicketMutex;
+TicketMutex             ThreadSystem::g_ThreadPoolMutex;
 
 #ifdef _WIN32
 DWORD WINAPI ThreadProc(LPVOID Param)
@@ -20,8 +21,10 @@ void* ThreadProc(void* Param)
 	Thread* ThisThread = (Thread*)Param;
 	ThisThread->m_ThreadID = ThreadSystem::GetCurrentGameThreadID();
 
+    ThreadSystem::g_ThreadPoolMutex.Enter();
 	// Add the thread to the list
 	ThreadSystem::g_ThreadPool.push_back(ThisThread);
+    ThreadSystem::g_ThreadPoolMutex.Leave();
 
 	// Run the thread
 	ThisThread->Run();

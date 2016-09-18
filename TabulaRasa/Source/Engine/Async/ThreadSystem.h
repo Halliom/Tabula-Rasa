@@ -42,4 +42,5 @@ public: // Private?
 	static Thread*				g_MainThread;
 	static JobQueue				g_JobQueue;
 	static TicketMutex			g_TicketMutex;
+    static TicketMutex          g_ThreadPoolMutex;
 };
