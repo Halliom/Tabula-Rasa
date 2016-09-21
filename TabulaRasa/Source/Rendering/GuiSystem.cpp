@@ -7,8 +7,8 @@
 #include "glm/common.hpp"
 #include "GUI/imgui/imgui.h"
 
-#include "Shader.h"
 #include "Texture.h"
+#include "Shaders/DebugGUIShader.h"
 
 #include "../Platform/Platform.h"
 
@@ -247,25 +247,25 @@ void GUIRenderer::RenderAtPosition(GUIRenderable Renderable, glm::vec2 Position)
 {
 	if (Renderable.Texture.m_TextureId != 0)
 	{
-		m_pTextureShader->Bind();
+		//m_pTextureShader->Bind();
 		glBindVertexArray(Renderable.VAO);
 
 		Renderable.Texture.Use();
 
-		m_pTextureShader->SetColor(Renderable.Color);
-		m_pTextureShader->SetProjectionMatrix(m_ProjectionMatrix);
-		m_pTextureShader->SetPositionOffset(glm::vec3(Position, 0.0f));
+		//m_pTextureShader->SetColor(Renderable.Color);
+		//m_pTextureShader->SetProjectionMatrix(m_ProjectionMatrix);
+		//m_pTextureShader->SetPositionOffset(glm::vec3(Position, 0.0f));
 
 		glDrawElements(GL_TRIANGLES, Renderable.NumIndices, GL_UNSIGNED_SHORT, (void*)0);
 	}
 	else
 	{
-		m_pNoTextureShader->Bind();
+		//m_pNoTextureShader->Bind();
 		glBindVertexArray(Renderable.VAO);
 
-		m_pNoTextureShader->SetColor(Renderable.Color);
-		m_pNoTextureShader->SetProjectionMatrix(m_ProjectionMatrix);
-		m_pNoTextureShader->SetPositionOffset(glm::vec3(Position, 1.0f));
+		//m_pNoTextureShader->SetColor(Renderable.Color);
+		//m_pNoTextureShader->SetProjectionMatrix(m_ProjectionMatrix);
+		//m_pNoTextureShader->SetPositionOffset(glm::vec3(Position, 1.0f));
 
 		glDrawElements(GL_TRIANGLES, Renderable.NumIndices, GL_UNSIGNED_SHORT, (void*)0);
 	}
@@ -279,14 +279,14 @@ GUIRenderer::GUIRenderer(int ScreenWidth, int ScreenHeight) :
 {
 	m_ProjectionMatrix = glm::ortho(0.0f, (float)ScreenWidth, (float)ScreenHeight, 0.0f);
 
-	m_pTextureShader = GLShaderProgram::CreateVertexFragmentShaderFromFile(std::string("VertexTextured2D.glsl"), std::string("FragmentTextured2D.glsl"));
-	m_pNoTextureShader = GLShaderProgram::CreateVertexFragmentShaderFromFile(std::string("Vertex2D.glsl"), std::string("Fragment2D.glsl"));
+	//m_pTextureShader = GLShaderProgram::CreateVertexFragmentShaderFromFile(std::string("VertexTextured2D.glsl"), std::string("FragmentTextured2D.glsl"));
+	//m_pNoTextureShader = GLShaderProgram::CreateVertexFragmentShaderFromFile(std::string("Vertex2D.glsl"), std::string("Fragment2D.glsl"));
 }
 
 GUIRenderer::~GUIRenderer()
 {
-	delete m_pTextureShader;
-	delete m_pNoTextureShader;
+	//delete m_pTextureShader;
+	//delete m_pNoTextureShader;
 }
 
 void GUIRenderer::UpdateScreenDimensions(int NewWidth, int NewHeight)
@@ -368,7 +368,7 @@ void GUIRenderer::UpdateMousePositionAndState(glm::ivec2 MousePosition, bool LMo
 
 static struct
 {
-	GLShaderProgram* Shader = NULL;
+	DebugGUIShader* Shader = NULL;
 	GLuint VAO = 0;
 	GLuint VBO = 0;
 	GLuint IBO = 0;
@@ -396,8 +396,8 @@ void RenderDrawLists(ImDrawData* DrawData)
     
 	glBindVertexArray(DebugGui.VAO);
 
-	DebugGui.Shader->Bind();
-	DebugGui.Shader->SetProjectionMatrix(DebugGui.ProjectionMatrix);
+    DebugGui.Shader->m_ProjectionMatrix = DebugGui.ProjectionMatrix;
+	DebugGui.Shader->Use();
 
 	for (int i = 0; i < DrawData->CmdListsCount; ++i)
 	{
@@ -566,7 +566,8 @@ DebugGUIRenderer::DebugGUIRenderer(int ScreenWidth, int ScreenHeight)
 
 	if (DebugGui.Shader == NULL)
 	{
-		DebugGui.Shader = GLShaderProgram::CreateVertexFragmentShaderFromFile(std::string("VertexDebugGUI.glsl"), std::string("FragmentDebugGUI.glsl"));
+        DebugGui.Shader = new DebugGUIShader();
+        DebugGui.Shader->Initialize();
 	}
 }
 

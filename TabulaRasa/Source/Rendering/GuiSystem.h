@@ -163,9 +163,9 @@ private:
 
 	List<IGUIElement*> m_Elements;
 
-	GLShaderProgram* m_pTextureShader;
+	//GLShaderProgram* m_pTextureShader;
 
-	GLShaderProgram* m_pNoTextureShader;
+	//GLShaderProgram* m_pNoTextureShader;
 
 	glm::ivec2 m_ScreenDimensions;
 

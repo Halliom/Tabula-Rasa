@@ -14,6 +14,10 @@
 #include "GuiSystem.h"
 #include "ChunkRenderer.h"
 
+#include "Shaders/SSAOShader.h"
+#include "Shaders/SSAOBlurShader.h"
+#include "Shaders/LightPassShader.h"
+
 #include "GL/glew.h"
 
 RenderingEngine::~RenderingEngine()
@@ -37,22 +41,17 @@ void RenderingEngine::Initialize(const unsigned int& ScreenWidth, const unsigned
 {
 	m_ScreenWidth = ScreenWidth;
 	m_ScreenHeight = ScreenHeight;
-
-	// SSAO shader
-	m_pSSAOShader = GLShaderProgram::CreateVertexFragmentShaderFromFile(
-		std::string("VertexPassthrough.glsl"),
-		std::string("FragmentShaderSSAO.glsl"),
-		true);
+    
+    m_pSSAOShader = new SSAOShader();
+    m_pSSAOShader->Initialize();
 
 	// SSAO blur shader
-	m_pSSAOBlurShader = GLShaderProgram::CreateVertexFragmentShaderFromFile(
-		std::string("VertexPassthrough.glsl"),
-		std::string("FragmentShaderSSAOBlur.glsl"));
+    m_pSSAOBlurShader = new SSAOBlurShader();
+    m_pSSAOBlurShader->Initialize();
 
 	// Light pass shader
-	m_pLightPassShader = GLShaderProgram::CreateVertexFragmentShaderFromFile(
-		std::string("VertexPassthrough.glsl"),
-		std::string("FragmentShaderLightPass.glsl"));
+    m_pLightPassShader = new LightPassShader();
+    m_pLightPassShader->Initialize();
 
 	glViewport(0, 0, ScreenWidth, ScreenHeight);
 
@@ -313,17 +312,16 @@ void RenderingEngine::SSAOPass()
 	glBindFramebuffer(GL_FRAMEBUFFER, m_SSAOFBO);
 	glClear(GL_COLOR_BUFFER_BIT);
 
-	m_pSSAOShader->Bind();
-	m_pSSAOShader->SetDefaultSamplers();
-	m_pSSAOShader->SetProjectionMatrix(Camera::g_ActiveCamera->m_ProjectionMatrix);
-	m_pSSAOShader->SetScreenDimension(glm::vec2(m_ScreenWidth, m_ScreenHeight));
+	m_pSSAOShader->m_ProjectionMatrix = Camera::g_ActiveCamera->m_ProjectionMatrix;
+	m_pSSAOShader->m_ScreenDimension = glm::vec2(m_ScreenWidth, m_ScreenHeight);
 
 	// Bind the textures from the gemoetry pass
 	m_GeomPassPositionTexture.Use();
 	m_GeomPassNormalTexture.Use();
-	m_SSAONoiseTexture.Use(),
-	m_pSSAOShader->SetSSAOSamples(m_pSSAOKernel);
+    m_SSAONoiseTexture.Use();
+	m_pSSAOShader->m_SSAOSamples = m_pSSAOKernel;
 
+    m_pSSAOShader->Use();
 	// Render a screen quad
 	glBindVertexArray(m_ScreenQuadVAO);
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, 0);
@@ -336,8 +334,7 @@ void RenderingEngine::SSAOPass()
 	glBindFramebuffer(GL_FRAMEBUFFER, m_SSAOBlurFBO);
 	glClear(GL_COLOR_BUFFER_BIT);
 
-	m_pSSAOBlurShader->Bind();
-	m_pSSAOBlurShader->SetDefaultSamplers();
+	m_pSSAOBlurShader->Use();
 
 	// Send the texture fromt he previous SSAO pass to the shader to get blurred
 	m_SSAOColorBuffer.Use();
@@ -362,8 +359,7 @@ void RenderingEngine::LightPass()
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	m_pLightPassShader->Bind();
-	m_pLightPassShader->SetDefaultSamplers();
+    m_pLightPassShader->Use();
 
 	// Bind the Position texture
 	m_GeomPassPositionTexture.Use();

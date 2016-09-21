@@ -8,6 +8,7 @@
 
 #include "../Rendering/Fonts.h"
 #include "../Rendering/RenderingEngine.h"
+#include "../Rendering/GuiSystem.h"
 
 #include "../Engine/Console.h"
 

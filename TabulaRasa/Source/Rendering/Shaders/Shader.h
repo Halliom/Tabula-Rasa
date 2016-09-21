@@ -33,6 +33,9 @@ public:
     template<typename T>
     void SetUniform(GLint Uniform, const T& Value);
     
+    template<typename T>
+    void SetUniform3(GLint Uniform, int Count, const T* Value);
+    
 protected:
     
     virtual void LoadShader(GLint Program);

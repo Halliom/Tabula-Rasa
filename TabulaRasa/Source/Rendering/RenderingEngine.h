@@ -6,10 +6,12 @@
 #include "../Engine/Async/ThreadSystem.h"
 #include "../Engine/Async/Mutex.h"
 #include "../Engine/Block.h"
-#include "../Rendering/Shader.h"
 #include "../Rendering/Texture.h"
 
 class ChunkRenderer;
+class SSAOShader;
+class SSAOBlurShader;
+class LightPassShader;
 
 class RenderingEngine
 {
@@ -63,17 +65,17 @@ private:
 
     Texture             m_TextureAtlas;
 
-	GLShaderProgram*    m_pLightPassShader;
+	LightPassShader*    m_pLightPassShader;
 
 	GLuint              m_SSAOFBO;
 	Texture             m_SSAONoiseTexture;
 	Texture             m_SSAOColorBuffer;
-	GLShaderProgram*    m_pSSAOShader;
+	SSAOShader*         m_pSSAOShader;
 
 	float               m_pSSAOKernel[192];
 	GLuint              m_SSAOBlurFBO;
 	Texture             m_SSAOBlurColorBuffer;
-    GLShaderProgram*    m_pSSAOBlurShader;
+    SSAOBlurShader*     m_pSSAOBlurShader;
 
 	GLuint              m_ScreenQuadVBO;
 	GLuint              m_ScreenQuadIBO;
