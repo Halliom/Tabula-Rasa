@@ -1,6 +1,0 @@
- - Create FreeList allocator so that memory can be allocated dynamically throughout entire application
- - Fix instancing of types to use the correct allocator and not the standard allocator
-
- - Lua functions:
-   - Set player position
-   - run (run scrips from console)
