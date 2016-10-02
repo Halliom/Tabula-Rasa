@@ -11,6 +11,7 @@
 #include "../Engine/Console.h"
 
 #include "../Rendering/GUI/imgui/imgui.h"
+#include "../Rendering/GuiSystem.h"
 
 PlatformWindow* PlatformWindow::GlobalWindow = NULL;
 

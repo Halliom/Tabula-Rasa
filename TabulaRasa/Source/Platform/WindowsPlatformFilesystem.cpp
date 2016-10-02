@@ -55,6 +55,28 @@ std::string PlatformFileSystem::LoadFile(const AssetDirectoryType& Directory, co
 	return std::string(FileContents, NumberOfBytesRead);
 }
 
+char* PlatformFileSystem::LoadFileIntoBuffer(const AssetDirectoryType&Directory, const char *FileName)
+{
+	std::string FullFileName = GetAssetDirectory(Directory).append(FileName);
+
+	std::ifstream File;
+	File.open(FullFileName, std::ios::binary);
+
+	File.seekg(0, std::ios::end);
+	size_t Size = File.tellg();
+	File.seekg(0, std::ios::beg);
+
+	//Reduce the file size by any header bytes that might be present
+	Size -= File.tellg();
+
+	char* Data = AllocateTransient<char>(Size + 1);
+	File.read(Data, Size);
+	File.close();
+	Data[Size] = '\0';
+
+	return Data;
+}
+
 std::string PlatformFileSystem::GetAssetDirectory(const AssetDirectoryType& Directory)
 {
 	char CurrentDirectory[MAX_PATH];
