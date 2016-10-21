@@ -21,37 +21,37 @@ std::string PlatformFileSystem::LoadFile(const AssetDirectoryType& Directory, co
 {
     std::string AssetDir = GetAssetDirectory(Directory);
     AssetDir.append(FileName);
-    
+
     // Create a filestream to read the file
     std::ifstream FileStream = std::ifstream(AssetDir);
-    
+
     // Create a result string and read the contents of the file into it
     // via a stream buffer
     std::string Result((std::istreambuf_iterator<char>(FileStream)),
                         std::istreambuf_iterator<char>());
-    
+
     return Result;
 }
 
 char* PlatformFileSystem::LoadFileIntoBuffer(const AssetDirectoryType&Directory, const char *FileName)
 {
     std::string FullFileName = GetAssetDirectory(Directory).append(FileName);
-    
+
     std::ifstream File;
     File.open(FullFileName, std::ios::binary);
-    
+
     File.seekg(0, std::ios::end);
     size_t Size = File.tellg();
     File.seekg(0, std::ios::beg);
-    
+
     //Reduce the file size by any header bytes that might be present
     Size -= File.tellg();
-    
+
     char* Data = AllocateTransient<char>(Size + 1);
     File.read(Data, Size);
     File.close();
     Data[Size] = '\0';
-    
+
     return Data;
 
 }
@@ -60,18 +60,18 @@ std::string PlatformFileSystem::GetAssetDirectory(const AssetDirectoryType& Dire
 {
     char CurrentDirectory[MAX_FILE_PATH];
     char* CurrentWorkingDirectory = getcwd(CurrentDirectory, sizeof(CurrentDirectory));
-    
+
     // Ensure that we actually got a directory
     assert(CurrentWorkingDirectory);
 #ifdef _DEBUG
     // TODO: This won't work in release
-    
+
     int StringLength = strlen(CurrentWorkingDirectory);
     std::string OutDirectory = std::string(CurrentDirectory, StringLength - 6);
 #else
     std::string OutDirectory = std::string(CurrentDirectory);
 #endif
-    
+
     //TODO: Cache this
     switch (Directory)
     {
@@ -108,38 +108,38 @@ Texture PlatformFileSystem::LoadImageFromFile(const std::string& FileName, unsig
 {
     std::ifstream File;
     File.open(FileName, std::ios::binary);
-    
+
     File.seekg(0, std::ios::end);
     size_t Size = File.tellg();
     File.seekg(0, std::ios::beg);
-    
+
     List<unsigned char> Data = List<unsigned char>(g_Engine->g_MemoryManager->m_pGameMemory);
     //Reduce the file size by any header bytes that might be present
     Size -= File.tellg();
     Data.Reserve(Size);
     File.read((char*) &(Data[0]), Size);
     File.close();
-    
+
     std::vector<unsigned char> Pixels;
     unsigned long Width;
     unsigned long Height;
-    
+
     decodePNG(Pixels, Width, Height, &(Data[0]), Size);
-    
+
     OutWidth = Width;
     OutHeight = Height;
-    
+
     Texture Result;
     Result.LoadFromBuffer(Pixels.data(), Width, Height, GL_RGBA, GL_RGBA);
     Result.SetFilteringMode(GL_NEAREST);
     Result.SetWrapMode(GL_CLAMP_TO_EDGE);
-    
+
     /** glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, Width, Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, Pixels->data());
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE); */
-    
+
     return Result;
 }
 
@@ -152,7 +152,7 @@ GLuint PlatformFileSystem::LoadBitmapFromFile(char* FileName)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    
+
     return Result;
 #endif
     return 0;
@@ -162,21 +162,21 @@ void PlatformFileSystem::LoadModel(LoadedModel* Model, const char* FileName)
 {
     glGenVertexArrays(1, &Model->m_AssetVAO);
     glBindVertexArray(Model->m_AssetVAO);
-    
+
     glGenBuffers(1, &Model->m_AssetVBO);
     glGenBuffers(1, &Model->m_AssetIBO);
-    
+
     // Get the actual location on disk
     std::string FileLocation = GetAssetDirectory(DT_MODELS);
     FileLocation.append(FileName);
-    
+
     Assimp::Importer Importer;
     const aiScene* ImportedScene = Importer.ReadFile(
                                                      FileLocation.c_str(),
                                                      aiProcess_Triangulate |
                                                      aiProcess_GenNormals |
                                                      aiProcess_GenUVCoords);
-    
+
     if (!ImportedScene)
     {
         const char* ErrorMessage = Importer.GetErrorString();
@@ -184,7 +184,7 @@ void PlatformFileSystem::LoadModel(LoadedModel* Model, const char* FileName)
         LogF("Error loading model %s\n%s", FileName, ErrorMessage);
         return;
     }
-    
+
     List<float> Vertices;
     List<unsigned short> Indices;
     unsigned short Offset = 0;
@@ -211,21 +211,21 @@ void PlatformFileSystem::LoadModel(LoadedModel* Model, const char* FileName)
         }
         Offset = Vertices.Size / 6;
     }
-    
+
     glBindBuffer(GL_ARRAY_BUFFER, Model->m_AssetVBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(float) * Vertices.Size, Vertices.Data(), GL_STATIC_DRAW);
-    
+
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, Model->m_AssetIBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned short) * Indices.Size, Indices.Data(), GL_STATIC_DRAW);
-    
+
     glEnableVertexAttribArray(0); // Position
     glEnableVertexAttribArray(1); // Normal
-    
+
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 6, 0);
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 6, (void *) (sizeof(float) * 3));
-    
+
     Model->m_NumVertices = Indices.Size;
-    
+
     glBindVertexArray(0);
 }
 
