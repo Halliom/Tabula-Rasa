@@ -19,7 +19,7 @@ struct EngineGlobals
     class ScriptEngine*         g_ScriptEngine;
     class FontLibrary*          g_FontLibrary;
     class Console*              g_Console;
-    class RenderingEngine*      g_RenderingEngine;
+    class Renderer*				g_WorldRenderer;
     class DebugGUIRenderer*     g_GUIRenderer;
     class World*                g_World;
 };

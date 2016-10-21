@@ -7,7 +7,7 @@
 #include "../Engine/Camera.h"
 
 #include "../Rendering/Fonts.h"
-#include "../Rendering/RenderingEngine.h"
+#include "../Rendering/Renderer.h"
 #include "../Engine/Console.h"
 
 #include "../Rendering/GUI/imgui/imgui.h"
@@ -123,7 +123,7 @@ void WindowCallback(GLFWwindow* Window, int Width, int Height)
 		GlobalWindow->WindowParams.Height = Height;
 
 		Camera::g_ActiveCamera->UpdateScreenDimensions(Width, Height);
-		g_Engine->g_RenderingEngine->UpdateScreenDimensions(Width, Height);
+		g_Engine->g_WorldRenderer->ScreenDimensionsChanged(Width, Height);
 		g_Engine->g_GUIRenderer->UpdateScreenDimensions(Width, Height);
 	}
 }

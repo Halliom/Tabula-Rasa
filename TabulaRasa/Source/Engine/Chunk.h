@@ -72,6 +72,7 @@ public:
 		}
 	}
 
+	// TODO: Maybe turn this into a SoA instead of a AoS?
 	Voxel           m_pVoxels[SIZE][SIZE][SIZE];
 	int             m_ChunkX;
 	int             m_ChunkY;

@@ -14,7 +14,7 @@
 #include "Engine/Core/Random.h"
 
 #include "Rendering/GuiSystem.h"
-#include "Rendering/RenderingEngine.h"
+#include "Rendering/Renderer.h"
 #include "Engine/Async/Thread.h"
 
 #define SAFE_DELETE(ptr) if (ptr) { delete ptr; }
@@ -101,9 +101,9 @@ int main(int argc, char* argv[])
 	g_Engine->g_Console = new Console();
 
     // Initializes the rendering engine
-	g_Engine->g_RenderingEngine = new RenderingEngine();
-	g_Engine->g_RenderingEngine->Initialize(Window.WindowParams.Width, Window.WindowParams.Height);
-	g_Engine->g_RenderingEngine->AddRendererForBlock(3, "Chest_Model.obj");
+	g_Engine->g_WorldRenderer = new Renderer();
+	g_Engine->g_WorldRenderer->Initialize(Window.WindowParams.Width, Window.WindowParams.Height);
+	g_Engine->g_WorldRenderer->AddCustomRendererForBlock(3, "Chest_Model.obj");
 
 	g_Engine->g_GUIRenderer = new DebugGUIRenderer((int)Window.WindowParams.Width, (int)Window.WindowParams.Height);
 
@@ -111,7 +111,7 @@ int main(int argc, char* argv[])
 	g_Engine->g_World = new World();
 	g_Engine->g_World->Initialize();
 
-	g_Engine->g_RenderingEngine->PostInitialize();
+	g_Engine->g_WorldRenderer->PostInitialize();
 
 	double LastFrameTime = glfwGetTime();
 	double DeltaTime = 0.0;
@@ -129,7 +129,7 @@ int main(int argc, char* argv[])
 		g_Engine->g_World->Update(DeltaTime);
 
 		// Render the world
-		g_Engine->g_RenderingEngine->RenderFrame(g_Engine->g_World, DeltaTime);
+		g_Engine->g_WorldRenderer->RenderFrame(g_Engine->g_World, DeltaTime);
         
         // Render all GUI elements
 		g_Engine->g_GUIRenderer->RenderFrame(StaticFPS, (float)DeltaTime);
@@ -156,7 +156,7 @@ int main(int argc, char* argv[])
 
 	SAFE_DELETE(g_Engine->g_World);
     SAFE_DELETE(g_Engine->g_GUIRenderer);
-	SAFE_DELETE(g_Engine->g_RenderingEngine);
+	SAFE_DELETE(g_Engine->g_WorldRenderer);
 	SAFE_DELETE(g_Engine->g_Console);
     SAFE_DELETE(g_Engine->g_FontLibrary);
     SAFE_DELETE(g_Engine->g_ScriptEngine);

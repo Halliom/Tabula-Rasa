@@ -1,7 +1,7 @@
 #include "ChunkManager.h"
 
 #include "../Rendering/ChunkRenderer.h"
-#include "../Rendering/RenderingEngine.h"
+#include "../Rendering/Renderer.h"
 
 #include "../Engine/Engine.h"
 #include "../Engine/Core/Memory.h"
@@ -54,7 +54,7 @@ Chunk* ChunkManager::LoadChunk(glm::ivec3 ChunkPosition)
 
 	m_pWorldGenerator->GenerateChunk(ChunkPosition, Result);
 
-	Result->Initialize(g_Engine->g_RenderingEngine->m_pChunkRenderer);
+	Result->Initialize(g_Engine->g_WorldRenderer->m_pChunkRenderer);
 
 	return Result;
 }

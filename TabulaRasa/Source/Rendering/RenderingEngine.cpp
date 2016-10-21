@@ -292,7 +292,7 @@ void RenderingEngine::RenderFrame(World* RenderWorld, const float& DeltaTime)
 	}
 
     // Do the geometry pass (render everything)
-	m_pChunkRenderer->RenderAllChunks(RenderWorld->m_pCurrentPlayer);
+	m_pChunkRenderer->RenderChunks(RenderWorld->m_pCurrentPlayer);
     
 	if (m_bWireframeRender)
 	{
@@ -304,6 +304,8 @@ void RenderingEngine::RenderFrame(World* RenderWorld, const float& DeltaTime)
 
 	// Do the light pass
 	LightPass();
+
+
 }
 
 void RenderingEngine::SSAOPass()

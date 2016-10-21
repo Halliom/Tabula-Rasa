@@ -12,14 +12,14 @@
 #include "../Engine/Camera.h"
 #include "../Engine/Block.h"
 #include "../Engine/Chunk.h"
-#include "../Rendering/RenderingEngine.h"
+#include "../Rendering/Renderer.h"
 #include "../Rendering/Shaders/ChunkRenderShader.h"
 #include "../Platform/Platform.h"
 #include "../Game/Player.h"
 
-ChunkRenderer::ChunkRenderer() :
-    m_pChunkRenderShader(NULL)
+ChunkRenderer::ChunkRenderer()
 {
+	m_pChunkRenderShader = new ChunkRenderShader();
 }
 
 ChunkRenderer::~ChunkRenderer()
@@ -32,12 +32,24 @@ void ChunkRenderer::SetupChunkRenderer()
     m_ChunksToRender = List<ChunkRenderData>(g_Engine->g_MemoryManager->m_pRenderingMemory);
     // Reserve space for 128 ChunkRenderDatas up front
     m_ChunksToRender.Reserve(128);
+
+	// Load the texture atlas for all the blocks textures
+	unsigned int Width, Height;
+	std::string FileName = PlatformFileSystem::GetAssetDirectory(DT_TEXTURES).append(std::string("textures.png"));
+	m_TextureAtlas = PlatformFileSystem::LoadImageFromFile((char*)FileName.c_str(), Width, Height);
+
+	// It will later be used as texture 4
+	m_TextureAtlas.m_BindingPoint = 4;
     
-    m_pChunkRenderShader = new ChunkRenderShader();
     m_pChunkRenderShader->Initialize();
 }
 
-void ChunkRenderer::RenderAllChunks(Player* CurrentPlayer)
+void ChunkRenderer::AddCustomRendererForBlock(IDType BlockID, const char* BlockModelFilename)
+{
+	PlatformFileSystem::LoadModel(&m_CustomBlockRenderers[BlockID], BlockModelFilename);
+}
+
+void ChunkRenderer::RenderChunks(Player* CurrentPlayer)
 {
 	const static glm::mat4 Identity = glm::mat4(1.0f);
 
@@ -49,28 +61,28 @@ void ChunkRenderer::RenderAllChunks(Player* CurrentPlayer)
     
 	//List<ChunkRenderData> ChunksToRender = CurrentPlayer->m_pWorldObject->m_pChunkManager->GetVisibleChunks();
 
-	for (size_t Index = 0; Index < m_ChunksToRender.Size; ++Index)
+	for (size_t i = 0; i < m_ChunksToRender.Size; ++i)
 	{
-        m_pChunkRenderShader->m_ModelMatrix = glm::translate(Identity, m_ChunksToRender[Index].ChunkPosition);
+        m_pChunkRenderShader->m_ModelMatrix = glm::translate(Identity, m_ChunksToRender[i].ChunkPosition);
         
         m_pChunkRenderShader->Use();
-		for (unsigned int MultiblockID = 0;
-			 MultiblockID < m_ChunksToRender[Index].NumMultiblocksToRender;
-			 ++MultiblockID)
+
+		for (size_t j = 0; i < m_ChunksToRender[i].NumMultiblocksToRender; ++i)
 		{
-			MultiblockRenderData* Multiblock = &m_ChunksToRender[Index].MultiblocksToRender[MultiblockID];
-			LoadedModel Model = g_Engine->g_RenderingEngine->m_CustomBlockRenderers[Multiblock->BlockID];
+			// Fetch the model for the multiblock to render
+			MultiblockRenderData* Multiblock = &m_ChunksToRender[i].MultiblocksToRender[j];
+			LoadedModel Model = m_CustomBlockRenderers[Multiblock->BlockID];
 
 			glBindVertexArray(Model.m_AssetVAO);
 			glDrawElements(GL_TRIANGLES, Model.m_NumVertices, GL_UNSIGNED_SHORT, 0);
 			glBindVertexArray(0);
 		}
 		
-        if (m_ChunksToRender[Index].NumVertices == 0)
+        if (m_ChunksToRender[i].NumVertices == 0)
             continue;
 
-		glBindVertexArray(m_ChunksToRender[Index].VertexArrayObject);
-		glDrawElements(GL_TRIANGLES, m_ChunksToRender[Index].NumVertices, GL_UNSIGNED_SHORT, 0);
+		glBindVertexArray(m_ChunksToRender[i].VertexArrayObject);
+		glDrawElements(GL_TRIANGLES, m_ChunksToRender[i].NumVertices, GL_UNSIGNED_SHORT, 0);
 	}
 	glBindVertexArray(0);
 }
@@ -375,7 +387,7 @@ static void GreedyMesh(Chunk* Voxels, ChunkRenderData* RenderData)
     });
     
     // Send it to the render thread
-    g_Engine->g_RenderingEngine->ScheduleRenderJob(GreedyMeshRenderUpdate);
+    g_Engine->g_WorldRenderer->ScheduleRenderJob(GreedyMeshRenderUpdate);
     
 	if (AdditionalRenderData.Size > 0)
 	{
