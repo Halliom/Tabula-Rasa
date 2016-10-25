@@ -37,9 +37,6 @@ void ChunkRenderer::SetupChunkRenderer()
 	unsigned int Width, Height;
 	std::string FileName = PlatformFileSystem::GetAssetDirectory(DT_TEXTURES).append(std::string("textures.png"));
 	m_TextureAtlas = PlatformFileSystem::LoadImageFromFile((char*)FileName.c_str(), Width, Height);
-
-	// It will later be used as texture 4
-	m_TextureAtlas.m_BindingPoint = 4;
     
     m_pChunkRenderShader->Initialize();
 }
@@ -67,7 +64,7 @@ void ChunkRenderer::RenderChunks(Player* CurrentPlayer)
         
         m_pChunkRenderShader->Use();
 
-		for (size_t j = 0; i < m_ChunksToRender[i].NumMultiblocksToRender; ++i)
+		/*for (size_t j = 0; i < m_ChunksToRender[i].NumMultiblocksToRender; ++i)
 		{
 			// Fetch the model for the multiblock to render
 			MultiblockRenderData* Multiblock = &m_ChunksToRender[i].MultiblocksToRender[j];
@@ -76,11 +73,12 @@ void ChunkRenderer::RenderChunks(Player* CurrentPlayer)
 			glBindVertexArray(Model.m_AssetVAO);
 			glDrawElements(GL_TRIANGLES, Model.m_NumVertices, GL_UNSIGNED_SHORT, 0);
 			glBindVertexArray(0);
-		}
+		}*/
 		
         if (m_ChunksToRender[i].NumVertices == 0)
             continue;
 
+		m_TextureAtlas.Use();
 		glBindVertexArray(m_ChunksToRender[i].VertexArrayObject);
 		glDrawElements(GL_TRIANGLES, m_ChunksToRender[i].NumVertices, GL_UNSIGNED_SHORT, 0);
 	}

@@ -663,7 +663,6 @@ void DebugGUIRenderer::RenderFrame(int FramesPerSecond, float FrameTime)
 	glfwGetFramebufferSize(PlatformWindow::GlobalWindow->GetWindow(), &WindowWidth, &WindowHeight);
 	glEnable(GL_SCISSOR_TEST);
 	glScissor((WindowWidth / 2) - (CrosshairSize / 2), (WindowHeight / 2) - (CrosshairSize / 2), CrosshairSize, CrosshairSize);
-	glClearColor(1.0f, 1.0f, 1.0f, 0.75f);
 	glClear(GL_COLOR_BUFFER_BIT);
 	glDisable(GL_SCISSOR_TEST);
 

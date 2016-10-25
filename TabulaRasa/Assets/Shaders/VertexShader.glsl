@@ -20,8 +20,7 @@ vec2 getAtlasOffset()
 {
 	float xCoord = float(textureCoord % uint(16));
 	float yCoord = float(textureCoord / uint(16));
-	vec2 atlasOffset = vec2(xCoord, yCoord) * TILE_OFFSET;
-	return atlasOffset;
+	return vec2(xCoord, yCoord) * TILE_OFFSET;
 }
 
 void main()
@@ -29,10 +28,10 @@ void main()
 	vec4 viewPos = g_ViewMatrix * g_ModelMatrix * vec4(position, 1.0);
 	frag_position = viewPos.xyz;
 	gl_Position = g_ProjectionMatrix * viewPos;
-	
+
 	frag_atlasOffset = getAtlasOffset();
 	frag_texCoord = dimension;
-	
+
 	mat3 normalMatrix = transpose(inverse(mat3(g_ViewMatrix * g_ModelMatrix)));
 	frag_normal = normalize(normalMatrix * normal);
 }

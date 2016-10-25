@@ -39,6 +39,9 @@ void Renderer::Initialize(const unsigned int& ScreenWidth, const unsigned int& S
 
 	glEnable(GL_DEPTH_TEST);
 
+	// Nothingness is the "background"
+	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+
 	// Initilize the chunk renderer
 	m_pChunkRenderer->SetupChunkRenderer();
 }
@@ -70,6 +73,9 @@ void Renderer::ScheduleRenderJob(IJob* RenderJob)
 
 void Renderer::RenderFrame(World* RenderWorld, const float& DeltaTime)
 {
+	// Clear the screen
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
 	// Enter mutex so access to m_RenderJobs is locked
 	m_QueueMutex.Enter();
 
